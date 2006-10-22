@@ -593,8 +593,6 @@ CONTAINS
     End Do
     
     ChisqrV = ChisqrV / Real(Npoints - Nparm,kind=DP)
-    Cerr = Cerr * Sqrt(ChisqrV)
-    
 
 
     Return
@@ -677,7 +675,7 @@ CONTAINS
     End Do
     
     ChisqrV = ChisqrV / Real(Npoints - Nparm,kind=DP)
-    Cerr = Cerr * Sqrt(ChisqrV)
+
     
     Return
   End Subroutine LinearReg_Pol_DP
@@ -771,8 +769,6 @@ CONTAINS
     End Do
     
     ChisqrV = ChisqrV / Real(Npoints - Nparm,kind=SP)
-    Cerr = Cerr * Sqrt(ChisqrV)
-    
 
 
     Return
@@ -855,7 +851,6 @@ CONTAINS
     End Do
     
     ChisqrV = ChisqrV / Real(Npoints - Nparm,kind=SP)
-    Cerr = Cerr * Sqrt(ChisqrV)
     
     Return
   End Subroutine LinearReg_Pol_SP
