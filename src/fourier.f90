@@ -461,7 +461,7 @@ CONTAINS
     Type (Fourier_Serie), Intent (in) :: Serie
     Integer, Intent (in) :: Nex
 
-    Integer, Parameter :: Maxcfr = 32
+    Integer, Parameter :: Maxcfr = 30
     Integer :: Bin(Maxcfr), Nmax
     Type (Fourier_Serie) :: Acum
 
@@ -507,7 +507,7 @@ CONTAINS
     Type (Fourier_Serie_2D), Intent (in) :: Serie
     Integer, Intent (in) :: Nex
 
-    Integer, Parameter :: Maxcfr = 32
+    Integer, Parameter :: Maxcfr = 30
     Integer :: Bin(Maxcfr), Nmax
     Type (Fourier_Serie_2D) :: Acum
 
@@ -616,20 +616,15 @@ CONTAINS
 !    Add%Coef => Temp
     
     If (Serie1%Nterm > Serie2%Nterm) Then
-       Add%Nterm = Serie1%Nterm
-       Add%Coef = Serie1%Coef 
+       Add = Serie1
        Add%Coef(-Serie2%Nterm:Serie2%Nterm) = &
             & Add%Coef(-Serie2%Nterm:Serie2%Nterm) + &
             & Serie2%Coef(:) 
-       Add%Nterm = Serie1%Nterm
     Else
-       Add%Nterm = Serie2%Nterm
-       Add%Coef = Serie2%Coef
+       Add = Serie2
        Add%Coef(-Serie1%Nterm:Serie1%Nterm) = &
             & Add%Coef(-Serie1%Nterm:Serie1%Nterm) + &
             & Serie1%Coef(:) 
-       
-       Add%Nterm = Serie2%Nterm
     End If
     
     
@@ -1369,11 +1364,8 @@ CONTAINS
   Type (Fourier_Serie) Function ConjgFS_1D(Serie) Result (Cserie)
 ! *
 ! ********************************
-! * Calculates the Fast Fourier
-! * Transformation from the complex
-! * data stored in data.
-! *
-! * This routine does not work!!!
+! * Calculates the Conjugate of a Fourier 
+! * Series.
 ! ********************************
 
     Type (Fourier_Serie), Intent (in) :: Serie
@@ -1392,11 +1384,8 @@ CONTAINS
   Type (Fourier_Serie_2D) Function ConjgFS_2D(Serie) Result (Cserie)
 ! *
 ! ********************************
-! * Calculates the Fast Fourier
-! * Transformation from the complex
-! * data stored in data.
-! *
-! * This routine does not work!!!
+! * Calculates the Conjugate of a Fourier 
+! * Series.
 ! ********************************
 
     Type (Fourier_Serie_2D), Intent (in) :: Serie

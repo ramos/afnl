@@ -1,0 +1,434 @@
+This is the documentation of the \texttt{MODULE Statistics}, a set
+of \texttt{FORTRAN 90} routines to perform statistical description
+of data. This module make use of the \texttt{MODULE NumTypes},
+\texttt{MODULE Constants}, \texttt{MODULE Error} and \texttt{MODULE
+  Linear} so please read the documentation of these modules
+\emph{before} reading this. 
+
+\section{Function \texttt{Mean(X)}}
+\index{Mean@Function \texttt{Mean(X)}}
+
+\subsection{Description}
+
+Compute the mean value of the numbers stored in \texttt{X(:)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose mean we want to compute.
+\end{description}
+
+\subsection{Output}
+
+A real double or simple precision (same type as the input).
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
+
+
+  CALL Random_Number(X)
+  Write(*,'(ES33.25)')Mean(X)
+
+
+  Stop
+End Program Tests
+\end{verbatim}
+
+
+\section{Function \texttt{Var(X)}}
+\index{Var@Function \texttt{Var(X)}}
+
+\subsection{Description}
+
+Compute the variance of a vector of numbers \texttt{X(:)}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose variance we want to compute.
+\end{description}
+
+\subsection{Output}
+
+A real double or simple precision (same type as the input).
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
+
+
+  CALL Random_Number(X)
+  Write(*,'(ES33.25)')Var(X)
+
+
+  Stop
+End Program Tests
+\end{verbatim}
+
+
+\section{Function \texttt{Stddev(X)}}
+\index{Stddev@Function \texttt{Stddev(X)}}
+
+\subsection{Description}
+
+Computes the standard deviation of the numbers stored in the vector
+\texttt{X(:)}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose standard deviation we want to
+  compute. 
+\end{description}
+
+\subsection{Output}
+
+Real Single or Double precision, the same as the input values.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
+
+
+  CALL Random_Number(X)
+  Write(*,'(ES33.25)')Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{verbatim}
+
+\section{Function \texttt{Moment(X, k)}}
+\index{Moment@Function \texttt{Moment(X, k)}}
+
+\subsection{Description}
+
+Returns the $k^{\underline{th}}$ moment of the values stored in the
+vector \texttt{X(:)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision). The numbers
+  whose $k^{\underline{th}}$ moment we want to compute.
+\item[\texttt{k}:] Integer. Which moment we want to compute.
+\end{description}
+
+\subsection{Output}
+
+Real single or double precision. The $k^{\underline{th}}$ moment of
+the numbers.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
+
+
+  CALL Random_Number(X)
+  Write(*,*)'We should obtain the same numbers twice: '
+  Write(*,'(ES33.25)')Moment(X,2), Var(X)
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\section{Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
+\index{Normal@Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a normal distribution with mean
+\texttt{Rm}, and standard deviation \texttt{Rsig}. The parameters
+\texttt{Rm} and \texttt{Rsig} are optional. If they are not given the
+mean will be 0, and the standard deviation 1.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[\texttt{Rm}:] Real (Single or Double precision), Optional. The
+  mean of the normal distribution. If not present the default value
+  is 0.
+\item[\texttt{Rsig}:] Real (Single or Double precision), Optional. The
+  standard deviation of the normal distribution.  If not present the
+  default value is 1. 
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
+
+
+  CALL Normal(X, 1.23_DP, 0.345_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 1.23 and 0.345: '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{verbatim}
+
+\section{Subroutine \texttt{Histogram(Val, Ndiv, Ntics, Vmin, Vmax,
+    h)}} 
+\index{Histogram@Subroutine \texttt{Histogram(Val, Ndiv, Ntics, Vmin, Vmax, h)}} 
+
+\subsection{Description}
+
+Given a set of points \texttt{Val(:)}, this routine makes
+\texttt{Ndiv} divisions between the minimum and the greatest value of
+\texttt{Val} (respectively returned in \texttt{Vmin} and
+\texttt{Vmax}), each of size \texttt{h} (also returned), and returns
+in the integer vector \texttt{Nticks(:)} the number of points that are
+in each interval. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Val(:)}:] Real (Single or Double precision) one
+  dimensional array. The original values.
+\item[\texttt{Ndiv}: ] Integer. The number of divisions.
+\item[\texttt{Nticks}:] Integer one dimensional array. \texttt{Ndiv(I)}
+  Tells how many points of \texttt{Val(:)} are between
+  $\mathtt{Vmin+(I-1)h}$ and $\mathtt{Vmin+Ih}$.
+\item[\texttt{Vmin, Vmax}:] Real (Single or Double precision). The
+  minimum and maximum values of \texttt{Val}.
+\item[\texttt{h}:] Real (Single or Double precision). After calling
+  the routine has the step of the division.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 500000, Npinta = 100, Npar = 4, Ndiv = 100
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2), &
+       & Xmin, Xmax, h, Xac
+  Integer :: Ntics(Ndiv)
+
+  CALL Normal(X, 1.23_DP, 0.345_DP)
+  CALL Histogram(X, Ndiv, Ntics, Xmin, Xmax, h)
+  
+  Do I = 1, Ndiv
+     Xac = Xmin + (I-1)*h
+     Write(*,'(1ES33.25,1I)')Xac, Ntics(I)
+  End Do
+
+  Stop
+End Program Tests
+\end{verbatim}
+
+\section{Subroutine \texttt{LinearReg(X, Y, Yerr, [Func], Coef, Cerr, ChisqrV)}} 
+\index{LinearReg@Subroutine \texttt{LinearReg(X, Y, Yerr, [Func], Coef, Cerr, ChisqrV)}} 
+
+\subsection{Description}
+
+Given a set of points \texttt{X(:)} and \texttt{Y(:)}, this routine
+performs a linear fit to a set of functions defined by
+\texttt{Func}. 
+\begin{displaymath}
+  Y = \sum_i a_i f_i(X)
+\end{displaymath}
+This routine also performs multi-dimensional fitting, in which case
+the points are specified as \texttt{X(:,:)}, where the first argument
+tells which point, and the second which variable.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:[,:])}:] Real single or double precision one
+  dimensional array (for a one dimensional fit) or two dimensional
+  array (for a multidimensional fit). The
+  independent variables. For a multidimensional fit, the first argument
+  tells which point, and the second which variable. So the size of the
+  array should be \texttt{X(Npoints,Ndim)}.
+\item[\texttt{Y(:)}: ] Real single or double precision one dimensional
+  array. The dependent
+  variable.
+\item[\texttt{Yerr(:)}:] Real single or double precision one
+  dimensional array. The errors
+  of the points. If you don't have them, you should put all of hem to
+  some non-zero value.
+\item[\texttt{Func}:] Optional. This routine define the functions to
+  fit. An interface like this should be provided
+\begin{verbatim}
+Interface
+   Function Func(Xx, i)
+         
+     USE NumTypes
+
+     Real (kind=SP), Intent (in) :: Xx
+     Integer, Intent (in) :: i
+     Real (kind=SP) :: Func
+
+   End Function Func
+End Interface
+\end{verbatim}
+if you want to perform a one dimensional fitting, and like this
+\begin{verbatim}
+Interface
+   Function Func(Xx, i)
+         
+     USE NumTypes
+
+     Real (kind=SP), Intent (in) :: Xx(:)
+     Integer, Intent (in) :: i
+     Real (kind=SP) :: Func
+
+   End Function Func
+End Interface
+\end{verbatim}
+if it is a multidimensional fitting. Since you are making a fitting
+to a function of the type
+\begin{displaymath}
+  Y = \sum_i a_i f_i(X)
+\end{displaymath}
+the values $f_i(X)$ are given y this function as \texttt{Func(X,
+  I)}. If the functions are not specified (i.e. you dont put this
+argument), a fit to a polynomial is made.
+\item[\texttt{Coef(:)}: ] Real single or double precision one
+  dimensional array. The
+  parameters that you want to determine.
+\item[\texttt{Cerr(:)}:] Real single or double precision one
+  dimensional array. The errors
+  in the parameters.
+\item[\texttt{ChiSqr}: ] Real single or double precision. The $\chi^2$
+  per degree of freedom of the fit.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 200, Npinta = 100, Npar = 4, Ndiv = 100
+  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
+       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2), &
+       & Xmin, Xmax, h, Xac
+  Integer :: Ntics(Ndiv)
+
+  Interface
+     Function Fd(Xx, i)
+       
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xx(:)
+       Integer, Intent (in) :: i
+       Real (kind=DP) :: Fd
+       
+     End Function FD
+  End Interface
+
+
+  CALL Random_Number(Xd)
+  Xd(:,:) = 10.0_DP*(Xd(:,:) - 0.8_DP)
+
+  CALL Normal(Yer, 0.0_DP, 1.0E-3_DP)
+  Y(:) = 12.34_DP*Xd(:,1)*sin(Xd(:,2)) - 2.23_DP + &
+       & 0.67_DP*Xd(:,1)**2*Xd(:,2) +  0.23_DP*Xd(:,1) + Yer(:) 
+
+
+  CALL LinearReg(Xd, Y, Yer, Fd, Coef, Cerr, Corr)
+  
+  ! This should print the adjusted parameters, 
+  ! that have values: 12.34, -2.23, 0.67, 0.23
+  Do I = 1, Npar
+     Write(*,'(2ES33.25)')Coef(I), Cerr(I)
+  End Do
+
+  ! This prints the ChiSqr, that should be very 
+  ! close to 1.
+  Write(*,'(1A,1ES33.25)')'ChiSqr of the Fit: ', Corr
+
+
+  Stop
+End Program Tests
+
+! ************************************
+! *
+Function Fd(X, i)
+! *
+! ************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X(:)
+  Integer, Intent (in) :: i
+  Real (kind=DP) :: Fd
+
+  If (I==1) Then
+     Fd = 1.0_DP
+  Else If (I==2) Then
+     Fd = X(1)*sin(X(2))
+  Else If (I==3) Then
+     Fd = X(1)**2*X(2)
+  Else If (I==4) Then
+     Fd = X(1)
+  End If
+
+  Return
+End Function FD
+\end{verbatim}
+

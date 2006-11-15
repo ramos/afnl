@@ -1,0 +1,119 @@
+This is the documentation of the \texttt{MODULE NonNum}, a set
+of \texttt{FORTRAN 90} routines to sort and search. This module make
+use of the \texttt{MODULE NumTypes}, and \texttt{MODULE Error} so
+please read the documentation of these modules \emph{before} reading
+this. 
+
+\section{Subroutine \texttt{Qsort(X,Ipt)}}
+\index{Qsort@Subroutine \texttt{Qsort(X,Ipt)}}
+
+\subsection{Description}
+
+Sort the elements of \texttt{X(:)} in ascendant order.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}: ] Integer, real single or real double precision one
+  dimensional array. Initially it contains unsorted numbers, and after
+  calling the routine, it contains the sorted elements. \emph{Note that
+    $X$ is overwritten when calling this routine}. 
+\item[\texttt{Ipt(:)}: ] Integer vector, Optional. It returns the
+  permutation made to \texttt{X(:)} to sort it.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestNN
+
+  USE NumTypes
+  USE NonNumeric
+
+  Integer, Parameter :: Nmax = 10
+  Integer :: Ima(Nmax)
+  Real (kind=DP) :: X(Nmax), Y(Nmax)
+
+
+  ! Fill X(:) with random data, and define Y(:)
+  CALL Random_Number(X)
+  Y = Sin(12.34_DP*(X-0.5_DP))
+
+  ! Plot an unsorted data table
+  Do I = 1, Nmax
+     Write(*,'(1000ES13.5)')X(I), Y(I)
+  End Do
+
+  ! Sort them, and plot the table again. Same points, but this time
+  ! sorted 
+  CALL Qsort(X, Ima)
+  Write(*,*)'# Again, this time sorted: '
+  Do I = 1, Nmax
+     Write(*,'(1000ES13.5)')X(I), Y(Ima(I))
+  End Do
+
+
+  Stop
+End Program TestNN
+\end{verbatim}
+
+
+\section{Function \texttt{Locate(X, $\mathtt{X_0}$, Iin)}}
+\index{Locate@Function \texttt{Locate(X, $\mathtt{X_0}$, Iin)}}
+
+\subsection{Description}
+
+Given a \emph{sorted} vector of elements \texttt{X(:)}, and a point
+$\mathtt{X_0}$, \texttt{Locate} returns the position $n$ such that
+$\mathtt{X(n)<X_0<X(n+1)}$. If  $\mathtt{X_0}$ is less than all the
+elements of $\mathtt{X(:)}$, \texttt{Locate} returns $0$, and if it is
+greater than all the elements of $\mathtt{X(:)}$, it returns the
+number of elements of $\mathtt{X(:)}$
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}: ] Integer, real single or real double precision one
+  dimensional \emph{sorted} array. 
+\item[$\mathtt{X_0}$: ] Integer, real single or real double precision
+  number, but the same type as $\mathtt{X(:)}$. Point that we want to
+  locate in the sorted vector $\mathtt{X(:)}$.
+\item[\texttt{Iin}: ] Integer, Optional. Initial guess of the position.
+\end{description}
+
+\subsection{Output}
+
+Integer. The position $n$ such that 
+\begin{displaymath}
+  \mathtt{X(n)<X_0<X(n+1)}  
+\end{displaymath}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestNN
+
+  USE NumTypes
+  USE NonNumeric
+
+  Integer, Parameter :: Nmax = 100
+  Integer :: Ima(Nmax), Idx
+  Real (kind=DP) :: X(Nmax), Y(Nmax), X0
+
+
+  ! Fill X(:) with random data, and set X0 to some arbitrary value. 
+  CALL Random_Number(X)
+  X0 = 0.276546754_DP
+
+  ! Sort X(:), find the position of X0, and plot the neightborr
+  ! elements. 
+  CALL Qsort(X)
+  Idx = Locate(X, X0)
+  Write(*,'(1A,1ES33.25)')'Searched element: ', X0
+  Write(*,'(1A,1ES33.25)')'Previous element in the list: ', X(Idx)
+  Write(*,'(1A,1ES33.25)')'Next element in the list:     ', X(Idx+1)
+
+  Stop
+End Program TestNN
+\end{verbatim}
+

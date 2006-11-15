@@ -1,0 +1,128 @@
+This is the documentation of the \texttt{MODULE Constants}, that
+contains the definition of the most used mathematical
+constants. This module uses numerical types defined in the
+\texttt{MODULE NumTypes}.
+
+\section{Name conventions}
+
+All the real simple precision constants ends with \texttt{\_SP}, the
+real double precision constants with \texttt{\_DP}, the complex simple
+precision with \texttt{\_SPC} and the complex double precision with
+\texttt{\_DPC}. 
+
+If a there exist a real or complex constant of simple precison defined,
+then it exist other with the same name (except for the sufix) of
+double precision and viceversa.
+
+\section{$\pi$-related constants}
+
+
+\subsection{Real}
+
+The complex $\pi$-related defined in this module and its values can be
+seen in the table (\ref{tab:picteR})
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{|l|l|c|}
+    \hline
+    \textbf{SP Name} & \textbf{DP Name} & \textbf{Value} \\
+    \hline
+    \hline
+    \texttt{PI\_SP} & \texttt{PI\_DP} & $\pi$ \\
+    \hline
+    \texttt{TWOPI\_SP} & \texttt{TWOPI\_DP} & $2\pi$ \\
+    \hline
+    \texttt{HALFPI\_SP} & \texttt{HALFPI\_DP} & $\frac{\pi}{2}$ \\
+    \hline
+  \end{tabular}
+  \caption{$\pi$-related real constants defined in the \texttt{MODULE constants}.}
+  \label{tab:picteR}
+\end{table}
+
+
+
+\subsection{Complex}
+
+The complex $\pi$-related defined in this module and its values can be
+seen in the table (\ref{tab:picteC})
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{|l|l|c|}
+    \hline
+    \textbf{SPC Name} & \textbf{DPC Name} & \textbf{Value} \\
+    \hline
+    \hline
+    \texttt{UNITIMAG\_SPC} & \texttt{UNITIMAG\_DPC} & $\iota$ \\
+    \hline
+    \texttt{PI\_IMAG\_SPC} & \texttt{PI\_IMAG\_DPC} & $\pi\iota$ \\
+    \hline
+    \texttt{TWOPI\_IMAG\_SPC} & \texttt{TWOPI\_IMAG\_DPC} & $2\pi\iota$ \\
+    \hline
+    \texttt{HALFPI\_IMAG\_SPC} & \texttt{HALFPI\_IMAG\_SDC} & $\frac{\pi}{2}\iota$ \\
+    \hline
+  \end{tabular}
+  \caption{$\pi$-related complex constants defined in the \texttt{MODULE constants}.}
+  \label{tab:picteC}
+\end{table}
+
+
+\section{Square roots and $\log$ related constants}
+
+We have only real constants defined here. We can see a list of
+names-vlues in the table (\ref{tab:logcte})
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{|l|l|c|}
+    \hline
+    \textbf{SP Name} & \textbf{DP Name} & \textbf{Value} \\
+    \hline
+    \hline
+    \texttt{SR2\_SP} & \texttt{SR2\_DP} & $\sqrt{2}$ \\
+    \hline
+    \texttt{SR3\_SP} & \texttt{SR3\_DP} & $\sqrt{3}$ \\
+    \hline
+    \texttt{SRe\_SP} & \texttt{SRe\_DP} & $\sqrt{e}$ \\
+    \hline
+    \texttt{SRpi\_SP} & \texttt{SRpi\_DP} & $\sqrt{\pi}$ \\
+    \hline
+    \texttt{LG102\_SP} & \texttt{LG102\_DP} & $\log_{10}{2}$ \\
+    \hline
+    \texttt{LG103\_SP} & \texttt{LG103\_DP} & $\log_{10}{3}$ \\
+    \hline
+    \texttt{LG10e\_SP} & \texttt{LG10e\_DP} & $\log_{10}{e}$ \\
+    \hline
+    \texttt{LG10pi\_SP} & \texttt{LG10pi\_DP} & $\log_{10}{\pi}$ \\
+    \hline
+    \texttt{LGe2\_SP} & \texttt{LGe2\_DP} & $\log_e{2}$ \\
+    \hline
+    \texttt{LGe3\_SP} & \texttt{LGe3\_DP} & $\log_e{3}$ \\
+    \hline
+    \texttt{LGe10\_SP} & \texttt{LGe10\_DP} & $\log_e{10}$ \\
+    \hline
+  \end{tabular}
+  \caption{Square roots and $\log$ related constants defined in the \texttt{MODULE constants}.}
+  \label{tab:logcte}
+\end{table}
+
+
+\section{Other mathematical constants}
+
+In this section we have only the Euler $\gamma$ constant. We can see
+the name-value pair in the table (\ref{tab:other})
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{|l|l|c|}
+    \hline
+    \textbf{SP Name} & \textbf{DP Name} & \textbf{Value} \\
+    \hline
+    \hline
+    \texttt{GEULER\_SP} & \texttt{GEULER\_DP} & $\gamma (=0.5772\dots)$ \\
+    \hline
+  \end{tabular}
+  \caption{Other mathematical constants defined in the \texttt{MODULE constants}.}
+  \label{tab:other}
+\end{table}

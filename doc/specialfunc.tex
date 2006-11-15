@@ -1,0 +1,351 @@
+This is the documentation of the \texttt{MODULE SpecialFunc}, a set
+of \texttt{FORTRAN 90} routines to compute the value of some
+functions. This module make use of the \texttt{MODULE NumTypes},
+\texttt{MODULE Constants}, \texttt{MODULE Error} so please read the
+documentation of these modules \emph{before} reading this.
+
+\section{Function \texttt{GammaLn(X)}}
+\index{GammaLn@Function \texttt{GammaLn(X)}}
+
+\subsection{Description}
+
+Compute $\log(\Gamma(X))$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X}:] Double (DP) precision. The vaue in which we want to
+  know the value of $\Gamma(X)$.
+\end{description}
+
+\subsection{Output}
+
+A real Double precision (DP).
+
+\subsection{Examples}
+
+This program should write the factorial of the first $100$ numbers.
+
+\begin{verbatim}
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Integer :: q
+
+
+  Do q = 1, 100
+     Write(*,'(1A13,1I4,1A3,1ES33.25)')'Factorial of:', q, ' = ',&
+          & exp(GammaLn(Real(q+1,kind=DP)))
+  End Do
+
+
+  Stop
+End Program TestSpecialFunc
+
+\end{verbatim}
+
+
+\section{Function \texttt{Theta(i, z, tau, Prec)}}
+\index{Theta@Function \texttt{Theta(i, z, tau, Prec)}}
+
+\subsection{Description}
+
+Compute the value of the $i^{\underline{\text{th}}}$ Jacobi theta
+function $(i=1,2,3,4)$ with nome $q=e^{i\pi\tau}$ 
+\begin{equation}
+  \vartheta_i(z|\tau)
+\end{equation}
+For a definition and properties of these functions take a
+look~\cite{ww:analysis}, here we will only say that following the
+conventions of the cited reference, our Theta functions have
+quasi-periods $\pi$ and $\tau\pi$. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{i}:] Integer. Intent (in). Says which theta function we
+  want to compute. $i$ must have one of the following values: $1,2,3,4$.
+\item[\texttt{z}:] Complex Double Precision (DPC) or Complex Single
+  Precision (SPC). The point in which we want to compute the Theta
+  function.
+\item[\texttt{tau}:] Complex, with the same precision as
+  \texttt{z}. is the quasi period of the Theta function. must be in
+  the upper half plane $(\textrm Im(\tau)> 0)$.
+\item[\texttt{Prec}:] Real, Optional. If \texttt{z} is DPC (SPC),
+  \texttt{Prec} must be double precision (single precision). An
+  estimation of the desired precision of the result.
+\end{description}
+
+\subsection{Output}
+
+If \texttt{z} is Double Precision Complex (SPC), the the result will be
+Double Precision Complex (SPC).
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Complex (DPC) :: Z, tau
+
+
+  Z = Cmplx(0.546734, 2.76457643, kind=DPC)
+  tau = Cmplx(0.0_DP, 3.76387540_DP)
+
+  ! Check the quasi-periodicity of the Third
+  ! Jacobi Theta function.
+  Write(*,*)Theta(3, Z           , tau)
+  Write(*,*)Theta(3, Z+Cmplx(PI_DP), tau)
+  Write(*,*)Theta(3, Z+PI_DP*tau, tau) * &
+       &exp(PI_IMAG_DPC*tau + 2.0_DP*UNITIMAG_DPC*Z)
+
+
+  Stop
+End Program TestSpecialFunc
+
+\end{verbatim}
+
+
+\section{Function \texttt{ThetaChar(a, b, z, tau, Prec)}}
+\index{Theta@Function \texttt{ThetaChar(a, b, z, tau, Prec)}}
+
+\subsection{Description}
+
+Computes the value of the Theta function with Characteristics $(a,b)$
+and quasi-periods $(\pi,\pi\tau)$ in the point $z$:
+\begin{equation}
+  \thetachar{a}{b}\left(z|\tau\right)
+\end{equation}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Complex or Real, Single or double precision. The
+  two characteristics of the Theta function.
+\item[\texttt{z}:] Complex (Single or Double precision). The point in
+  the complex plane.
+\item[\texttt{tau}:] Complex (Single or Double precision). The
+  quasi-period of the theta function. Must have $(\textrm{Im}(\tau)>0)$.
+\item[\texttt{Prec}:] Real (Single or Double precision). Optional. An
+  estimation of the desired precision of the value of the theta
+  function. 
+\end{description}
+
+\subsection{Output}
+
+Complex Single or Double precision, the same as the input values.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Real(kind=DP) :: Deriv, X1, X2
+  Complex (DPC) :: Wmas, Wmenos, Z, tau
+  Integer :: q, s
+
+
+  Z = Cmplx(0.546734, 2.76457643, kind=DPC)
+  tau = Cmplx(0.0_DP, 3.76387540_DP)
+
+
+  Write(*,*)'Theta 1:'
+  Write(*,*)Theta(1, Z, tau)
+  Write(*,*)-ThetaChar(0.5_DP,0.5_DP, Z, tau)
+  Write(*,*)'Theta 2:'
+  Write(*,*)Theta(2, Z, tau)
+  Write(*,*)ThetaChar(0.5_DP,0.0_DP, Z, tau)
+  Write(*,*)'Theta 3:'
+  Write(*,*)Theta(3, Z, tau)
+  Write(*,*)ThetaChar(0.0_DP,0.0_DP, Z, tau)
+  Write(*,*)'Theta 4:'
+  Write(*,*)Theta(4, Z, tau)
+  Write(*,*)ThetaChar(0.0_DP,0.5_DP, Z, tau)
+  
+
+  Stop
+End Program TestSpecialFunc
+\end{verbatim}
+
+\section{Function \texttt{Hermite(n,x,Dval)}}
+\index{Hermite@Function \texttt{Hermite(n,x,Dval)}}
+
+\subsection{Description}
+
+Returns the value of the $n^{\underline{\text{th}}}$ Hermite
+polynomial in the point $X$. If \texttt{Dval} is specified, the value
+of the Derivative of the $n^{\underline{\text{th}}}$ Hermite
+polynomial in the point $X$ is also returned.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{n}:] Integer. Which Hermite polynomial wants to compute.
+\item[\texttt{X}:] Real (Single or Double precision). The point in
+  which we want to compute the Polynomial.
+\item[\texttt{Dval}:] Real (Single or Double precision). Optional. If
+  specified, it stores the value of the Derivative of the
+  Polynomials.
+\end{description}
+
+\subsection{Output}
+
+The value of the $n^{\underline{\text{th}}}$ Hermite Polynomial in
+the point X.
+
+\subsection{Examples}
+
+\begin{verbatim}
+
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Integer :: q
+
+
+  Write(*,*)'The first 31 Hermite Numbers'
+  Write(*,*)'http://www.research.att.com/~njas/sequences/A067994'
+  Do q = 1, 31
+     Write(*,'(1I4,1ES33.25)')q, Hermite(q, 0.0_DP)
+  End Do
+
+
+  Stop
+End Program TestSpecialFunc
+\end{verbatim}
+
+\section{Function \texttt{HermiteFunc(n,x,Dval)}}
+\index{Hermite@Function \texttt{HermiteFunc(n,x,Dval)}}
+
+\subsection{Description}
+
+Returns the value of the $n^{\underline{\text{th}}}$ Hermite
+function
+\begin{equation}
+  \frac{1}{\sqrt{n!2^n\sqrt{\pi}}}e^{-x^2/2}H_n(x)
+\end{equation}
+in the point $X$. If \texttt{Dval} is specified, the value
+of the Derivative of the $n^{\underline{\text{th}}}$ Hermite
+function in the point $X$ is also returned.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{n}:] Integer. Which Hermite function wants to compute.
+\item[\texttt{X}:] Real (Single or Double precision). The point in
+  which we want to compute the Polynomial.
+\item[\texttt{Dval}:] Real (Single or Double precision). Optional. If
+  specified, it stores the value of the Derivative of the
+  function.
+\end{description}
+
+\subsection{Output}
+
+The value of the $n^{\underline{\text{th}}}$ Hermite function in
+the point X.
+
+\subsection{Examples}
+
+\begin{verbatim}
+
+
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Real(kind=DP) :: Deriv, X1, X2, Sum
+  Complex (DPC) :: Wmas, Wmenos, Z, tau
+  Integer :: q, s
+
+
+  Write(*,*)'A (really bad) proof of orthonormality:'
+  X1 = -10.0_DP
+  Sum = 0.0_DP
+  Do q = -1000, 1000
+     Sum = Sum + HermiteFunc(6,X1)**2
+     X1 = X1 + 0.01_DP
+  End Do
+
+  Write(*,'(1ES33.25)')Sum*0.01_DP
+
+  Stop
+End Program TestSpecialFunc
+\end{verbatim}
+
+\section{Function \texttt{Basis(X1, X2, n, s, q, itau, Prec) }}
+\index{Basis@Function \texttt{Basis(X1, X2, n, s, q, itau, Prec) }}
+
+\subsection{Description}
+
+Return the value of the basis elements of the Hilbert space $\mathcal
+H_q$ of quasi-periodic functions
+\begin{equation}
+  \ket{n,s} = e^{\imath
+    \frac{f}{2}x_1x_2} \sum_{k\in s + q\mathbb Z} 
+  e^{-u^2/2}H_n(u)
+  e^{2\pi\imath k\frac{x_1}{l_1}}\qquad n=0,\dots\infty;s=1,\dots,q
+\end{equation}
+defined in the appendix of~\cite{Gonzalez-Arroyo:2004xu} (look there
+for more details and properties).
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X1,X2}:] Real (Single or Double precision). The point in
+  the Torus.
+\item[\texttt{n,s}:] Integer. Specify which element of the basis.
+\item[\texttt{q}:] Integer. Specify the Hilbert space $\mathcal H_q$.
+\item[\texttt{itau}:] Real (Single or Double precision). Specify the
+  ratio of quasi-periods: $\mathtt{itau} = l_2/l_1$.
+\item[\texttt{Prec}:] Real (Single or Double precision). Optional. An
+  estimation of the desired precision. 
+\end{description}
+
+\subsection{Output}
+
+Complex single or double precision, depends of the input  arguments.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Real(kind=DP) :: X1, X2
+  Complex (DPC) :: Wmas, Wmenos,
+  Integer :: I, q, s
+
+
+  Write(*,*)'Looking at the quasi-periodicity properties:'
+  X1 = 0.97834D0
+  X2 = 0.873873D0
+  q = 4
+  s = 3
+  Do I = 0, 8
+     Wmas   = Basis( X1,  X2+1.0_DP, I, s, q, 1.0_DP, 1.0D-15) * &
+          & exp(PI_IMAG_DPC*X1*q)
+     Wmenos = Basis( X1+1.0_DP,  X2, I, s, q, 1.0_DP, 1.0D-15) * &
+          & exp(-PI_IMAG_DPC*X2*q)
+     Write(*,'(1I3,2ES33.25)')I, Basis( X1,  X2, I, s, q, 1.0_DP, 1.0D-15)
+     Write(*,'(1I3,2ES33.25)')I, Wmas
+     Write(*,'(1I3,2ES33.25)')I, Wmenos
+  End Do
+
+
+  Stop
+End Program TestSpecialFunc
+\end{verbatim}
+

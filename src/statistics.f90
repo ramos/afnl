@@ -62,7 +62,8 @@ MODULE Statistics
 
   Interface LinearReg
      Module Procedure LinearReg_DP, LinearReg_SP, &
-          & LinearReg_Pol_DP, LinearReg_Pol_SP
+          & LinearReg_Pol_DP, LinearReg_Pol_SP, &
+          & MultiLinearReg_DP, MultiLinearReg_SP
   End Interface
 
   Private NormalS, NormalV, NormalS2, NormalV2, &
@@ -70,7 +71,7 @@ MODULE Statistics
        & Stddev_DP, Var_DP, Mean_DP, Moment_DP, &
        & Stddev_SP, Var_SP, Mean_SP, Moment_SP, ChiSqr_SP, &
        & ChiSqr_DP, LinearReg_DP, LinearReg_SP, LinearReg_Pol_DP, &
-       & LinearReg_Pol_SP 
+       & LinearReg_Pol_SP, MultiLinearReg_DP, MultiLinearReg_SP
 
 CONTAINS
 
@@ -854,5 +855,199 @@ CONTAINS
     
     Return
   End Subroutine LinearReg_Pol_SP
+
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiLinearReg_DP(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)
+!  *                                           *
+!  *********************************************
+!  * Given a set of points (X(:,:), Y(:)), this routine 
+!  * fit the points to a function \sum_i Coef(i)*Func(X(:),i).
+!  * The errors in the coefficients are returned in 
+!  * Cerr(:), and the ChiSqr is returned
+!  *********************************************
+    
+    Real (kind=DP), Intent(in) :: X(:,:), Y(:), Yerr(:)
+    Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
+
+    Real (kind=DP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
+    Integer :: Ipiv(Size(Coef))
+
+    Interface
+       Function Func(Xx, i)
+         
+         USE NumTypes
+
+         Real (kind=DP), Intent (in) :: Xx(:)
+         Integer, Intent (in) :: i
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+
+
+    Nparm = Size(Coef)
+    Npoints = Size(X,1)
+    Ndim = Size(X,2)
+
+    Sm = 0.0_DP
+    Kv = 0.0_DP
+    Do I = 1, Nparm
+       Do K = 1, Npoints
+          Kv(I) = Kv(I) + Y(K)*Func(X(K,:), I)/(Yerr(K))**2
+       End Do
+       Do J = 1, Nparm
+          Do K = 1, Npoints
+             Sm(I,J) = Sm(I,J) + Func(X(K,:), I)*Func(X(K,:), J)/(Yerr(K)**2)
+          End Do
+       End Do
+    End Do
+
+
+    CALL LU(Sm, Ipiv, Idet)
+    Do I = 1, Nparm
+       Coef(I) = Kv(Ipiv(I))
+    End Do
+    Do I = 2, Nparm
+       Coef(I) = Coef(I) - Dot_Product(Sm(I,1:I-1),Coef(1:I-1))
+    End Do
+    Coef(Nparm) = Coef(Nparm) / Sm(Nparm, Nparm)
+    Do I = Nparm - 1, 1, -1
+       Coef(I) = Coef(I) - Dot_Product(Sm(I, I+1:Nparm),Coef(I+1:Nparm))
+       Coef(I) = Coef(I) / Sm(I, I)
+    End Do
+
+    Do J = 1, Nparm
+       Do I = 1, Nparm
+          If (Ipiv(I) == J) Then
+             Kv(I) = 1.0_DP
+          Else
+             Kv(I) = 0.0_DP
+          End If
+       End Do
+
+       Do I = 2, Nparm
+          Kv(I) = Kv(I) - Dot_Product(Sm(I,1:I-1),Kv(1:I-1))
+       End Do
+       Kv(Nparm) = Kv(Nparm) / Sm(Nparm, Nparm)
+       Do I = Nparm - 1, J, -1
+          Kv(I) = Kv(I) - Dot_Product(Sm(I, I+1:Nparm),Kv(I+1:Nparm))
+          Kv(I) = Kv(I) / Sm(I, I)
+       End Do
+       Cerr(J) = Sqrt(Kv(J))
+    End Do
+
+    ChisqrV = 0.0_DP
+    Do I = 1, Npoints
+       Fval = 0.0_DP
+       Do J = 1, Nparm
+          Fval = Fval + Coef(J)*Func(X(I,:),J)
+       End Do
+       ChisqrV = ChisqrV + ((Y(I) - Fval)/(Yerr(I)))**2
+    End Do
+    
+    ChisqrV = ChisqrV / Real(Npoints - Nparm,kind=DP)
+
+
+    Return
+  End Subroutine MultiLinearReg_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiLinearReg_SP(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)
+!  *                                           *
+!  *********************************************
+!  * Given a set of points (X(:,:), Y(:)), this routine 
+!  * fit the points to a function \sum_i Coef(i)*Func(X(:),i).
+!  * The errors in the coefficients are returned in 
+!  * Cerr(:), and the ChiSqr is returned
+!  *********************************************
+    
+    Real (kind=SP), Intent(in) :: X(:,:), Y(:), Yerr(:)
+    Real (kind=SP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
+
+    Real (kind=SP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
+    Integer :: Ipiv(Size(Coef))
+
+    Interface
+       Function Func(Xx, i)
+         
+         USE NumTypes
+
+         Real (kind=SP), Intent (in) :: Xx(:)
+         Integer, Intent (in) :: i
+         Real (kind=SP) :: Func
+
+       End Function Func
+    End Interface
+
+
+    Nparm = Size(Coef)
+    Npoints = Size(X,1)
+    Ndim = Size(X,2)
+
+    Sm = 0.0_SP
+    Kv = 0.0_SP
+    Do I = 1, Nparm
+       Do K = 1, Npoints
+          Kv(I) = Kv(I) + Y(K)*Func(X(K,:), I)/(Yerr(K))**2
+       End Do
+       Do J = 1, Nparm
+          Do K = 1, Npoints
+             Sm(I,J) = Sm(I,J) + Func(X(K,:), I)*Func(X(K,:), J)/(Yerr(K)**2)
+          End Do
+       End Do
+    End Do
+
+
+    CALL LU(Sm, Ipiv, Idet)
+    Do I = 1, Nparm
+       Coef(I) = Kv(Ipiv(I))
+    End Do
+    Do I = 2, Nparm
+       Coef(I) = Coef(I) - Dot_Product(Sm(I,1:I-1),Coef(1:I-1))
+    End Do
+    Coef(Nparm) = Coef(Nparm) / Sm(Nparm, Nparm)
+    Do I = Nparm - 1, 1, -1
+       Coef(I) = Coef(I) - Dot_Product(Sm(I, I+1:Nparm),Coef(I+1:Nparm))
+       Coef(I) = Coef(I) / Sm(I, I)
+    End Do
+
+    Do J = 1, Nparm
+       Do I = 1, Nparm
+          If (Ipiv(I) == J) Then
+             Kv(I) = 1.0_SP
+          Else
+             Kv(I) = 0.0_SP
+          End If
+       End Do
+
+       Do I = 2, Nparm
+          Kv(I) = Kv(I) - Dot_Product(Sm(I,1:I-1),Kv(1:I-1))
+       End Do
+       Kv(Nparm) = Kv(Nparm) / Sm(Nparm, Nparm)
+       Do I = Nparm - 1, J, -1
+          Kv(I) = Kv(I) - Dot_Product(Sm(I, I+1:Nparm),Kv(I+1:Nparm))
+          Kv(I) = Kv(I) / Sm(I, I)
+       End Do
+       Cerr(J) = Sqrt(Kv(J))
+    End Do
+
+    ChisqrV = 0.0_SP
+    Do I = 1, Npoints
+       Fval = 0.0_SP
+       Do J = 1, Nparm
+          Fval = Fval + Coef(J)*Func(X(I,:),J)
+       End Do
+       ChisqrV = ChisqrV + ((Y(I) - Fval)/(Yerr(I)))**2
+    End Do
+    
+    ChisqrV = ChisqrV / Real(Npoints - Nparm,kind=SP)
+
+
+    Return
+  End Subroutine MultiLinearReg_SP
+
 
 End MODULE Statistics

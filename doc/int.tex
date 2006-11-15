@@ -1,0 +1,965 @@
+This is the documentation of the \texttt{MODULE Integration}, a set
+of \texttt{FORTRAN 90} routines that performs numerical integration
+and solves the initial value problem for a specified system  of
+first-order  ordinary  differential equations. This module make use
+of the \texttt{MODULE NumTypes}, so please read the documentation of
+this module \emph{before} reading this.
+
+\section{Numerical integration of functions}
+
+
+\subsection{Function \texttt{Trapecio(a, b, Func, [Tol])}}
+\index{Trapecio@Function \texttt{Trapecio(a, b, Func, [Tol])}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
+the trapezoid rule.
+
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of x**2 between 0 and 1:'
+  Write(*,*)Trapecio(0.0_DP, 1.0_DP, Fint, Tol)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = X**2
+
+  Return
+End Function Fint
+\end{verbatim}
+
+\subsection{Function \texttt{Simpson(a, b, Func, [Tol])}}
+\index{Simpson@Function \texttt{Simpson(a, b, Func, [Tol])}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
+the Simpson's rule.
+
+In general this routine is better than \texttt{Trapecio}.
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of x**2 between 0 and 1:'
+  Write(*,*)Simpson(0.0_DP, 1.0_DP, Fint, Tol)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = X**2
+
+  Return
+End Function Fint
+\end{verbatim}
+
+\subsection{Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
+\index{TrapecioAb@Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
+the open trapezoid rule.
+
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of x**2 between 0 and 1:'
+  Write(*,*)TrapecioAb(0.0_DP, 1.0_DP, Fint, Tol)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = X**2
+
+  Return
+End Function Fint
+\end{verbatim}
+
+
+\subsection{Function \texttt{SimpsonAb(a, b, Func, [Tol])}}
+\index{SimpsonAb@Function \texttt{SimpsonAb(a, b, Func, [Tol])}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
+the open Simpson's rule.
+
+In general better than \texttt{TrapecioAb}
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of x**2 between 0 and 1:'
+  Write(*,*)SimpsonAb(0.0_DP, 1.0_DP, Fint, Tol)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = X**2
+
+  Return
+End Function Fint
+\end{verbatim}
+
+\subsection{Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
+\index{SimpsonInfUp@Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and $\infty$ with precision \texttt{Tol} (optional) using
+the Simpson rule and a change of variables.
+
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+  This routine does not check if the integral exist, so the function
+  must obviously decay fast for large $x$ to obtain a finite value.
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+\subsubsection{examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of e**(-x**2) between 0 and infinity:'
+  Write(*,*)SimpsonInfUp(0.0_DP, Fint, Tol)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = exp(-X**2)
+
+  Return
+End Function Fint
+\end{verbatim}
+
+
+\subsection{Function \texttt{SimpsonInfDw(a, Func, [Tol])}}
+\index{SimpsonInfDw@Function \texttt{SimpsonInfDw(a, Func, [Tol])}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+$- \infty$ and \texttt{a} with precision \texttt{Tol} (optional) using
+the Simpson rule and a change of variables.
+
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+  This routine does not check if the integral exist, so the function
+  must obviously decay fast for large $-x$ to obtain a finite value.
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+\subsubsection{examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of e**(-x**2) between -infinity and 0:'
+  Write(*,*)SimpsonInfDw(0.0_DP, Fint, Tol)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = exp(-X**2)
+
+  Return
+End Function Fint
+\end{verbatim}
+
+\subsection{Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
+\index{SinpsonSingUp@Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
+the Simpson's rule. The function may have an integrable singularity of
+the type:
+\begin{displaymath}
+  f(x+b) \approx \frac{c}{(x-b)^\gamma} +  \dots
+\end{displaymath}
+with $0<\gamma<1$.
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\item[\texttt{gamma}:] The ``degree of divergence'' of the function in
+  $x\approx b$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of 1/sqrt(-x) between -1 and 0:'
+  Write(*,*)SimpsonSingUp(-1.0_DP, 0.0_DP, Fint, Tol, 0.5_DP)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = Sqrt(-X)
+
+  Return
+End Function Fint
+\end{verbatim}
+
+\subsection{Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
+\index{SimpsonSingDw@Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
+
+\subsubsection{Description}
+
+Calculates the integral of the function \texttt{Func} between
+\texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
+the Simpson's rule. The function may have an integrable singularity of
+the type:
+\begin{displaymath}
+  f(x+a) \approx \frac{c}{(x-a)^\gamma} +  \dots
+\end{displaymath}
+with $0<\gamma<1$.
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
+  the limits of the integral.
+\item[\texttt{Func}:] The function to be integrated. It must be a
+  function of only one argument of the same type as the function
+  itself. If it is an
+  external function an interface block like the following should be
+  declared: 
+\begin{verbatim}
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+\end{verbatim}
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter, and the default is $\mathtt{Tol} = 0.01$. 
+\item[\texttt{gamma}:] The ``degree of divergence'' of the function in
+  $x\approx a$. 
+\end{description}
+
+
+\subsubsection{Output}
+
+If the arguments are single (double) precision, the result will also be of
+single (double) precision. 
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol
+
+  Interface 
+     Function Fint(X)
+       USE NumTypes
+
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fint
+     End Function Fint
+  End Interface
+
+  Tol = 1.0E-6_DP
+  Write(*,*)'Integral of 1/sqrt(x) between 0 and 1:'
+  Write(*,*)SimpsonSingUp(0.0_DP, 1.0_DP, Fint, Tol, 0.5_DP)
+
+  Stop
+End Program Test
+
+! ***********************************************
+! *
+Function Fint(X)
+! *  
+! ***********************************************
+
+  USE NumTypes
+
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fint
+
+  Fint = Sqrt(X)
+
+  Return
+End Function Fint
+\end{verbatim}
+
+\section{Numerical integration of ODE's}
+
+\subsection{Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
+\index{Euler@Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
+
+\subsubsection{Description}
+
+Integrate the first order set of ODE defined by the function
+\texttt{Feuler}, with initial conditions given by the vector
+\texttt{Init} in \texttt{Xo}, until \texttt{Xfin}, with a precision
+given by \texttt{Tol} (optional).
+
+A set of first order ODE's is given by the first derivatives of the
+variables involved:
+\begin{displaymath}
+  \frac{\d y_i(x)}{\d x} = f_i(y_j, x)
+\end{displaymath}
+and the initial conditions:
+\begin{displaymath}
+  y_i(x_0)
+\end{displaymath}
+After the integration we get:
+\begin{displaymath}
+  y_i(x_{\text{fin}})
+\end{displaymath}
+So to define a set of first order ODE's we need the value of the
+derivative of the variable $i$ in te point $x$ (this is done by
+\texttt{Feuler}), a vector of initial conditions (\texttt{Init}) and
+the point where this initial conditions are defined (\texttt{Xo}), and
+finally the point where we want the solution (\texttt{Xfin})
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{Init(:)}:] Single (SP) or double (DP) precision vector of
+  one dimension with the initial conditions.
+\item[\texttt{Xo}:] Single (SP) or double (DP) precision. The point
+  where the initial conditions are defined.
+\item[\texttt{Xfin}:] Single (SP) or double (DP) precision. The point
+  where we want the value of the functions.
+\item[\texttt{Feuler}:] The function that defines the set of first order
+  ODE's. If it is an external function an interface block like the
+  following should be declared: 
+\begin{verbatim}
+    Interface
+       Function Feuler(X, Y) Result (Func)
+         USE NumTypes
+
+         Real (kind=DP), Intent (in) :: X, Y(:)
+         Real (kind=DP) :: Func(Size(Y))
+       End Function Feuler
+    End Interface
+\end{verbatim}
+The function must return a vector with the values of the first
+derivatives of the functions $y_i(x)$ in the point \texttt{X}.
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter.
+\end{description}
+
+\subsubsection{Output}
+
+A vector that contains the values of the functions $y_i$ in the point
+\texttt{Xfin}. 
+
+
+\subsubsection{Examples}
+
+This example below will integrate the set of first order ODE's defined
+by the equations:
+\begin{displaymath}
+  \frac{\d y_1(x)}{\d x} = y_2(x);\qquad
+  \frac{\d y_2(x)}{\d x} = -y_1(x)    
+\end{displaymath}
+And which solution is clearly:
+\begin{displaymath}
+  y_1(x) = A\cos(x) + B\sin(x)
+\end{displaymath}
+With the initial conditions $y_1(0) = 0; y_2(0)=1$, we have:
+\begin{displaymath}
+  y_1(x) = \sin(x);\qquad y_2(x) = \cos(x)
+\end{displaymath}
+so if we plot $y_1(1)$ and $y_2(1)$ we will obtain the values
+$\sin(1)$ and $y_2(1)$. In the following example, these values with
+the real ones.
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol, In(2)
+
+  Interface
+    Function Feuler(X, Y) Result (Func)
+      USE NumTypes
+
+      Real (kind=DP), Intent (in) :: X, Y(:)
+      Real (kind=DP) :: Func(Size(Y))
+    End Function Feuler
+  End Interface
+
+
+  Tol = 1.0E-2_DP
+  In(1) = 0.0_DP
+  In(2) = 1.0_DP
+  Write(*,*)'Values of sin(1) and cos(1): '
+  Write(*,*)Euler(In, 0.0_DP, 1.0_DP, Feuler, Tol)
+  Write(*,*)Sin(1.0_DP), Cos(1.0_DP)
+
+  Stop
+End Program Test
+
+! **********************************************  
+! *                                            *
+  Function FEuler(X, Y) Result (Func)
+! *                                            *
+! **********************************************
+
+    Real (kind=8), Intent (in) :: X, Y(:)
+    Real (kind=8) :: Func(Size(Y))
+
+    Func(1) = Y(2)
+    Func(2) = -Y(1)
+    
+    Return
+  End Function FEuler
+\end{verbatim}
+
+\subsection{Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
+\index{Rgnkta@Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
+
+\subsubsection{Description}
+
+Integrate the first order set of ODE defined by the function
+\texttt{Feuler}, with initial conditions given by the vector
+\texttt{Init} in \texttt{Xo}, until \texttt{Xfin}, with a precision
+given by \texttt{Tol} (optional). This method uses a Runge-Kutta
+algorithm and is much more exact than the previous \texttt{Euler}
+function. 
+
+A set of first order ODE's is given by the first derivatives of the
+variables involved:
+\begin{displaymath}
+  \frac{\d y_i(x)}{\d x} = f_i(y_j, x)
+\end{displaymath}
+and the initial conditions:
+\begin{displaymath}
+  y_i(x_0)
+\end{displaymath}
+After the integration we get:
+\begin{displaymath}
+  y_i(x_{\text{fin}})
+\end{displaymath}
+So to define a set of first order ODE's we need the value of the
+derivative of the variable $i$ in te point $x$ (this is done by
+\texttt{Feuler}), a vector of initial conditions (\texttt{Init}) and
+the point where this initial conditions are defined (\texttt{Xo}), and
+finally the point where we want the solution (\texttt{Xfin})
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{Init(:)}:] Single (SP) or double (DP) precision vector of
+  one dimension with the initial conditions.
+\item[\texttt{Xo}:] Single (SP) or double (DP) precision. The point
+  where the initial conditions are defined.
+\item[\texttt{Xfin}:] Single (SP) or double (DP) precision. The point
+  where we want the value of the functions.
+\item[\texttt{Feuler}:] The function that defines the set of first order
+  ODE's. If it is an external function an interface block like the
+  following should be declared: 
+\begin{verbatim}
+    Interface
+       Function Feuler(X, Y) Result (Func)
+         USE NumTypes
+
+         Real (kind=DP), Intent (in) :: X, Y(:)
+         Real (kind=DP) :: Func(Size(Y))
+       End Function Feuler
+    End Interface
+\end{verbatim}
+The function is the same as in the previos function.
+\item[\texttt{Tol}:] Single (SP) or double (DP) precision. An
+  estimation of the desired accuracy of the result. It is an optional
+  parameter.
+\end{description}
+
+\subsubsection{Output}
+
+A vector that contains the values of the functions $y_i$ in the point
+\texttt{Xfin}. 
+
+\subsubsection{Examples}
+
+This example below will integrate the set of first order ODE's defined
+by the equations:
+\begin{displaymath}
+  \frac{\d y_1(x)}{\d x} = y_2(x);\qquad
+  \frac{\d y_2(x)}{\d x} = -y_1(x)    
+\end{displaymath}
+And which solution is clearly:
+\begin{displaymath}
+  y_1(x) = A\cos(x) + B\sin(x)
+\end{displaymath}
+With the initial conditions $y_1(0) = 0; y_2(0)=1$, we have:
+\begin{displaymath}
+  y_1(x) = \sin(x);\qquad y_2(x) = \cos(x)
+\end{displaymath}
+so if we plot $y_1(1)$ and $y_2(1)$ we will obtain the values
+$\sin(1)$ and $y_2(1)$. In the following example, we will compare the
+Euler, the Runge-Kutta and the exact values.
+
+\begin{verbatim}
+Program Test
+  USE NumTypes
+  USE Integration
+
+  Real (kind=DP) :: Tol, In(2)
+
+  Interface
+    Function Feuler(X, Y) Result (Func)
+      USE NumTypes
+
+      Real (kind=DP), Intent (in) :: X, Y(:)
+      Real (kind=DP) :: Func(Size(Y))
+    End Function Feuler
+  End Interface
+
+
+  Tol = 1.0E-3_DP
+  In(1) = 0.0_DP
+  In(2) = 1.0_DP
+  Write(*,*)'Values of sin(1) and cos(1): '
+  Write(*,*)'  Euler: '
+  Write(*,*)Euler(In, 0.0_DP, 1.0_DP, Feuler, Tol)
+  Write(*,*)'  Runge-Kutta: '
+  Write(*,*)Rgnkta(In, 0.0_DP, 1.0_DP, Feuler, Tol)
+  Write(*,*)'  Exact: '
+  Write(*,*)Sin(1.0_DP), Cos(1.0_DP)
+
+  Stop
+End Program Test
+
+! **********************************************  
+! *                                            *
+  Function FEuler(X, Y) Result (Func)
+! *                                            *
+! **********************************************
+
+    Real (kind=8), Intent (in) :: X, Y(:)
+    Real (kind=8) :: Func(Size(Y))
+
+    Func(1) = Y(2)
+    Func(2) = -Y(1)
+    
+    Return
+  End Function FEuler
+\end{verbatim}
+

@@ -1,0 +1,70 @@
+
+This is the documentation of a total of eleven \texttt{FORTRAN 90}
+modules with different utilities. This code is well documented, and
+can be useful for several people, although the idea is \emph{not} to
+produce fast, high performance code, but to have nice data structures
+and \texttt{INTERFACE} definitions so that complex problems can be
+solved fast, writing only a couple of lines of code. 
+
+The code of all these modules is \emph{free software}, this means that
+you can redistribute and/or modify all the code under the terms of the
+GNU General Public License (\texttt{http://www.gnu.org/copyleft/gpl.html})
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version. Note that the
+code is distributed in the hope that it will be useful, but
+\textbf{without any warranty; without even the implied warranty of
+  merchantability or fitness for a particular purpose}.  See the GNU
+General Public License for more details. 
+
+The code has been written using standard \texttt{FORTRAN 90}, this
+means that it should run on any machine and with any compiler. In
+particular the code of all these modules has been compiled using
+\texttt{GNU gfortran}, \texttt{INTEL ifort} and \texttt{DIGITAL f90}
+for PC.
+
+This manual is distributed under the GNU Free Documentation
+License. This means that you can copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License,
+Version 1.2 or any later version published by the Free Software
+Foundation; with no Invariant Sections, no Front-Cover Texts, and no
+Back-Cover Texts.  A copy of the license is included in the section
+entitled ``GNU Free Documentation License''.
+
+The source code of all the modules as well as the last version of this
+document should always be available (in it's last version) at:
+\begin{displaymath}
+  \texttt{\href{http://lattice.ft.uam.es/perpag/alberto/codigo\_en.php}{\texttt{http://lattice.ft.uam.es/perpag/alberto/codigo\_en.php}}}
+\end{displaymath}
+
+Enjoy programming.
+
+\section*{Installation}
+\addcontentsline{toc}{section}{Installing}
+
+To install this library in a Unix/Linux environment, simply edit the
+\texttt{Makefile} file, and set the \texttt{F90} and \texttt{F90OPT}
+variables to whatever your compiler and your favourite optimisation
+flags are. After running \texttt{make} you should obtain a file called
+\texttt{libf90.a}, and probably (that depends on the particular
+compiler) some \texttt{.mod} files. Copy the \texttt{libf90.a} library
+and the \texttt{.mod} files to any place you like, and compile and
+link your program to that files. With \texttt{GNU gfortran} this is
+done using the flags \texttt{-I<path> -L<path> -lf90}, where
+\texttt{<path>} has to be substituted by the path you have chosen.
+
+In other environments, you should ask the local guru/administrator
+about how to generate a library. In particular in a Windows environment
+the best option is to repartition you hard drive, eliminate Windows
+and install any Unix like free operating system, like Linux or
+FreeBSD. 
+
+
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
+
+
+ 

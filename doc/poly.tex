@@ -1,0 +1,676 @@
+This is the documentation of the \texttt{MODULE Polynomial}, a set
+of \texttt{FORTRAN 90} routines to work with polynomials. This
+module make use of the \texttt{MODULE NumTypes}, \texttt{MODULE
+  Constants}, \texttt{MODULE Error} and \texttt{MODULE Linear} so
+please read the documentation of these modules \emph{before} reading
+this. 
+
+\section{\texttt{Type Pol}}
+
+\subsection{Description}
+
+A new data type \texttt{Pol} is defined to work with polynomials. This
+type has two components: The coefficients of the polynomial, and the
+degree. 
+
+\subsection{Components}
+
+\begin{description}
+\item[\texttt{Coef(:)}: ] Real double precision one dimensional
+  array.
+\item[\texttt{dg}:] Integer. The degree of the polynomial.
+\end{description}
+
+\subsection{Examples}
+
+A small example showing how to define a polynomial.
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Type (Pol) :: P1
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Assignment}
+
+\subsection{Description}
+
+You can directly assign one defined polynomial to another, or to an
+array of real numbers, that are interpreted as the coefficients. 
+
+\subsection{Examples}
+
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1)
+  Type (Pol) :: Hermite4
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now Show what we have in our data type:
+  Do I = 0, Hermite4%dg
+     Write(*,'(1I5,ES33.25)')I, Hermite4%Coef(I)
+  End Do
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Operator \texttt{+}}
+
+\subsection{Description}
+
+You can naturally sum \texttt{Pol} data types.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1)
+  Type (Pol) :: Hermite4, Hermite3, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now Add the two polynomials, and show the result.
+  Sum = Hermite3 + Hermite4
+  Do I = 0, Sum%dg
+     Write(*,'(1I5,ES33.25)')I, Sum%Coef(I)
+  End Do
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Operator \texttt{-}}
+
+\subsection{Description}
+
+You can subtract \texttt{Pol} data types.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1)
+  Type (Pol) :: Hermite4, Hermite3, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now Subtract the two polynomials, and show the result.
+  Sum = Hermite3 - Hermite4
+  Do I = 0, Sum%dg
+     Write(*,'(1I5,ES33.25)')I, Sum%Coef(I)
+  End Do
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Operator \texttt{*}}
+
+\subsection{Description}
+
+You can naturally multiply \texttt{Pol} data types and \texttt{Pol}
+data types with double precision real numbers.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1)
+  Type (Pol) :: Hermite4, Hermite3, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now multiply the two polynomials, and show the result.
+  Sum = Hermite3 * Hermite4
+  Do I = 0, Sum%dg
+     Write(*,'(1I5,ES33.25)')I, Sum%Coef(I)
+  End Do
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+
+\section{Subroutine \texttt{Init(P, Dgr)}}
+\index{Init@Subroutine \texttt{Init(P, Dgr)}}
+
+\subsection{Description}
+
+Allocate memory space for the coefficients of a \texttt{Pol} type.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{P}:] Type \texttt{Pol}. The polynomial that you want
+  to allocate space for.
+\item[\texttt{Dgr}] Integer. The degree of the polynomial.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1)
+  Type (Pol) :: Hermite4, Hermite3, Sum
+
+
+  ! An alternative way of setting the third Hermite
+  ! polynomial.
+  CALL Init(Hermite3, 3)
+  Hermite3%Coef(0) =  0.0_DP
+  Hermite3%Coef(1) = -3.0_DP
+  Hermite3%Coef(2) =  0.0_DP
+  Hermite3%Coef(3) =  1.0_DP
+  Hermite3%dg = 3
+
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Function \texttt{Degree(P)}}
+\index{Degree@Function \texttt{Degree(P)}}
+
+\subsection{Description}
+
+Returns the degree of the polynomial \texttt{P}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose degree we want to
+  know.  
+\end{description}
+
+\subsection{Output}
+
+Integer. The degree of the polynomial \texttt{P}.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1), X
+  Type (Pol) :: Hermite4, Hermite3, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now Mutiply the two polynomials, and show the result.
+  Sum = Hermite3 * Hermite4
+
+  ! Show the degree of the product. It should be 4+3=7.
+  Write(*,*)Degree(Sum)
+
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+
+\section{Function \texttt{Value(P, X)}}
+\index{Value@Function \texttt{Value(P, X)}}
+
+\subsection{Description}
+
+Computes the value of the polynomial \texttt{P} in the point \texttt{X}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{P}:] Type \texttt{Pol}. The polynomial.
+\item[\texttt{X}:] Real double precision. The point in which you want
+  to compute the value.
+\end{description}
+
+\subsection{Output}
+
+Real double precision. The value of the polynomial \texttt{P} in the
+point \texttt{X}. 
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1), X
+  Type (Pol) :: Hermite4, Hermite3, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now Mutiply the two polynomials, and show the result.
+  Sum = Hermite3 * Hermite4
+  
+  ! Compute the valuye of the product in some point in two 
+  ! different ways.
+  X = 9.34564_DP
+  Write(*,'(ES33.25)')Value(Sum, X)
+  Write(*,'(ES33.25)')Value(Hermite3, X)*Value(Hermite4, X)
+
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+
+\section{Function \texttt{Deriv(P)}}
+\index{Deriv@Function \texttt{Deriv(P)}}
+
+\subsection{Description}
+
+Computes the derivative of the polynomial \texttt{P}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose derivative
+  we want to compute.
+\end{description}
+
+\subsection{Output}
+
+Type \texttt{Pol}. Another polynomial: the derivative of \texttt{P}.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1), X
+  Type (Pol) :: Hermite4, Hermite3, Res, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now compute the derivative of Hermite4
+  Res = Deriv(Hermite4)
+
+  ! From the recursion relation of the Hermite polynomials 
+  ! we should obtain twwice the same number:
+  X = 7.346582_DP
+  Write(*,'(ES33.25)')Value(Res, X)
+  Write(*,'(ES33.25)')4.0_DP*Value(Hermite3, X)
+  
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Function \texttt{Integra(P, Cte)}}
+\index{Integra@Function \texttt{Integra(P, Cte)}}
+
+\subsection{Description}
+
+Computes the integral of the polynomial \texttt{P}. If \texttt{Cte} is
+present then it is used as \emph{integration constant}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose integral
+  we want to compute.
+\item[\texttt{C}:] Real single or double precision. Optional. The
+  constant of integration. If not present, the default value is 0.
+\end{description}
+
+\subsection{Output}
+
+Type \texttt{Pol}. Another polynomial: the integral of \texttt{P}.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4
+  Real (kind=DP) :: Hcoef(Deg+1), X
+  Type (Pol) :: Hermite4, Hermite3, Res, Sum
+
+  ! The Third Hermite polynomial is x^3 - 3x, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(2) = -3.0_DP
+  Hcoef(4) =  1.0_DP
+
+  Hermite3 = Hcoef(1:4)
+
+  ! The fourth Hermite polynomial is x^4 - 6x^2 + 3, so
+  ! we first assign the values of the coefficients.
+  Hcoef    =  0.0_DP
+  Hcoef(1) =  3.0_DP
+  Hcoef(3) = -6.0_DP
+  Hcoef(5) =  1.0_DP
+
+  Hermite4 = Hcoef
+
+  ! Now compute the derivative of Hermite4
+  Res = Integra(Hermite3, 3.0_DP/4.0_DP)
+
+  ! From the recursion relation of the Hermite polynomials 
+  ! we should obtain twwice the same number:
+  X = 7.346582_DP
+  Write(*,'(ES33.25)')Value(Res, X)
+  Write(*,'(ES33.25)')0.25_DP*Value(Hermite4, X)
+  
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Function \texttt{InterpolValue(X, Y, Xo)}}
+\index{Interpol@Function \texttt{InterpolValue(X, Y, Xo)}}
+
+\subsection{Description}
+
+Computes the value of the interpolation polynomial that pass trough
+\texttt{(X(:), Y(:))} in the point \texttt{Xo}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:), Y(:)}:] Real double precision one dimensional
+  arrays. Specify the points at which the interpolation polynomial
+  should pass. 
+\item[\texttt{Xo}:] The ppoint at which you want to compute the
+  interpolation polynomial.
+\end{description}
+
+\subsection{Output}
+
+Real double precision. The value of the interpolation polynomial in
+\texttt{Xo}. 
+
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4, Np = 7
+  Real (kind=DP) :: Hcoef(Deg+1), X, Xp(Np), Yp(Np)
+  Type (Pol) :: Hermite4, Hermite3, Res, Sum
+
+
+  CALL Random_Number(Xp)
+  Yp = 3.347234_DP*Xp - 2.475875_DP*Xp**3 - 7.23467_DP*Xp**4 + &
+       & 1.47854_DP*Xp**6
+
+  ! Now we compute the value of the interpolation polynomial
+  ! at X, and compare it with the real value of the Polynomial
+  X = -1.23899843_DP
+  Write(*,'(ES33.25)')InterpolValue(Xp, Yp, X)
+  Write(*,'(ES33.25)')3.347234_DP*X - 2.475875_DP*X**3 - &
+       & 7.23467_DP*X**4 + 1.47854_DP*X**6
+
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Function \texttt{Interpol(X, Y)}}
+\index{Interpol@Function \texttt{Interpol(X, Y)}}
+
+Computes the value of the interpolation polynomial that pass trough
+\texttt{(X(:), Y(:))}. \textbf{Note that using this function can be
+very unstable}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:), Y(:)}:] Real double precision one dimensional
+  array. Specify the points at which the interpolation polynomial
+  should pass. 
+\end{description}
+
+\subsection{Output}
+
+Type \texttt{Pol}. The interpolation polynomial.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Integer, Parameter :: Deg = 4, Np = 7
+  Real (kind=DP) :: Hcoef(Deg+1), X, Xp(Np), Yp(Np)
+  Type (Pol) :: Hermite4, Hermite3, Res, Sum
+
+
+  CALL Random_Number(Xp)
+  Yp = 3.347234_DP*Xp - 2.475875_DP*Xp**3 - 7.23467_DP*Xp**4 + &
+       & 1.47854_DP*Xp**6
+
+  ! Now we compute the interpolation polynomial
+  ! at X, and compare it with the real value of the Polynomial
+  X = -1.23899843_DP
+  Res = Interpol(Xp,Yp)
+  Write(*,'(ES33.25)')Value(Res, X)
+  Write(*,'(ES33.25)')3.347234_DP*X - 2.475875_DP*X**3 - &
+       & 7.23467_DP*X**4 + 1.47854_DP*X**6
+
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Subroutine \texttt{Spline(X, Y, Ypp0, YppN, Pols)}}
+\index{Spline@Subroutine \texttt{Spline(X, Y, Ypp0, YppN, Pols)}}
+
+\subsection{Description}
+
+Compute the cubic spline interpolation polynomial that pass trough
+\texttt{(X(:), Y(:))}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:), Y(:)}:] Real double precision one dimensional
+  arrays. Specify the points at which the cubic spline interpolation
+  polynomial should pass. 
+\item[\texttt{Ypp0, YppN}:] The values of the second derivatives of
+  the cubic spline interpolation polynomial in the first and last points.
+\item[\texttt{Pols(:)}:] Type \texttt{Pol} one dimensional
+  array. Returns the \texttt{N-1} cubic interpolation polynomials.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+  USE NonNumeric
+
+  Integer, Parameter :: Deg = 4, Np = 7
+  Real (kind=DP) :: Hcoef(Deg+1), X, Xp(Np), Yp(Np)
+  Type (Pol) :: Hermite4, Hermite3, Res, Sum, Spl(Np-1)
+
+
+  CALL Random_Number(Xp)
+  ! Order Xp
+  CALL Qsort(Xp)
+  Yp = 3.347234_DP*Xp - 2.475875_DP*Xp**3 - 7.23467_DP*Xp**4 + &
+       & 1.47854_DP*Xp**6
+
+  ! Now we compute the interpolation polynomial
+  ! at X, and compare it with the real value of the Polynomial, and
+  ! the value of the spline cubic interpolation polynomial.
+  X = 0.23899843_DP
+  Res = Interpol(Xp,Yp)
+  CALL Spline(Xp, Yp, 0.0_DP, 0.0_DP, Spl)
+  Write(*,'(ES33.25)')Value(Res, X)
+  Write(*,'(ES33.25)')Value(Spl(Locate(Xp, X)), X)
+  Write(*,'(ES33.25)')3.347234_DP*X - 2.475875_DP*X**3 - &
+       & 7.23467_DP*X**4 + 1.47854_DP*X**6
+
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+

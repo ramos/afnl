@@ -324,7 +324,7 @@ CONTAINS
   Type (Pol) Function Integra(P, C)
 !  *                                           *
 !  *********************************************
-!  * Deriva un polinomio
+!  * Integra un polinomio
 !  * 
 !  *********************************************
 
@@ -332,17 +332,16 @@ CONTAINS
     Real (kind=DP), Optional :: C
 
 
-    Ndim = Size(P%Coef)
-    ALLOCATE(Integra%Coef(Ndim + 1))
+    CALL Init(Integra, P%dg + 1)
 
     If (Present(C)) Then
-       Integra%Coef(1) = C
+       Integra%Coef(0) = C
     Else
-       Integra%Coef(1) = 0.D0
+       Integra%Coef(0) = 0.D0
     End If
        
-    Do I = 2, Ndim + 1
-       Integra%Coef(I) = P%Coef(I-1)/(I-1)
+    Do I = 1, Integra%dg
+       Integra%Coef(I) = P%Coef(I-1)/Real(I,kind=DP)
     End Do
     
     Return

@@ -1,0 +1,12 @@
+\providecommand{\href}[2]{#2}\begingroup\raggedright\begin{thebibliography}{1}
+
+\bibitem{ww:analysis}
+G.~N.~W. E.~T.~Whittaker, \emph{ A course on modern analysis.}
+\newblock Cambridge University Press, 1969.
+
+\bibitem{Gonzalez-Arroyo:2004xu}
+A.~Gonz{\'a}lez-Arroyo and A.~Ramos, \textit{ {Expansion for the solutions of the
+  Bogomolny equations on the torus}},  \emph{ JHEP} \textbf{ 07} (2004) 008,
+  [\href{http://xxx.lanl.gov/abs/hep-th/0404022}{\texttt{ hep-th/0404022}}].
+
+\end{thebibliography}\endgroup

@@ -1,0 +1,45 @@
+This is the documentation of the \texttt{MODULE NumTypes}, that
+contaions the definition of Single Precision, and Double
+Precision data. All the other numerical modules uses this data type
+definitions. 
+
+
+\section{Description}
+
+The \texttt{MODULE NumTypes} provides the definition of the Single
+Precision and Double Precision real and complex data in a potable
+way. When we want to define a single precision real we \emph{will} do
+it with a statement like \texttt{Real (kind=DP)}, instead of
+\texttt{Real (kind=4)}. What we mean with \texttt{DP} is defined in
+this module. The different data types are:
+
+\begin{description}
+\item[SP: ] Single precision real.
+\item[DP: ] Double precision real.
+\item[SPC: ] Single precision complex.
+\item[DPC: ] Double precision complex.
+\end{description}
+
+To make all the code as portable as possible, all the data
+definitions should make use of this module.
+
+\section{Examples}
+
+Here we will define \texttt{A} as a single precision real, \texttt{D}
+as a double precision real, \texttt{Ac} as a single precision complex,
+and \texttt{Dc} as a double precision complex.
+
+\begin{verbatim}
+   .
+   .
+   USE NumTypes
+   .
+   .
+   Real (kind=SP) :: A
+   Real (kind=DP) :: D
+   Complex (kind=SPC) :: Ac
+   Complex (kind=DPC) :: Dc
+   .
+   .
+\end{verbatim}
+

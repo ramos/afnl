@@ -1,0 +1,207 @@
+\documentclass[a4paper,11pt,twoside,openright]{memoir}
+
+% Things concerning page style
+\settrimmedsize{11in}{210mm}{*}
+\setlength{\trimtop}{0pt}
+\setlength{\trimedge}{\stockwidth}
+\addtolength{\trimedge}{-\paperwidth}
+\settypeblocksize{634pt}{448.13pt}{*}
+\setulmargins{4cm}{*}{*}
+\setlrmargins{*}{*}{1.5}
+\setmarginnotes{17pt}{51pt}{\onelineskip}
+\setheadfoot{\onelineskip}{2\onelineskip}
+\setheaderspaces{*}{2\onelineskip}{*}
+\checkandfixthelayout
+
+% Styles
+\setsecnumdepth{subsection}
+\maxsecnumdepth{subsection}
+\settocdepth{subsection}
+\maxtocdepth{subsection}
+
+%
+% Simple change of the demo chapterstyle to make chapters in appendix
+% be numbered with letters.
+%
+
+\makechapterstyle{thesis}{
+  \renewcommand{\printchaptername}{\centering}
+  \renewcommand{\printchapternum}{\chapnumfont \numtoName{\thechapter}}
+  \renewcommand{\chaptitlefont}{\normalfont\Huge\sffamily}
+  \renewcommand{\printchaptertitle}[1]{%
+    \hrule\vskip\onelineskip \raggedleft \chaptitlefont ##1}
+  \renewcommand{\afterchaptertitle}%
+               {\vskip\onelineskip \hrule\vskip \afterchapskip}
+}
+
+\makechapterstyle{thesisap}{
+  \renewcommand{\printchaptername}{\centering}
+  \renewcommand{\printchapternum}{\chapnumfont \thechapter}
+  \renewcommand{\chaptitlefont}{\normalfont\Huge\sffamily}
+  \renewcommand{\printchaptertitle}[1]{%
+    \hrule\vskip\onelineskip \raggedleft \chaptitlefont ##1}
+  \renewcommand{\afterchaptertitle}%
+               {\vskip\onelineskip \hrule\vskip \afterchapskip}
+}
+
+%
+% END of new chapterstyles
+%
+
+\chapterstyle{thesis}
+
+\usepackage[english]{babel}
+% ***************************************
+%  BEGIN of my personal file general_en.tex
+% ***************************************
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{makeidx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{subfigure}
+\usepackage{cclicenses}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{xmpincl}
+\usepackage{slashed}
+
+\newcommand{\ñ}{\~n}
+\newcommand{\h}{\hslash}
+\newcommand{\bra}[1] {\langle #1 \mid}
+\newcommand{\ket}[1] {\mid #1 \rangle}
+\newcommand{\braket}[2] {\left\langle #1 | #2 \right\rangle }
+\newcommand{\bb}[1] {$\mathbb #1$}
+\newcommand{\ca}[1] {$\mathcal #1$}
+\newcommand{\iif}{\Longleftrightarrow}
+\newcommand{\si}{\Longrightarrow}
+\newcommand{\oif}{\Longleftarrow}
+\newcommand{\e}{$e^-$}
+\newcommand{\fslash}[1]{\slash\!\!\!\! #1}
+
+\renewcommand{\d}{\mathrm{d}}
+\newcommand{\thetachar}[2]{\vartheta\left[ \begin{array}{c}
+          #1 \\ #2
+                    \end{array}\right]}
+% ***************************************
+%  BEGIN of my personal file general_en.tex
+% ***************************************
+
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{memhfixc}
+
+\newtheorem{dfn}{Definition}[section]
+\newtheorem{ej}{Example}[section]
+\newtheorem{teo}{Theorem}[section]
+\newtheorem{dem}{Proof}[section]
+
+
+\bibliographystyle{JHEP}
+\makeindex
+
+\ifpdf
+\includexmp{CC_Attribution-Share_Alike_2.5_Spain}
+\fi
+\begin{document}
+
+
+% Cabeceras 
+\pagestyle{companion}
+
+
+% Title Page
+% title page
+\input{title.tex}
+\clearpage
+
+
+% Tabla de contenidos, etc...
+\frontmatter
+\captiontitlefont{\small\sffamily}
+
+
+\tableofcontents
+\clearpage
+\listoftables
+\clearpage
+
+% Introduccion
+\chapter*{Generalities}
+\addcontentsline{toc}{chapter}{Generalities}
+
+\input{generalities.tex}
+
+\mainmatter
+
+\chapter{MODULE \texttt{NumTypes}}
+\label{cp:numtypes}
+\input{numtypes.tex}
+
+\chapter{MODULE \texttt{Constants}}
+\label{cp:constants}
+\input{constants.tex}
+
+\chapter{MODULE \texttt{Error}}
+\label{cp:error}
+\input{error.tex}
+
+\chapter{MODULE \texttt{Integration}}
+\label{cp:int}
+\input{int.tex}
+
+\chapter{MODULE \texttt{Linear}}
+\label{cp:linear}
+\input{linear.tex}
+
+\chapter{MODULE \texttt{NonNum}}
+\label{cp:nonnum}
+\input{nonnum.tex}
+
+\chapter{MODULE \texttt{SpecialFunc}}
+\label{cp:specialfunc}
+\input{specialfunc.tex}
+
+\chapter{MODULE \texttt{Statistics}}
+\label{cp:statistics}
+\input{statistics.tex}
+
+\chapter{MODULE \texttt{Polynomial}}
+\label{cp:poly}
+\input{poly.tex}
+
+\chapter{MODULE \texttt{Root}}
+\label{cp:root}
+\input{root.tex}
+
+\chapter{MODULE \texttt{Fourier}}
+\label{cp:fourier}
+\input{fourier.tex}
+
+
+%
+% APENDICES
+%
+\appendix
+\chapterstyle{thesisap}
+
+% Convenios
+\input{fdl.tex}
+
+\backmatter
+
+%
+% BIBLIOGRAFIA
+%
+\bibliography{/home/alberto/latex/math,/home/alberto/latex/campos,/home/alberto/latex/fisica,/home/alberto/latex/computing}
+
+
+%
+% INDICE
+%
+\clearpage
+\printindex
+\addcontentsline{toc}{chapter}{Index}
+
+
+
+\end{document}
+

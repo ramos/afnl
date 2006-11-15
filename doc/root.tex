@@ -1,0 +1,260 @@
+This is the documentation of the \texttt{MODULE Root}, a set
+of \texttt{FORTRAN 90} routines to compute root of functions. This
+module make use of the \texttt{MODULE NumTypes}, \texttt{MODULE
+  Constants} and \texttt{MODULE Error} so please read the
+documentation of these modules \emph{before} reading this. 
+
+
+\section{Subroutine \texttt{RootPol(a, b, [c, d], z1, z2, [z3, z4])}}
+\index{RootPol@Subroutine \texttt{RootPol(a, b, [c, d], z1, z2, [z3, z4])}}
+
+\subsection{Description}
+
+Returns the complex roots of a polynomial of degree 2, 3 or 4. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b, c, d}:] The coefficients of the polynomial. The
+  meaning of the coefficieents $\mathtt{a,b,c,d}$ depends on the
+  degree of the polynomial:
+  \begin{eqnarray*}
+    P(x) &=& x^2 + \mathtt{a}x + \mathtt{b} \\
+    P(x) &=& x^3 + \mathtt{a}x^2 + \mathtt{b}x + \mathtt{c}\\
+    P(x) &=& x^4 + \mathtt{a}x^3 + \mathtt{b}x^2 + \mathtt{c}x + \mathtt{d}\\
+  \end{eqnarray*}
+\item[\texttt{z1,z2,z3,z4}:] Complex simple or double precision. The
+  roots of the polynomial.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestRoot
+
+  USE NumTypes
+  USE Error
+  USE Root
+
+  Real (kind=DP) :: a, b, c, d
+  Complex (kind=DPC) ::  z1, z2, z3, z4, ac, bc, cc, dc
+
+
+  CALL Random_Number(a)
+  CALL Random_Number(b)
+  CALL Random_Number(c)
+  CALL Random_Number(d)
+  CALL RootPol(a,b,z1,z2)
+  Write(*,'(3ES20.12)')Z1, Abs(z1**2 + a*z1 + Cmplx(b,kind=DPC))
+  Write(*,'(3ES20.12)')Z2, Abs(z2**2 + a*z2 + Cmplx(b,kind=DPC))
+
+  CALL RootPol(a,b,c, z1,z2, z3)
+  Write(*,*)
+  Write(*,'(3ES20.12)')Z1, Abs(z1**3+a*z1**2+b*z1+Cmplx(c,kind=DPC))
+  Write(*,'(3ES20.12)')Z2, Abs(z2**3+a*z2**2+b*z2+Cmplx(c,kind=DPC))
+  Write(*,'(3ES20.12)')Z3, Abs(z3**3+a*z3**2+b*z3+Cmplx(c,kind=DPC))
+
+  ac = Cmplx(a,kind=DPC)
+  bc = Cmplx(b,a,kind=DPC)
+  cc = Cmplx(c,kind=DPC)
+  dc = Cmplx(d,kind=DPC)
+  CALL RootPol(ac,bc,z1,z2)
+  Write(*,*)
+  Write(*,'(3ES20.12)')Z1, Abs(z1**2 + ac*z1 + Cmplx(bc,kind=DPC))
+  Write(*,'(3ES20.12)')Z2, Abs(z2**2 + ac*z2 + Cmplx(bc,kind=DPC))
+  CALL RootPol(ac,bc,cc, dc, z1,z2, z3, z4)
+  Write(*,*)
+  Write(*,'(3ES20.12)')Z1, Abs(z1**4+ac*z1**3+bc*z1**2+cc*z1+dc)
+  Write(*,'(3ES20.12)')Z2, Abs(z2**4+ac*z2**3+bc*z2**2+cc*z2+dc)
+  Write(*,'(3ES20.12)')Z3, Abs(z3**4+ac*z3**3+bc*z3**2+cc*z3+dc)
+  Write(*,'(3ES20.12)')Z4, Abs(z4**4+ac*z4**3+bc*z4**2+cc*z4+dc)
+
+
+  Stop
+End Program TestRoot
+\end{verbatim}
+
+
+\section{Function \texttt{Newton(Xo,  Fnew,  [Tol]) }}
+\index{Newton@Function \texttt{Newton(Xo,  Fnew,  [Tol]) }}
+
+\subsection{Description}
+
+Compute a root of the function defined by the routine \texttt{Fnew}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Xo}:] Real simple or double precision. An initial guess
+  of the position of the root.
+\item[\texttt{Fnew}:] The function whose root we want to compute. It
+  is defined as a subroutine that returns the value of the function
+  and of its derivative. If it is an external function, an interface
+  block like this should be defined
+\begin{verbatim}
+Interface
+   Subroutine FNew(Xo, F, D)
+
+      USE NumTypes
+
+      Real (kind=DP), Intent (in) :: Xo
+      Real (kind=DP), Intent (out) :: F, D
+   End Subroutine FNew
+End Interface
+\end{verbatim}
+where \texttt{F} is the value of the function in \texttt{Xo}, and
+\texttt{D} the value of the derivative in \texttt{Xo}. If the
+arguments are of simple precision, a similar interface should be
+provided, where the arguments of \texttt{Fnew} are of single
+precision. 
+\item[\texttt{Tol}:] Real single or double precision. Optional. An
+  estimation of the desired accuracy of the  position of the root.
+\end{description}
+
+\subsection{Output}
+
+Real single or double precision. The position of the root.
+
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestRoot
+
+  USE NumTypes
+  USE Error
+  USE Root
+
+  Real (kind=DP) :: a, b, c, d, X
+  Complex (kind=DPC) ::  z1, z2, z3, z4, ac, bc, cc, dc
+
+
+  Interface
+     Subroutine FNew(Xo, F, D)
+       
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo
+       Real (kind=DP), Intent (out) :: F, D
+     End Subroutine FNew
+  End Interface
+
+
+  ! Compute the value such that cos(x) = x
+  X = Newton(0.0_DP, Fnew, 1.0E-10_DP)
+  Write(*,'(1A,ES33.25)')'Point:        ', X
+  Write(*,'(1A,ES33.25)')'Value of Cos: ', Cos(X)
+
+
+  Stop
+End Program TestRoot
+
+! *********************************
+! *
+Subroutine FNew(Xo, F, D)
+! *
+! *********************************  
+
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: Xo
+  Real (kind=DP), Intent (out) :: F, D
+
+  
+  F = Xo - Cos(Xo)
+  D = 1.0_DP  + Sin(Xo)
+
+  Return
+End Subroutine FNew
+\end{verbatim}
+
+
+\section{Function \texttt{Bisec(a,  b,  Fbis,  [Tol])}}
+\index{Bisec@Function \texttt{Bisec(a,  b,  Fbis,  [Tol])}}
+
+\subsection{Description}
+
+Compute the root of the function defined by \texttt{Fbis}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{a, b}:] Real single or double precision. Initial points,
+  such that $\mathtt{Fbis(a)Fbis(b)} < 0$.
+\item[\texttt{Fbis}:] The function whose root we want to compute. It
+  is defined as a function that returns the value of the function. If
+  it is an external function, an interface block like this should be
+  defined 
+\begin{verbatim}
+Interface
+   Function F(X)
+
+     USE NumTypes
+
+     Real (kind=DP), Intent (in) :: X
+     Real (kind=DP) :: F
+   End Function F
+End Interface
+\end{verbatim}
+where \texttt{F} is the value of the function in \texttt{X}. If the
+arguments are of simple precision, a similar interface should be
+provided, where the arguments of \texttt{F} are of single
+precision. 
+\item[\texttt{Tol}:] Real single or double precision. Optional. An
+  estimation of the desired accuracy of the  position of the root.
+\end{description}
+
+\subsection{Output}
+
+Real single or double precision. The position of the root of
+\texttt{Fbis}.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestRoot
+
+  USE NumTypes
+  USE Error
+  USE Root
+
+  Real (kind=DP) :: a, b, c, d, X
+  Complex (kind=DPC) ::  z1, z2, z3, z4, ac, bc, cc, dc
+
+  Interface
+     Function Fbis(X)
+       
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: X
+       Real (kind=DP) :: Fbis
+     End Function Fbis
+  End Interface
+  
+  ! Compute the value such that cos(x) = x
+  X = Bisec(0.0_DP, 1.1_DP, Fbis, 1.0E-10_DP)
+  Write(*,'(1A,ES33.25)')'Point:        ', X
+  Write(*,'(1A,ES33.25)')'Value of Cos: ', Cos(X)
+
+
+  Stop
+End Program TestRoot
+
+! *********************************
+! *
+Function FBis(X)
+! *
+! *********************************  
+
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: X
+  Real (kind=DP) :: Fbis
+
+  
+  Fbis = X - Cos(X)
+
+  Return
+End Function FBis
+\end{verbatim}
+

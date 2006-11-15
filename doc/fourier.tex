@@ -1,0 +1,640 @@
+This is the documentation of the \texttt{MODULE Fourier}, a set
+of \texttt{FORTRAN 90} routines to work with Fourier series. This
+module make use of the \texttt{MODULE NumTypes} and the
+\texttt{MODULE Constants} so please read the documentation of these
+modules \emph{before} reading this. 
+
+\section{\texttt{Type Fourier\_Serie}}
+
+\subsection{Description}
+
+A new data type \texttt{Fourier\_Serie} is defined to work with
+Fourier series. This type has two components: The modes, and the
+number of modes.
+
+\subsection{Components}
+
+\begin{description}
+\item[\texttt{Coef(:)}: ] Complex double precision one dimensional
+  array. The modes.
+\item[\texttt{Nterm}:] Integer. The number of terms of the Fourier
+  series. 
+\end{description}
+
+\subsection{Examples}
+
+A small example showing how to define a polynomial.
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: Ff
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{\texttt{Type Fourier\_Serie\_2D}}
+
+\subsection{Description}
+
+A new data type \texttt{Fourier\_Serie\_2D} is defined to work with
+two dimensional Fourier series. This type has two components: The
+modes, and the number of modes.
+
+\subsection{Components}
+
+\begin{description}
+\item[\texttt{Coef(:,:)}: ] Complex double precision two dimensional
+  array. The modes.
+\item[\texttt{Nterm}:] Integer. The number of terms of the Fourier
+  series. 
+\end{description}
+
+\subsection{Examples}
+
+A small example showing how to define a polynomial.
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie_2D) :: Ff
+
+  Stop
+End Program TestPoly
+\end{verbatim}
+
+\section{Assignment}
+
+\subsection{Description}
+
+You can directly assign one defined Fourier series (one or two
+dimensional) to another.
+
+\subsection{Examples}
+
+This example uses the \texttt{Init\_Serie} subroutine. For details of
+the usage of this function look at the section~(\ref{sc:InitSerie}),
+page~(\pageref{sc:InitSerie}). 
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2
+
+  CALL Init_Serie(FS1, 20)
+  CALL Init_Serie(FS2, 20)
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+
+  FS2 = FS1
+
+  Write(*,'(2ES33.25)')FS2%Coef( 1)
+  Write(*,'(2ES33.25)')FS2%Coef(-1)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Operator \texttt{+}}
+
+\subsection{Description}
+
+You can naturally sum one or two dimensional Fourier series. If they
+have different sizes, it is assumed that the non defined modes of the
+short Fourier Series are zero.
+
+\subsection{Examples}
+
+This example uses the \texttt{Init\_Serie} subroutine. For details of
+the usage of this function look at the section~(\ref{sc:InitSerie}),
+page~(\pageref{sc:InitSerie}). 
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie_2D) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+  CALL Init_Serie(FS2, Nt)
+
+  FS1%Coef( 1,1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1,1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+  
+  FS2%Coef( 1,1) = Cmplx(-1.0_DP, 4.5_DP, kind=DPC)
+  FS2%Coef(-1,1) = Cmplx(-1.0_DP, -6.78745_DP, kind=DPC)
+  
+
+  FS3 = FS1 + FS2
+  Write(*,'(2ES33.25)')FS3%Coef( 1,1)
+  Write(*,'(2ES33.25)')FS3%Coef(-1,1)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Operator \texttt{-}}
+
+\subsection{Description}
+
+You can naturally subtract one or two dimensional Fourier series. If they
+have different sizes, it is assumed that the non defined modes of the
+short Fourier Series are zero.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+  
+  FS2 = FS1  
+
+  FS3 = FS1 - FS2
+  Write(*,'(2ES33.25)')FS3%Coef( 1)
+  Write(*,'(2ES33.25)')FS3%Coef(-1)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Operator \texttt{*}}
+
+\subsection{Description}
+
+You can naturally multiply one or two dimensional Fourier series, in
+which case the convolution of the Fourier Modes is performed. If they
+have different sizes, it is assumed that the non defined modes of the
+short Fourier Series are zero.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+  
+  FS2 = FS1  
+
+  FS3 = FS1 * FS2
+  Write(*,'(2ES33.25)')FS3%Coef( 0)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Operator \texttt{**}}
+
+\subsection{Description}
+
+You can naturally compute the integer power of a one or two
+dimensional Fourier series, in which case the convolution of the
+Fourier modes with themselves are performed a certain number of
+times. 
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+  CALL Init_Serie(FS2, Nt)
+  CALL Init_Serie(FS3, Nt)
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+
+  FS3%Coef(0) = Cmplx(1.0_DP, 0.0_DP, kind=DPC)
+
+  FS2 = FS1**8
+  Do I = 1, 8
+     FS3 = FS3 * FS1
+  End Do
+
+  Write(*,'(2ES33.25)')FS2%Coef( 0)
+  Write(*,'(2ES33.25)')FS3%Coef( 0)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+
+\section{Subroutine \texttt{Init\_Serie(FS,Ns)}}
+\label{sc:InitSerie}
+\index{Init@Subroutine \texttt{Init\_Serie(FS,Ns)}}
+
+\subsection{Description}
+
+Allocate memory space for the modes of a one or two dimensional
+Fourier series.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{FS}:] Type \texttt{Fourier\_Serie} or type
+  \texttt{Fourier\_Serie\_2D}. The Fourier series that you want
+  to allocate space for.
+\item[\texttt{Ns}:] Integer. The number of modes.
+\end{description}
+
+\subsection{Examples}
+
+Any of the examples of some of the previous sections are aldo good
+examples of the use of the \texttt{Init\_Serie} subroutine. Here we
+simply repeat one of them.
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+  
+  FS2 = FS1  
+
+  FS3 = FS1 * FS2
+  Write(*,'(2ES33.25)')FS3%Coef( 0)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Function \texttt{Eval\_Serie(FS, X, [Y], Tx, [Ty]) }}
+\index{Eval@Function \texttt{Eval\_Serie(FS, X, [Y], Tx, [Ty]) }}
+
+\subsection{Description}
+
+Compute the value of the Fourier series \texttt{FS} with periods
+\texttt{Tx,Ty} at the point \texttt{X,Y}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{FS}:] Type \texttt{Fourier\_Serie} or type
+  \texttt{Fourier\_Serie\_2D}. The Fourier series that you want to evaluate.
+\item[\texttt{X,Y}:] Real double precision. The point in which you
+  want to evaluate the Fourier series. If \texttt{FS} is a two
+  dimensional Fourier series, then \texttt{Y} must be present.
+\item[\texttt{Tx,Ty}:] Real double precision. The period(s). If
+  \texttt{FS} is a two dimensional Fourier series, then \texttt{Ty}
+  must be present. 
+\end{description}
+
+\subsection{Output}
+
+Real double precision. The value of the function defined by the modes
+in \texttt{FS} at the point \texttt{(X[,Y])}.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+  CALL Init_Serie(FS2, Nt)
+  CALL Init_Serie(FS3, Nt)
+
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+
+  FS2 = FS1**2
+
+  FS3 = FS1*FS2
+
+  Write(*,'(2ES33.25)')Eval_Serie(FS1,0.12_DP,1.0_DP) * &
+       & Eval_Serie(FS2,0.12_DP,1.0_DP)
+  Write(*,'(2ES33.25)')Eval_Serie(FS3,0.12_DP,1.0_DP)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+
+\section{Function \texttt{Unit(FS, Ns)}}
+\index{Unit@Function \texttt{Unit(FS, Ns)}}
+
+\subsection{Description}
+
+Allocate memory space for the modes of a one or two dimensional
+Fourier series and sets the zero mode equal to 1.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{FS}:] Type \texttt{Fourier\_Serie} or type
+  \texttt{Fourier\_Serie\_2D}. The Fourier series that you want
+  to allocate space for.
+\item[\texttt{Ns}:] Integer. The number of modes.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Integer :: Nt
+
+  Nt = 4
+  CALL Init_Serie(FS1, Nt)
+  CALL Init_Serie(FS2, Nt)
+  CALL Init_Serie(FS3, Nt)
+
+
+  FS1%Coef( 1) = Cmplx(1.0_DP, 0.5_DP, kind=DPC)
+  FS1%Coef(-1) = Cmplx(1.0_DP, 0.7_DP, kind=DPC)
+
+  CALL Unit(FS2, Nt)
+
+  FS3 = FS1*FS2
+
+  Write(*,'(2ES33.25)')Eval_Serie(FS1,0.12_DP,1.0_DP)
+  Write(*,'(2ES33.25)')Eval_Serie(FS3,0.12_DP,1.0_DP)
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+
+\section{Function \texttt{DFT(Data, Is)}}
+\index{DFT@Function \texttt{DFT(Data, Is)}}
+
+\subsection{Description}
+
+Compute the Discrete Fourier Transform of the values stored in the
+complex array \texttt{Data}. If \texttt{Is} is present and 
+is set to -1, the inverse Discrete Fourier Transform is performed. The
+direct Fourier transform is defined as
+\begin{displaymath}
+  \tilde f(k) = \sum_{n=0}^N f_ne^{\frac{2\pi\imath n}{N}}\qquad\forall k
+  \in \left[-\frac{N}{2}, \frac{N}{2}\right]
+\end{displaymath}
+the inverse one is defined as
+\begin{displaymath}
+  \tilde f(k) = \frac{1}{N}\sum_{n=0}^N f_ne^{\frac{-2\pi\imath
+      n}{N}}\qquad\forall k 
+  \in \left[-\frac{N}{2}, \frac{N}{2}\right]
+\end{displaymath}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Data(:[,:])}:] One or two dimensional double precision complex
+  array. The data whose Discrete Fourier Transform we want to
+  compute.
+\item[\texttt{Is}:] Integer. Optional. A flag to tell if we want to
+  compute the direct or the inverse Fourier transform.
+\end{description}
+
+\subsection{Output}
+
+Type \texttt{Fourier\_Serie} if \texttt{Data(:)} is one dimensional,
+and type \texttt{Fourier\_Serie\_2D} if \texttt{Data(:,:)} is two
+dimensional. 
+
+\subsection{Examples}
+
+This example compute the discrete Fourier transform of $f(x_i) =
+\sin(x_i)$. 
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Integer, Parameter :: Nmax=20
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Complex (kind=DPC) :: Data(Nmax), X
+  Integer :: Nt
+
+  Do I = 1, Nmax
+     X = Cmplx(TWOPI_DP*I/Nmax)
+     Data(I) = Sin(X)
+  End Do
+
+  FS1 = DFT(Data)
+
+  Write(*,'(1A,2ES33.25)')'Mode k= 1: ', FS1%Coef( 1)
+  Write(*,'(1A,2ES33.25)')'Mode k=-1: ', FS1%Coef(-1)
+  Write(*,'(ES33.25)' )Sum(Abs(FS1%Coef(:)))
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Function \texttt{Conjg(FS)}}
+\index{Conjg@Function \texttt{Conjg(FS)}}
+
+\subsection{Description}
+
+Computes the Fourier modes that correspond to the conjugate
+function. This means: If the modes of \texttt{FS} are $\tilde f(k)$,
+this function returns a Fourier series with modes $\tilde f(-k)$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{FS}:] Type \texttt{Fourier\_Serie} or type
+  \texttt{Fourier\_Serie\_2D}. The Fourier series whose conjugate you
+  want to compute.
+\end{description}
+
+\subsection{Output}
+
+Type \texttt{Fourier\_Serie} if \texttt{FS} is of type
+\texttt{Fourier\_Serie}, and type \texttt{Fourier\_Serie\_2D} if
+\texttt{FS} is of Type \texttt{Fourier\_Serie\_2D}.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Integer, Parameter :: Nmax=20
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Complex (kind=DPC) :: Data(Nmax), X
+  Integer :: Nt
+
+  Do I = 1, Nmax
+     X = Cmplx(TWOPI_DP*I/Nmax,kind=DPC)
+     Data(I) = Sin(X) + Cmplx(0.0_DP,I*2.0_DP,kind=DPC)
+  End Do
+
+  FS1 = DFT(Data)
+
+  Write(*,'(2ES33.25)')Eval_Serie(FS1,0.23_DP,1.0_DP)
+  Write(*,'(2ES33.25)')Eval_Serie(Conjg(FS1),0.23_DP,1.0_DP)
+
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Subroutine \texttt{Save\_Serie(FS, File)}}
+\index{Save@Subroutine \texttt{Save\_Serie(FS, File)}}
+
+\subsection{Description}
+
+Write the Fourier series \texttt{FS} to the file \texttt{File}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{FS}:] Type \texttt{Fourier\_Serie} or type
+  \texttt{Fourier\_Serie\_2D}. The Fourier series that you want to
+  store in a file.
+\item[\texttt{File}:] Character (len=*). The name of the file in which
+  you want to save \texttt{FS}.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Integer, Parameter :: Nmax=20
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Complex (kind=DPC) :: Data(Nmax), X
+  Integer :: Nt
+
+  Do I = 1, Nmax
+     X = Cmplx(TWOPI_DP*I/Nmax,kind=DPC)
+     Data(I) = Sin(X) + Cmplx(0.0_DP,I*2.0_DP,kind=DPC)
+  End Do
+
+  FS1 = DFT(Data)
+
+  CALL Save(FS1,'datamodes.dat')
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+
+\section{Subroutine \texttt{Read\_Serie(FS, File)}}
+\index{Read@Subroutine \texttt{Read\_Serie(FS, File)}}
+
+\subsection{Description}
+
+Reads the Fourier series \texttt{FS} stored in the file \texttt{File}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{FS}:] Type \texttt{Fourier\_Serie} or type
+  \texttt{Fourier\_Serie\_2D}. The name of the Fourier series data
+  type in which you want to store that data.
+\item[\texttt{File}:] Character (len=*). The name of the file in which
+  the saved series is.
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestFourier
+
+  USE NumTypes
+  USE Constants
+  USE Fourier
+
+  Integer, Parameter :: Nmax=20
+  Type (Fourier_Serie) :: FS1, FS2, FS3
+  Complex (kind=DPC) :: Data(Nmax), X
+  Integer :: Nt
+
+  Do I = 1, Nmax
+     X = Cmplx(TWOPI_DP*I/Nmax,kind=DPC)
+     Data(I) = Sin(X) + Cmplx(0.0_DP,I*2.0_DP,kind=DPC)
+  End Do
+
+  FS1 = DFT(Data)
+
+  CALL Save_Serie(FS1,'datamodes.dat')
+  CALL Read_Serie(FS2,'datamodes.dat')
+
+  Write(*,'(ES33.25)')Sum(Abs(FS1%Coef(:) - FS2%Coef(:)))
+
+
+  Stop
+End Program TestFourier
+\end{verbatim}
+

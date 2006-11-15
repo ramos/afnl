@@ -1,0 +1,271 @@
+This is the documentation of the \texttt{MODULE Linear}, a set
+of \texttt{FORTRAN 90} routines to solve linear systems of
+equations. This module make use of the \texttt{MODULE NumTypes},
+and \texttt{MODULE Error} so please read the
+documentation of these modules \emph{before} reading this.
+
+
+\section{Subroutine \texttt{Pivoting(M,Ipiv,Idet)}}
+\index{Pivoting@Subroutine \texttt{Pivoting(M,Ipiv,Idet)}}
+
+\subsection{Description}
+
+Permute the rows of $M$ so that the biggest elements (in absolute
+value) of $M$ are in the diagonal.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{M(:,:)}: ] Real single or double precision two dimensional
+  array. Initially it contains the matrix to permute, after calling
+  the routine, it contains the permuted matrix. \emph{Note that $M$ is
+    overwritten when calling this routine}. 
+\item[\texttt{Ipiv(:)}: ] Integer vector. It returns the permutation of
+  rows made to $M$.
+\item[\texttt{Idet(:)}: ] Integer. If the number of permutations is odd,
+  $\mathtt{Idet}=1$, if it is even $\mathtt{Idet}=-1$
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestLinear
+
+  USE NumTypes
+  USE Linear
+
+  Integer, Parameter :: Nord = 4
+
+  Real (kind=DP) :: M(Nord,Nord), L(Nord,Nord), U(Nord,Nord), &
+       & Mcp(Nord,Nord)
+  Integer :: Ipiv(Nord), Iperm
+
+
+  ! Fill M of random numbers
+  CALL Random_Number(M)
+
+  Write(*,*)'Original M: '
+  Do I = 1, Nord
+     Write(*,'(100ES10.3)')(M(I,J), J = 1, Nord)
+  End Do
+
+  CALL Pivoting (M, Ipiv, Iperm)
+  Write(*,*)'Permuted M: '
+  Do I = 1, Nord
+     Write(*,'(100ES10.3)')(M(I,J), J = 1, Nord)
+  End Do
+
+  Stop
+End Program TestLinear
+\end{verbatim}
+
+
+\section{Subroutine \texttt{LU(M, Ipiv, Idet)}}
+\index{LU@Subroutine \texttt{LU(M, Ipiv, Idet)}}
+
+\subsection{Description}
+
+Make the LU decomposition of matrix $M$. That is to say, given a
+matrix $M$, this function returns two matrix $L$ and $U$, such that
+\begin{equation}
+  M = LU
+\end{equation}
+and $L$ is lower triangular, and $U$ upper triangular.
+\begin{equation}
+  L = \left(
+    \begin{array}{cccc}
+      1 & 0 & 0 &\dots \\
+      L_{21} & 1 & 0 &\dots \\
+      L_{31} & L_{32} & 1 &\dots \\
+      \vdots & \vdots  & \vdots &\ddots \\
+    \end{array}
+  \right);\quad
+  U = \left(
+    \begin{array}{cccc}
+      U_{11} & U_{12} & U_{13} &\dots \\
+      0 & U_{22} & U_{23} &\dots \\
+      0 & 0 & U_{33} &\dots \\
+      \vdots & \vdots  & \vdots &\ddots \\
+    \end{array}
+  \right)
+\end{equation}
+
+The rows of $M$ are permuted so that the biggest possible elements are
+on the diagonal (this makes the problem more stable). The two matrices
+$L$ and $U$ are returned \emph{overwriting} $M$. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{M(:,:)}: ] Real single or double precision two dimensional
+  array. Initially it contains the matrix to decompose, after calling
+  the routine, it contains $L$ in its lower part, and $U$ in its upper
+  part. \emph{Note that $M$ is overwritten when calling this routine}.
+\item[\texttt{Ipiv(:)}: ] Integer vector. It returns the permutation of
+  rows made to $M$.
+\item[\texttt{Idet(:)}: ] Integer. If the number of permutations is odd,
+  $\mathtt{Idet}=1$, if it is even $\mathtt{Idet}=-1$
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestLinear
+
+  USE NumTypes
+  USE Linear
+
+  Integer, Parameter :: Nord = 4
+
+  Real (kind=DP) :: M(Nord,Nord), L(Nord,Nord), U(Nord,Nord), &
+       & Mcp(Nord,Nord)
+  Integer :: Ipiv(Nord), Iperm
+
+  
+  ! Fill M of random numbers, and make a copy
+  CALL Random_Number(M)
+  Mcp = M
+  L = 0.0_DP
+  U = 0.0_DP
+
+  ! Make the LU decomposition and fill the matrices 
+  ! L and U
+  CALL Lu(M, Ipiv, Iperm)
+  Do I = 1, Nord
+     L(I,I) = 1.0_DP
+     U(I,I) = M(I,I)
+     Do J = I+1, Nord
+        L(J,I) = M(J,I)
+        U(I,J) = M(I,J)
+     End Do
+  End Do
+
+  ! Now Make the product and see that it is the original matrix with
+  ! some rows permuted
+  Write(*,*)'M: '
+  Do I = 1, Nord
+     Write(*,'(100ES10.3)')(Mcp(I,J), J = 1, Nord)
+  End Do
+
+  Write(*,*)'L: '
+  Do I = 1, Nord
+     Write(*,'(100ES10.3)')(L(I,J), J = 1, Nord)
+  End Do
+  Write(*,*)'U: '
+  Do I = 1, Nord
+     Write(*,'(100ES10.3)')(U(I,J), J = 1, Nord)
+  End Do
+
+  M = MatMul(L,U)
+  Write(*,*)'LU (Same as M with some rows permuted): '
+  Do I = 1, Nord
+     Write(*,'(100ES10.3)')(M(I,J), J = 1, Nord)
+  End Do
+
+
+  Stop
+End Program TestLinear
+\end{verbatim}
+
+\section{Subroutine \texttt{LUsolve(M, b)}}
+\index{LUsolve@Subroutine \texttt{LUsolve(M, b)}}
+
+\subsection{Description}
+Solves the linear system of equations
+\begin{eqnarray}
+  M_{11}x_1 + M_{12}x_2 + M_{13}x_3 + M_{14}x_4 + \dots & = & b_1 \\
+  \nonumber
+  M_{21}x_1 + M_{22}x_2 + M_{23}x_3 + M_{24}x_4 + \dots & = & b_2 \\
+  \nonumber
+  \vdots & & 
+\end{eqnarray}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{M(:,:)}: ] Real single or double precision matrix. The matrix
+  of coefficients. \emph{$M$ is overwritten when solving the system}.
+\item[\texttt{b(:)}: ] Real single or double precision vector. The
+  independent terms before calling the routine, and the solution after
+  calling it. \emph{Note that $b$ is overwritten when calling this
+    routine}. 
+\end{description}
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestLinear
+
+  USE NumTypes
+  USE Linear
+
+  Integer, Parameter :: Nord = 10
+
+  Real (kind=DP) :: M(Nord,Nord), L(Nord,Nord), U(Nord,Nord), &
+       & Mcp(Nord,Nord), b(Nord), bcp(Nord)
+  Integer :: Ipiv(Nord), Iperm
+
+  ! Fill M and b of random numbers, and make a copy of both
+  CALL Random_Number(M)
+  CALL Random_Number(b)
+  Mcp = M
+  bcp = b
+
+  ! Solve the linear system
+  CALL LUsolve(M,b)
+  
+  ! Check that it is a solution:
+  b = MatMul(Mcp,b)
+  Write(*,*)'b: '
+  Write(*,'(100ES10.3)')(Abs(bcp(I)-b(I)), I = 1, Nord)
+
+
+  Stop
+End Program TestLinear
+\end{verbatim}
+
+
+\section{Function \texttt{Det(M)}}
+\index{Det@Function \texttt{Det(M)}}
+
+\subsection{Description}
+
+Computes the determinant of the matrix $M$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{M(:,:)}: ] Real or double precision two dimensional
+  array. The matrix whose determinant we want to know.
+\end{description}
+
+\subsection{Output}
+
+The value of the determinant. Same precision as the input argument.
+
+\subsection{Examples}
+
+\begin{verbatim}
+Program TestLinear
+
+  USE NumTypes
+  USE Linear
+
+  Integer, Parameter :: Nord = 10
+
+  Real (kind=DP) :: M(Nord,Nord), L(Nord,Nord), U(Nord,Nord), &
+       & Mcp(Nord,Nord), b(Nord), bcp(Nord)
+  Integer :: Ipiv(Nord), Iperm
+
+
+  ! Fill M of randoms numbers
+  CALL Random_Number(M)
+
+  ! Now compute the determinant.
+  Write(*,'(ES15.8)')Det(M)
+
+
+  Stop
+End Program TestLinear
+\end{verbatim}
+

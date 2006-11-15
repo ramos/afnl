@@ -1,0 +1,109 @@
+This is the documentation of the \texttt{MODULE Error}, a set
+of \texttt{FORTRAN 90} routines that allow to write errors.
+
+
+\section{Defined variables}
+
+\subsection{\texttt{stderr}}
+
+\subsubsection{Description}
+
+This variable has the unit number of standard error.
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE Error
+
+  Write(stderr,*)'This is printed in standard error.'
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\section{Routines}
+
+\subsection{Subroutine \texttt{perror([routine], msg)}}
+\index{perror@Subroutine \texttt{perror([routine], msg)}}
+
+\subsubsection{Description}
+
+Prints the error message \texttt{msg} in standard error. If the
+optional argument \texttt{routine} is given, it is used as the routine
+where the program has crashed.
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{routine}:] Character string with arbitrary length. It
+  should be the routine or program name where the error has
+  ocurred. It is an optional argument.
+\item[\texttt{msg}:] Character string with arbitrary length. It
+  should be the message that you want to print.
+\end{description}
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE Error
+
+  Integer :: N1, N2
+
+  Write(*,*)'Two integer numbers:'
+  Read(*,*)N1,N2
+
+  If (N2 == 0) Then
+    CALL Perror('Test', 'Division by cero. I will print the product of the two numbers')
+    Write(*,*)N1*N2
+  Else 
+    Write(*,*)N1/N2
+  End If
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\subsection{Subroutine \texttt{abort([routine], msg)}}
+\index{abort@Subroutine \texttt{abort([routine], msg)}}
+
+\subsubsection{Description}
+
+Prints the error message \texttt{msg} in standard error, and stops the
+program. If the optional argument \texttt{routine} is given, it is
+used as the routine where the program has crashed.
+
+\subsubsection{Arguments}
+
+\begin{description}
+\item[\texttt{routine}:] Character string with arbitrary length. It
+  should be the routine or program name where the error has
+  ocurred. It is an optional argument.
+\item[\texttt{msg}:] Character string with arbitrary length. It
+  should be the message that you want to print.
+\end{description}
+
+
+\subsubsection{Examples}
+
+\begin{verbatim}
+Program Test
+  USE Error
+
+  Integer :: N1, N2
+
+  Write(*,*)'Two integer numbers:'
+  Read(*,*)N1,N2
+
+  If (N2 == 0) Then
+    CALL abort('Test', 'Division by cero')
+  Else 
+    Write(*,*)N1/N2
+  End If
+
+  Stop
+End Program Test
+\end{verbatim}
+
