@@ -5,24 +5,22 @@ first-order  ordinary  differential equations. This module make use
 of the \texttt{MODULE NumTypes}, so please read the documentation of
 this module \emph{before} reading this.
 
-\section{Numerical integration of functions}
 
-
-\subsection{Function \texttt{Trapecio(a, b, Func, [Tol])}}
+\section{Function \texttt{Trapecio(a, b, Func, [Tol])}}
 \index{Trapecio@Function \texttt{Trapecio(a, b, Func, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
 the trapezoid rule.
 
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
-\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
-  the limits of the integral.
+\item[\texttt{a, b}:] Real single or double precision. The limits of
+  the integral. 
 \item[\texttt{Func}:] The function to be integrated. It must be a
   function of only one argument of the same type as the function
   itself. If it is an
@@ -44,14 +42,14 @@ the trapezoid rule.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
-If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+If the arguments are real of single (double) precision, the result
+will also be a real of single (double) precision. The value of the
+integral. 
 
 
-
-\subsubsection{Examples}
+\subsection{Examples}
 
 \begin{verbatim}
 Program Test
@@ -93,10 +91,10 @@ Function Fint(X)
 End Function Fint
 \end{verbatim}
 
-\subsection{Function \texttt{Simpson(a, b, Func, [Tol])}}
+\section{Function \texttt{Simpson(a, b, Func, [Tol])}}
 \index{Simpson@Function \texttt{Simpson(a, b, Func, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
@@ -104,11 +102,11 @@ the Simpson's rule.
 
 In general this routine is better than \texttt{Trapecio}.
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
-\item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
-  the limits of the integral.
+\item[\texttt{a, b}:] Real single or double precision. The limits of
+  the integral. 
 \item[\texttt{Func}:] The function to be integrated. It must be a
   function of only one argument of the same type as the function
   itself. If it is an
@@ -130,13 +128,14 @@ In general this routine is better than \texttt{Trapecio}.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
-If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+If the arguments are reals of single (double) precision, the result
+will also be a real of single (double) precision. The value of the
+integral. 
 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 \begin{verbatim}
 Program Test
@@ -178,17 +177,17 @@ Function Fint(X)
 End Function Fint
 \end{verbatim}
 
-\subsection{Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
+\section{Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
 \index{TrapecioAb@Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
 the open trapezoid rule.
 
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
@@ -214,14 +213,14 @@ the open trapezoid rule.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
 If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+single (double) precision. The value of the integral.
 
 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 \begin{verbatim}
 Program Test
@@ -264,10 +263,10 @@ End Function Fint
 \end{verbatim}
 
 
-\subsection{Function \texttt{SimpsonAb(a, b, Func, [Tol])}}
+\section{Function \texttt{SimpsonAb(a, b, Func, [Tol])}}
 \index{SimpsonAb@Function \texttt{SimpsonAb(a, b, Func, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
@@ -275,7 +274,7 @@ the open Simpson's rule.
 
 In general better than \texttt{TrapecioAb}
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
@@ -301,14 +300,14 @@ In general better than \texttt{TrapecioAb}
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
 If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+single (double) precision. The value of the integral.
 
 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 \begin{verbatim}
 Program Test
@@ -350,17 +349,17 @@ Function Fint(X)
 End Function Fint
 \end{verbatim}
 
-\subsection{Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
+\section{Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
 \index{SimpsonInfUp@Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and $\infty$ with precision \texttt{Tol} (optional) using
 the Simpson rule and a change of variables.
 
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{a}:] Single (SP) or double (DP) precision. They are
@@ -388,13 +387,13 @@ the Simpson rule and a change of variables.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
 If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+single (double) precision. The value of the integral.
 
 
-\subsubsection{examples}
+\subsection{examples}
 
 \begin{verbatim}
 Program Test
@@ -437,17 +436,17 @@ End Function Fint
 \end{verbatim}
 
 
-\subsection{Function \texttt{SimpsonInfDw(a, Func, [Tol])}}
+\section{Function \texttt{SimpsonInfDw(a, Func, [Tol])}}
 \index{SimpsonInfDw@Function \texttt{SimpsonInfDw(a, Func, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 $- \infty$ and \texttt{a} with precision \texttt{Tol} (optional) using
 the Simpson rule and a change of variables.
 
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{a}:] Single (SP) or double (DP) precision. They are
@@ -475,13 +474,13 @@ the Simpson rule and a change of variables.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
 If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+single (double) precision. The value of the integral.
 
 
-\subsubsection{examples}
+\subsection{examples}
 
 \begin{verbatim}
 Program Test
@@ -523,10 +522,10 @@ Function Fint(X)
 End Function Fint
 \end{verbatim}
 
-\subsection{Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
+\section{Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
 \index{SinpsonSingUp@Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
@@ -537,7 +536,7 @@ the type:
 \end{displaymath}
 with $0<\gamma<1$.
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
@@ -565,13 +564,13 @@ with $0<\gamma<1$.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
 If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+single (double) precision. The value of the integral.
 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 \begin{verbatim}
 Program Test
@@ -613,10 +612,10 @@ Function Fint(X)
 End Function Fint
 \end{verbatim}
 
-\subsection{Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
+\section{Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
 \index{SimpsonSingDw@Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Calculates the integral of the function \texttt{Func} between
 \texttt{a} and \texttt{b} with precision \texttt{Tol} (optional) using
@@ -627,7 +626,7 @@ the type:
 \end{displaymath}
 with $0<\gamma<1$.
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{a, b}:] Single (SP) or double (DP) precision. They are
@@ -655,13 +654,13 @@ with $0<\gamma<1$.
 \end{description}
 
 
-\subsubsection{Output}
+\subsection{Output}
 
 If the arguments are single (double) precision, the result will also be of
-single (double) precision. 
+single (double) precision. The value of the integral.
 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 \begin{verbatim}
 Program Test
@@ -703,12 +702,10 @@ Function Fint(X)
 End Function Fint
 \end{verbatim}
 
-\section{Numerical integration of ODE's}
-
-\subsection{Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
+\section{Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
 \index{Euler@Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Integrate the first order set of ODE defined by the function
 \texttt{Feuler}, with initial conditions given by the vector
@@ -734,7 +731,7 @@ derivative of the variable $i$ in te point $x$ (this is done by
 the point where this initial conditions are defined (\texttt{Xo}), and
 finally the point where we want the solution (\texttt{Xfin})
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{Init(:)}:] Single (SP) or double (DP) precision vector of
@@ -763,13 +760,14 @@ derivatives of the functions $y_i(x)$ in the point \texttt{X}.
   parameter.
 \end{description}
 
-\subsubsection{Output}
+\subsection{Output}
 
-A vector that contains the values of the functions $y_i$ in the point
-\texttt{Xfin}. 
+Real single or double precision (same as input) one dimensional
+array. The array contains the values of the functions $y_i$ in the
+point \texttt{Xfin}. 
 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 This example below will integrate the set of first order ODE's defined
 by the equations:
@@ -777,17 +775,17 @@ by the equations:
   \frac{\d y_1(x)}{\d x} = y_2(x);\qquad
   \frac{\d y_2(x)}{\d x} = -y_1(x)    
 \end{displaymath}
-And which solution is clearly:
+whose solution is:
 \begin{displaymath}
   y_1(x) = A\cos(x) + B\sin(x)
 \end{displaymath}
-With the initial conditions $y_1(0) = 0; y_2(0)=1$, we have:
+With the initial conditions $y_1(0) = 0; y_2(0)=1$, the solution is:
 \begin{displaymath}
   y_1(x) = \sin(x);\qquad y_2(x) = \cos(x)
 \end{displaymath}
 so if we plot $y_1(1)$ and $y_2(1)$ we will obtain the values
-$\sin(1)$ and $y_2(1)$. In the following example, these values with
-the real ones.
+$\sin(1)$ and $y_2(1)$. In the following example, we will compare the
+result of integrating the differential equations with the exact values.
 
 \begin{verbatim}
 Program Test
@@ -832,10 +830,10 @@ End Program Test
   End Function FEuler
 \end{verbatim}
 
-\subsection{Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
+\section{Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
 \index{Rgnkta@Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
 
-\subsubsection{Description}
+\subsection{Description}
 
 Integrate the first order set of ODE defined by the function
 \texttt{Feuler}, with initial conditions given by the vector
@@ -863,7 +861,7 @@ derivative of the variable $i$ in te point $x$ (this is done by
 the point where this initial conditions are defined (\texttt{Xo}), and
 finally the point where we want the solution (\texttt{Xfin})
 
-\subsubsection{Arguments}
+\subsection{Arguments}
 
 \begin{description}
 \item[\texttt{Init(:)}:] Single (SP) or double (DP) precision vector of
@@ -891,12 +889,13 @@ The function is the same as in the previos function.
   parameter.
 \end{description}
 
-\subsubsection{Output}
+\subsection{Output}
 
-A vector that contains the values of the functions $y_i$ in the point
-\texttt{Xfin}. 
+Real single or double precision (same as input) one dimensional
+array. The array contains the values of the functions $y_i$ in the
+point \texttt{Xfin}. 
 
-\subsubsection{Examples}
+\subsection{Examples}
 
 This example below will integrate the set of first order ODE's defined
 by the equations:
@@ -904,7 +903,7 @@ by the equations:
   \frac{\d y_1(x)}{\d x} = y_2(x);\qquad
   \frac{\d y_2(x)}{\d x} = -y_1(x)    
 \end{displaymath}
-And which solution is clearly:
+whose solution is:
 \begin{displaymath}
   y_1(x) = A\cos(x) + B\sin(x)
 \end{displaymath}
@@ -914,7 +913,8 @@ With the initial conditions $y_1(0) = 0; y_2(0)=1$, we have:
 \end{displaymath}
 so if we plot $y_1(1)$ and $y_2(1)$ we will obtain the values
 $\sin(1)$ and $y_2(1)$. In the following example, we will compare the
-Euler, the Runge-Kutta and the exact values.
+values obtained with \texttt{Euler}, with \texttt{Rgnkta} and the
+exact ones. 
 
 \begin{verbatim}
 Program Test

@@ -14,7 +14,7 @@ Compute $\log(\Gamma(X))$.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{X}:] Double (DP) precision. The vaue in which we want to
+\item[\texttt{X}:] Double (DP) precision. The point in which we want to
   know the value of $\Gamma(X)$.
 \end{description}
 
@@ -65,7 +65,7 @@ quasi-periods $\pi$ and $\tau\pi$.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{i}:] Integer. Intent (in). Says which theta function we
+\item[\texttt{i}:] Integer. Which theta function we
   want to compute. $i$ must have one of the following values: $1,2,3,4$.
 \item[\texttt{z}:] Complex Double Precision (DPC) or Complex Single
   Precision (SPC). The point in which we want to compute the Theta
@@ -75,7 +75,8 @@ quasi-periods $\pi$ and $\tau\pi$.
   the upper half plane $(\textrm Im(\tau)> 0)$.
 \item[\texttt{Prec}:] Real, Optional. If \texttt{z} is DPC (SPC),
   \texttt{Prec} must be double precision (single precision). An
-  estimation of the desired precision of the result.
+  estimation of the desired precision of the result. The default value
+  is $1\times 10^{-3}$
 \end{description}
 
 \subsection{Output}
@@ -198,8 +199,8 @@ polynomial in the point $X$ is also returned.
 
 \subsection{Output}
 
-The value of the $n^{\underline{\text{th}}}$ Hermite Polynomial in
-the point X.
+Real single or double precision (same as input). The value of the
+$n^{\underline{\text{th}}}$ Hermite Polynomial in the point X.
 
 \subsection{Examples}
 
@@ -251,8 +252,8 @@ function in the point $X$ is also returned.
 
 \subsection{Output}
 
-The value of the $n^{\underline{\text{th}}}$ Hermite function in
-the point X.
+Real single or double precision (same as input). The value of the
+$n^{\underline{\text{th}}}$ Hermite function in the point X.
 
 \subsection{Examples}
 

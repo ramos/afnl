@@ -460,7 +460,7 @@ present then it is used as \emph{integration constant}.
 \begin{description}
 \item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose integral
   we want to compute.
-\item[\texttt{C}:] Real single or double precision. Optional. The
+\item[\texttt{Cte}:] Real single or double precision. Optional. The
   constant of integration. If not present, the default value is 0.
 \end{description}
 
@@ -526,7 +526,7 @@ Computes the value of the interpolation polynomial that pass trough
 \item[\texttt{X(:), Y(:)}:] Real double precision one dimensional
   arrays. Specify the points at which the interpolation polynomial
   should pass. 
-\item[\texttt{Xo}:] The ppoint at which you want to compute the
+\item[\texttt{Xo}:] The point at which you want to compute the
   interpolation polynomial.
 \end{description}
 
@@ -569,7 +569,7 @@ End Program TestPoly
 \section{Function \texttt{Interpol(X, Y)}}
 \index{Interpol@Function \texttt{Interpol(X, Y)}}
 
-Computes the value of the interpolation polynomial that pass trough
+Computes the interpolation polynomial that pass trough
 \texttt{(X(:), Y(:))}. \textbf{Note that using this function can be
 very unstable}.
 

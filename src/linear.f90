@@ -186,13 +186,39 @@ CONTAINS
     Real (kind=SP) :: Mcp(Size(M,1),Size(M,1))
     Integer :: Ipiv(Size(M,1)), Id
 
+    Idim = Size(M,1)
     Mcp = M
-    CALL LU(Mcp, Ipiv, Id)
+    ! First make pivoting
+    CALL Pivoting(Mcp, Ipiv, Id)
 
-    Det_SP = Real(Id,kind=SP)
-    Do I = 1, Size(M,1)
-       Det_SP = Det_SP * Mcp(I,I)
+    
+    ! NOW: LU Decomposition
+    ! Separamos el paso I = 1
+    Do J = 2, Idim
+       Mcp(J, 1) = Mcp(J, 1) / Mcp(1, 1)
     End Do
+
+    Det_SP = Mcp(1,1)
+    Do I = 2, Idim
+       Mcp(I, I) = Mcp(I, I) - &
+            & Dot_Product(Mcp(I,1:I-1), Mcp(1:I-1, I)) 
+
+       Do J = i+1, Idim
+          Mcp(I, J) = Mcp(I, J) - Dot_Product(Mcp(I, 1:I-1),&
+               & Mcp(1:I-1, J))
+          Mcp(J, I) = Mcp(J, I) - Dot_Product(Mcp(J, 1:I-1)&
+               &,Mcp(1:I-1, I))
+
+          If (Abs(Mcp(I,I)) < Epsilon(1.0_SP)) Then
+             Det_SP = 0.0_SP
+             Return
+          End If
+          Mcp(J, I) = Mcp(J, I) / Mcp(I, I)
+       End Do
+       Det_SP = Det_SP * M(I,I)
+    End Do
+
+    Det_SP = Real(Id,kind=SP)*Det_SP
 
     Return
   End Function Det_SP
@@ -330,13 +356,39 @@ CONTAINS
     Real (kind=DP) :: Mcp(Size(M,1),Size(M,1))
     Integer :: Ipiv(Size(M,1)), Id
 
+    Idim = Size(M,1)
     Mcp = M
-    CALL LU(Mcp, Ipiv, Id)
+    ! First make pivoting
+    CALL Pivoting(Mcp, Ipiv, Id)
 
-    Det_DP = Real(Id,kind=DP)
-    Do I = 1, Size(M,1)
-       Det_DP = Det_DP * Mcp(I,I)
+    
+    ! NOW: LU Decomposition
+    ! Separamos el paso I = 1
+    Do J = 2, Idim
+       Mcp(J, 1) = Mcp(J, 1) / Mcp(1, 1)
     End Do
+
+    Det_DP = Mcp(1,1)
+    Do I = 2, Idim
+       Mcp(I, I) = Mcp(I, I) - &
+            & Dot_Product(Mcp(I,1:I-1), Mcp(1:I-1, I)) 
+
+       Do J = i+1, Idim
+          Mcp(I, J) = Mcp(I, J) - Dot_Product(Mcp(I, 1:I-1),&
+               & Mcp(1:I-1, J))
+          Mcp(J, I) = Mcp(J, I) - Dot_Product(Mcp(J, 1:I-1)&
+               &,Mcp(1:I-1, I))
+
+          If (Abs(Mcp(I,I)) < Epsilon(1.0_DP)) Then
+             Det_DP = 0.0_DP
+             Return
+          End If
+          Mcp(J, I) = Mcp(J, I) / Mcp(I, I)
+       End Do
+       Det_DP = Det_DP * M(I,I)
+    End Do
+
+    Det_DP = Real(Id,kind=DP)*Det_DP
 
     Return
   End Function Det_DP

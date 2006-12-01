@@ -21,7 +21,8 @@ Compute the mean value of the numbers stored in \texttt{X(:)}.
 
 \subsection{Output}
 
-A real double or simple precision (same type as the input).
+A real double or simple precision (same type as the input). The mean
+of the values.
 
 \subsection{Examples}
 
@@ -62,7 +63,8 @@ Compute the variance of a vector of numbers \texttt{X(:)}
 
 \subsection{Output}
 
-A real double or simple precision (same type as the input).
+A real double or simple precision (same type as the input). The
+variance of the values.
 
 \subsection{Examples}
 
@@ -105,7 +107,8 @@ Computes the standard deviation of the numbers stored in the vector
 
 \subsection{Output}
 
-Real Single or Double precision, the same as the input values.
+Real Single or Double precision, the same as the input values. The
+standard deviation of the values.
 
 \subsection{Examples}
 
@@ -340,9 +343,10 @@ to a function of the type
 \begin{displaymath}
   Y = \sum_i a_i f_i(X)
 \end{displaymath}
-the values $f_i(X)$ are given y this function as \texttt{Func(X,
-  I)}. If the functions are not specified (i.e. you dont put this
-argument), a fit to a polynomial is made.
+the values $f_i(X)$ are given by this function as \texttt{Func(X,
+  I)}. If the functions are not specified (i.e. you don't put this
+argument), a fit to a polynomial is made (this only work for
+one-dimensional fittings).
 \item[\texttt{Coef(:)}: ] Real single or double precision one
   dimensional array. The
   parameters that you want to determine.
