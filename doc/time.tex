@@ -1,0 +1,239 @@
+Th \texttt{MODULE} Time is a module to provide access to date and
+time properties.
+
+\section{\texttt{Type tm}}
+\index{tm@Type \texttt{tm}}
+
+\subsection{Description}
+
+A new data type, called \texttt{tm} is defined. It has some properties
+common with the same derived type defined in the \texttt{C} standard
+library. The components of the type specify a time: Day, year, month,
+hour, etc\dots
+
+\subsection{Components}
+
+\begin{description}
+\item[\texttt{hour}: ] Integer. Hour of the day [0-23].
+\item[\texttt{min}: ] Integer, Minutes after the hour [0-59].
+\item[\texttt{sec}: ] Integer. Seconds after the minute [0-59].
+\item[\texttt{msec}: ] Integer. Miliseconds after the second [0-999].
+\item[\texttt{year}: ] Integer. Year.
+\item[\texttt{month}: ] Integer. Month of the year [0-11].
+\item[\texttt{mday}: ] Integer. Day of the month [1-31].
+\item[\texttt{wday}: ] Integer. Day of the week since Sunday [0-6].
+\end{description}
+
+\subsection{Example}
+
+A small example defining a \texttt{tm} data type.
+
+\begin{verbatim}
+Program Test
+
+  USE NumTypes
+  USE Time
+
+  Type (tm) :: Oneday
+
+  OneDay%hour = 12
+  OneDay%min  = 0
+  OneDay%sec  = 0
+  OneDay%mday = 10
+  OneDay%mon  = 0
+  OneDay%year = 2007
+  OneDay%wday = 3
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\section{Function \texttt{gettime()}}
+\index{gettime@Function \texttt{gettime()}}
+
+\subsection{Description}
+
+The function \texttt{gettime()} returns the current time and date in a
+\texttt{type tm} data type.
+
+\subsection{Arguments}
+
+This function has no arguments. 
+
+\subsection{Output}
+
+\texttt{Type tm}, containing all the information about the date and
+time. 
+
+\subsection{Example}
+
+A small program that prints the current year.
+
+\begin{verbatim}
+Program Test
+
+  USE NumTypes
+  USE Time
+
+  Type (tm) :: Oneday
+
+  Oneday = gettime()
+
+  Write(*,*)'Current year: ', Oneday%year
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\section{Function \texttt{isleap(Nyr)}}
+\index{isleap@Function \texttt{isleap(Nyr)}}
+
+\subsection{Description}
+
+The function \texttt{isleap(Nyr)} returns \texttt{.true.} if \texttt{Nyr}
+is a leap year, and \texttt{.false.} otherwise. Note that the leap
+years are different in the Julian and Gregorian calendars. In this
+code the Gregorian calendar is supposed valid \emph{after} 1582\footnote{For
+more details, take a look at 
+\begin{center}
+\href{http://en.wikipedia.org/wiki/Gregorian_calendar}{\texttt{http://en.wikipedia.org/wiki/Gregorian\_calendar}}  
+\end{center}
+}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Nyr}: ] Integer. The year.
+\end{description}
+
+\subsection{Output}
+
+Logical.  \texttt{.true.} if \texttt{Nyr} is a leap year, and
+\texttt{.false.} otherwise. 
+
+\subsection{Example}
+
+A small program that tell us if the current year is leap.
+
+\begin{verbatim}
+Program Test
+
+  USE NumTypes
+  USE Time
+
+  Type (tm) :: Oneday
+
+  Oneday = gettime()
+
+  If (isleap(Oneday%year)) Then
+    Write(*,*)'We are in a leap year.'
+  Else
+    Write(*,*)'We are not in a leap year.'
+  End If
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\section{Function \texttt{asctime(t)}}
+\index{asctime@Function \texttt{asctime(t)}}
+
+\subsection{Description}
+
+The function \texttt{asctime}, returns a 24 length character string
+from a type \texttt{tm} data type, containing the date and time, in a
+similar way that the function \texttt{asctime} of the \texttt{C}
+standard library, for example:
+\begin{verbatim}
+Wed Jan 10 19:15:49 2007
+\end{verbatim}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{t}: ] Type \texttt{tm}. A Type \texttt{tm} data type
+  containing the date and time.
+\end{description}
+
+\subsection{Output}
+
+Character (len=24). A 24 length character string with the format
+\texttt{Www Mmm dd hh:mm:ss yyyy}, where \texttt{Www} is the weekday,
+\texttt{Mmm} the month in letters, \texttt{dd} the day of the month,
+\texttt{hh:mm:ss} the time, and \texttt{yyyy} the year. 
+
+\subsection{Example}
+
+A small program that prints the current time.
+
+\begin{verbatim}
+Program Test
+
+  USE NumTypes
+  USE Time
+
+
+  Write(*,'(1A)')asctime(gettime())
+
+
+  Stop
+End Program Test
+\end{verbatim}
+
+\section{Function \texttt{Day\_of\_Week(Day, Month, Year)}}
+\index{Day_of_the_week@Function \texttt{Day\_of\_Week(Day, Month, Year)}}
+
+\subsection{Description}
+
+The function \texttt{Day\_of\_Week(Day, Month, Year)}, returns the
+day of the week since sunday (sunday is 0), of the date that
+correspond to the input \texttt{Day, Month, Year}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Day}: ] Integer. The day of the month [1-31].
+\item[\texttt{Month}: ] Integer. The month of the year [0-11].
+\item[\texttt{Year}: ] Integer. The year.
+\end{description}
+
+\subsection{Output}
+
+Integer. The day of the week since sunday, thus a number between 0 and
+6, with 0 corresponding to sunday.
+
+\subsection{Example}
+
+A small program that prints the date and time of the first of
+january of 1900.
+
+\begin{verbatim}
+
+Program Test
+
+  USE NumTypes
+  USE Time
+
+  Type (tm) :: Oneday
+
+  Oneday%hour = 12
+  Oneday%min  = 0
+  OneDay%sec  = 0
+  OneDay%mday = 1
+  OneDay%mon  = 0
+  OneDay%year = 1900
+
+  OneDay%wday = Day_of_Week(Oneday%mday, Oneday%mon, Oneday%year)
+
+  Write(*,*)asctime(Oneday)
+
+
+  Stop
+End Program Test
+\end{verbatim}
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 

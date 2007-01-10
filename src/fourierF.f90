@@ -29,7 +29,7 @@ MODULE FourierF
   USE Constants, ONLY: PI => PI_DP, DPI => TWOPI_DP, UnitImag_DPC
   USE Error
 
-  Integer, Parameter :: MaxTerm = 12
+  Integer, Parameter :: MaxTerm = 20
 
 
   Type Fourier_Serie
