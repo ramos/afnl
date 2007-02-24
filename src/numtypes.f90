@@ -31,6 +31,8 @@ MODULE NumTypes
 ! *
 ! ***************************************************
 
+  IMPLICIT NONE
+
   ! Here we define our Single Precision (SP)
   ! and Double Precision (DP) data types, for
   ! both Real and Complex variables.

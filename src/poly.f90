@@ -30,6 +30,7 @@ MODULE Polynomial
   USE NumTypes
   USE Error
 
+  IMPLICIT NONE
 
   Type Pol
      Real (kind=DP), Pointer :: Coef(:) => Null()
@@ -54,7 +55,7 @@ MODULE Polynomial
   End Interface
      
 
-  Private IgualR, IgualM, IgualP, SumaP, RestaP, MultP, MultCl, MultCr
+  Private IgualM, IgualP, SumaP, RestaP, MultP, MultCl, MultCr
 
 
 CONTAINS
@@ -141,6 +142,7 @@ CONTAINS
     Type (Pol), Intent (in) :: Pol1, Pol2
 
     Type (Pol) :: PP1, PP2 ! Local copies of the input poly
+    Integer :: I1, I2
 
     I1 = Pol1%dg
     CALL Init(PP1, I1)
@@ -175,6 +177,7 @@ CONTAINS
     Type (Pol), Intent (in) :: Pol1, Pol2
 
     Type (Pol) :: PP1, PP2 ! Local copies of the input poly
+    Integer :: I1, I2
 
     I1 = Pol1%dg
     CALL Init(PP1, I1)
@@ -208,6 +211,7 @@ CONTAINS
     Type (Pol), Intent (in) :: Pol1, Pol2
 
     Type (Pol) :: PP1, PP2 ! Local copies of the input poly
+    Integer :: I, J, Igrado1, Igrado2
 
     Igrado1 = Pol1%dg
     CALL Init(PP1, Igrado1)
@@ -242,6 +246,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: C
 
     Type (Pol) :: PP2
+    Integer :: Igrado2
 
     Igrado2 = Pol2%dg
     CALL Init(PP2, Igrado2)
@@ -267,6 +272,7 @@ CONTAINS
     Real (kind=DP), Intent (in)  :: C
 
     Type (Pol) :: PP2
+    Integer :: Igrado2
 
     Igrado2 = Pol2%dg
     CALL Init(PP2, Igrado2)
@@ -291,6 +297,8 @@ CONTAINS
     Type (Pol), Intent (in) :: Polin
     Real (kind=DP), Intent (in) :: X
 
+    Integer :: I
+
     Value = Polin%Coef(Polin%dg)*X
     Do I = Polin%dg-1, 1, -1
        Value = (Value + Polin%Coef(I))*X
@@ -309,6 +317,8 @@ CONTAINS
 !  *********************************************
 
     Type (Pol), Intent (in) :: P
+
+    Integer :: I
 
     CALL Init(Deriv, P%dg-1)
     
@@ -331,6 +341,7 @@ CONTAINS
     Type (Pol), Intent (in) :: P
     Real (kind=DP), Optional :: C
 
+    Integer :: I
 
     CALL Init(Integra, P%dg + 1)
 
@@ -360,7 +371,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: X(:), Y(:), Xo
 
     Real (kind=DP) :: a(Size(X),Size(X))
-
+    Integer :: I, J, Npoints
 
     Npoints = Size(X)
     a = 0.0_DP 
@@ -399,6 +410,7 @@ CONTAINS
     
     Type (Pol) :: Base, Mul, P
     Real (kind=DP) :: Coef(Size(X)), a(Size(X), Size(X))
+    Integer :: I, J
 
     CALL Init(Interpol, Size(X)-1)
     CALL Init(Base,0)
@@ -444,7 +456,7 @@ CONTAINS
 
     Real (kind=DP) :: M(2:Size(X)-1,2:Size(X)-1), Ypp(Size(X)), a, &
          & b, c, d, h, hm
-    
+    Integer :: Npt, I
 
     Npt = Size(X)
 

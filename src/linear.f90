@@ -30,6 +30,7 @@ MODULE Linear
   USE NumTypes
   USE Error
 
+  IMPLICIT NONE
 
   Interface Pivoting
      Module Procedure Pivoting_SP, Pivoting_DP
@@ -66,7 +67,7 @@ CONTAINS
     Integer, Intent (out) :: Ipiv(:), Idet
 
     Real (kind=SP) :: Rval(Size(M,2))
-    Integer :: Ipos(1), Kval
+    Integer :: Ipos(1), Kval, I
 
     ! Set  initial Idet, Ipiv
     Idet = 1
@@ -103,6 +104,7 @@ CONTAINS
     Real (kind=SP), Intent (inout) :: M(:,:)
     Integer, Intent (out) :: Ipiv(:), Idet
 
+    Integer :: I, J, Idim
 
     Idim = Size(M,1)
     ! First make pivoting
@@ -146,7 +148,7 @@ CONTAINS
     Real (kind=SP), Intent (inout) :: M(:,:), b(:)
 
     Real (kind=SP) :: bcp(Size(M,1))
-    Integer :: Ipiv(Size(M,1)), Id, Idim
+    Integer :: Ipiv(Size(M,1)), Id, Idim, I
     
 
     Idim = Size(M,1)
@@ -184,7 +186,7 @@ CONTAINS
     Real (kind=SP), Intent (in) :: M(:,:)
     
     Real (kind=SP) :: Mcp(Size(M,1),Size(M,1))
-    Integer :: Ipiv(Size(M,1)), Id
+    Integer :: Ipiv(Size(M,1)), Id, I, J, Idim
 
     Idim = Size(M,1)
     Mcp = M
@@ -236,7 +238,7 @@ CONTAINS
     Integer, Intent (out) :: Ipiv(:), Idet
 
     Real (kind=DP) :: Rval(Size(M,2))
-    Integer :: Ipos(1), Kval
+    Integer :: Ipos(1), Kval, I
 
     ! Set  initial Idet, Ipiv
     Idet = 1
@@ -273,6 +275,7 @@ CONTAINS
     Real (kind=DP), Intent (inout) :: M(:,:)
     Integer, Intent (out) :: Ipiv(:), Idet
 
+    Integer :: I, J, Idim
 
     Idim = Size(M,1)
     ! First make pivoting
@@ -316,7 +319,7 @@ CONTAINS
     Real (kind=DP), Intent (inout) :: M(:,:), b(:)
 
     Real (kind=DP) :: bcp(Size(M,1))
-    Integer :: Ipiv(Size(M,1)), Id, Idim
+    Integer :: Ipiv(Size(M,1)), Id, Idim, I
     
 
     Idim = Size(M,1)
@@ -354,7 +357,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: M(:,:)
     
     Real (kind=DP) :: Mcp(Size(M,1),Size(M,1))
-    Integer :: Ipiv(Size(M,1)), Id
+    Integer :: Ipiv(Size(M,1)), Id, I, J, Idim
 
     Idim = Size(M,1)
     Mcp = M

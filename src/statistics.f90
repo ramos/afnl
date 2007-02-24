@@ -30,6 +30,7 @@ MODULE Statistics
   USE Error  
   USE Linear
 
+  IMPLICIT NONE
 
   Interface Mean
      Module Procedure Mean_DP, Mean_SP
@@ -292,6 +293,7 @@ CONTAINS
 !  *********************************************
 
     Real (kind=SP), Intent (in) :: X(:)
+    Integer, Intent (in) :: k
     Real (kind=SP) :: Nmed
 
     Nmed = Mean(X)
@@ -402,6 +404,7 @@ CONTAINS
     Real (kind=SP) :: ChiSqr_SP
 
     Real (kind=SP) :: Serr, Sval
+    Integer :: Nval
 
     Nval = Size(V)
     Serr = 0.0_SP
@@ -433,6 +436,7 @@ CONTAINS
     Real (kind=DP) :: ChiSqr_DP
 
     Real (kind=DP) :: Serr, Sval
+    Integer :: Nval
 
     Nval = Size(V)
     Serr = 0.0_DP
@@ -464,6 +468,8 @@ CONTAINS
     Integer, Intent (in) :: Ndiv
     Real (kind=SP), Intent (out) :: Vmin, Vmax, h
     Integer, Intent (out) :: Ntics(Ndiv)
+
+    Integer :: I, K
     
     Vmin = MinVal(Val)
     Vmax = MaxVal(Val)
@@ -491,6 +497,8 @@ CONTAINS
     Integer, Intent (in) :: Ndiv
     Real (kind=DP), Intent (out) :: Vmin, Vmax, h
     Integer, Intent (out) :: Ntics(Ndiv)
+
+    Integer :: I, K
     
     Vmin = MinVal(Val)
     Vmax = MaxVal(Val)
@@ -520,7 +528,7 @@ CONTAINS
     Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
 
     Real (kind=DP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
-    Integer :: Ipiv(Size(Coef))
+    Integer :: Ipiv(Size(Coef)), Nparm, Npoints, I, J, K, Idet
 
     Interface
        Function Func(Xx, i)
@@ -614,7 +622,7 @@ CONTAINS
     Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
     
     Real (kind=DP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
-    Integer :: Ipiv(Size(Coef))
+    Integer :: Ipiv(Size(Coef)), Nparm, Npoints, I, J, K, Idet
 
 
     Nparm = Size(Coef)
@@ -696,7 +704,7 @@ CONTAINS
     Real (kind=SP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
 
     Real (kind=SP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
-    Integer :: Ipiv(Size(Coef))
+    Integer :: Ipiv(Size(Coef)), Nparm, Npoints, I, J, K, Idet
 
     Interface
        Function Func(Xx, i)
@@ -790,7 +798,7 @@ CONTAINS
     Real (kind=SP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
     
     Real (kind=SP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
-    Integer :: Ipiv(Size(Coef))
+    Integer :: Ipiv(Size(Coef)), Nparm, Npoints, I, J, K, Idet
 
 
     Nparm = Size(Coef)
@@ -872,7 +880,7 @@ CONTAINS
     Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
 
     Real (kind=DP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
-    Integer :: Ipiv(Size(Coef))
+    Integer :: Ipiv(Size(Coef)), Nparm, Npoints, I, J, K, Idet, Ndim
 
     Interface
        Function Func(Xx, i)
@@ -968,7 +976,7 @@ CONTAINS
     Real (kind=SP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
 
     Real (kind=SP) :: Sm(Size(Coef), Size(Coef)), Kv(Size(Coef)), Fval
-    Integer :: Ipiv(Size(Coef))
+    Integer :: Ipiv(Size(Coef)), Nparm, Npoints, I, J, K, Idet, Ndim
 
     Interface
        Function Func(Xx, i)

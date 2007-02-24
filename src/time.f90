@@ -26,6 +26,8 @@ MODULE Time
   USE NumTypes
   USE Error
 
+  IMPLICIT NONE
+
   ! The year the Gregorian calendar was implemented 
   ! for more details take a look to
   ! http://en.wikipedia.org/wiki/Gregorian_calendar

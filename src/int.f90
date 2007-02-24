@@ -29,6 +29,8 @@ MODULE Integration
  
   USE NumTypes
 
+  IMPLICIT NONE
+
   ! The maximum number of iterations before
   ! Printing error msg and exit.
 
@@ -147,7 +149,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=DP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=DP) :: Val, h, X
 
     Interface 
@@ -198,6 +200,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, Old, ainf, bsup
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -256,6 +259,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, OldN, Old2N, ainf, bsup, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -321,7 +325,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=DP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=DP) :: Val, h, X
 
     Interface 
@@ -373,6 +377,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, Old, ainf, bsup
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -431,6 +436,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, OldN, Old2N, ainf, bsup, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -497,7 +503,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=DP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=DP) :: Val, h, X, a, b
 
     Interface 
@@ -548,6 +554,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, OldN, Old2N, Val, OldSum, a
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -620,7 +627,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=DP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=DP) :: Val, h, X, a
 
     Interface 
@@ -672,6 +679,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, OldN, Old2N, Val, OldSum, a
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -746,7 +754,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=DP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=DP) :: Val, h, X, b, Exp
 
     Interface 
@@ -769,7 +777,7 @@ CONTAINS
        Val = 0.0_DP
        h = b / ( 3.0_DP*Real(Ntrap, DP) )
 
-       X = a + h / 2.0_DP
+       X = h / 2.0_DP
        Do I = 1, Ntrap
           Val = Val + Func(X**Exp + aa) * X**(gamma*Exp)
           X = X + 2.0_DP*h
@@ -801,6 +809,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, OldN, Old2N, Val, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -870,7 +879,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=DP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=DP) :: Val, h, X, b, Exp
 
     Interface 
@@ -893,7 +902,7 @@ CONTAINS
        Val = 0.0_DP
        h = b / ( 3.0_DP*Real(Ntrap, DP) )
 
-       X = a + h / 2.0_DP
+       X = h / 2.0_DP
        Do I = 1, Ntrap
           Val = Val + Func(bb - X**Exp) * X**(gamma*Exp)
           X = X + 2.0_DP*h
@@ -925,6 +934,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Eps
 
     Real (kind=DP) :: Tol, OldN, Old2N, Val, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1107,7 +1117,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=SP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=SP) :: Val, h, X
 
     Interface 
@@ -1158,6 +1168,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, Old, ainf, bsup
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1216,6 +1227,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, OldN, Old2N, ainf, bsup, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1281,7 +1293,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=SP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=SP) :: Val, h, X
 
     Interface 
@@ -1333,6 +1345,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, Old, ainf, bsup
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1391,6 +1404,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, OldN, Old2N, ainf, bsup, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1457,7 +1471,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=SP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=SP) :: Val, h, X, a, b
 
     Interface 
@@ -1508,6 +1522,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, OldN, Old2N, Val, OldSum, a
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1580,7 +1595,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=SP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=SP) :: Val, h, X, a
 
     Interface 
@@ -1632,6 +1647,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, OldN, Old2N, Val, OldSum, a
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1706,7 +1722,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=SP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=SP) :: Val, h, X, b, Exp
 
     Interface 
@@ -1729,7 +1745,7 @@ CONTAINS
        Val = 0.0_SP
        h = b / ( 3.0_SP*Real(Ntrap, SP) )
 
-       X = a + h / 2.0_SP
+       X = h / 2.0_SP
        Do I = 1, Ntrap
           Val = Val + Func(X**Exp + aa) * X**(gamma*Exp)
           X = X + 2.0_SP*h
@@ -1761,6 +1777,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, OldN, Old2N, Val, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)
@@ -1830,7 +1847,7 @@ CONTAINS
     Integer, Intent (in) :: N
     Real (kind=SP), Intent (inout) :: Sum
 
-    Integer :: Ntrap
+    Integer :: Ntrap, I
     Real (kind=SP) :: Val, h, X, b, Exp
 
     Interface 
@@ -1853,7 +1870,7 @@ CONTAINS
        Val = 0.0_SP
        h = b / ( 3.0_SP*Real(Ntrap, SP) )
 
-       X = a + h / 2.0_SP
+       X = h / 2.0_SP
        Do I = 1, Ntrap
           Val = Val + Func(bb - X**Exp) * X**(gamma*Exp)
           X = X + 2.0_SP*h
@@ -1885,6 +1902,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Eps
 
     Real (kind=SP) :: Tol, OldN, Old2N, Val, OldSum
+    Integer :: I
 
     Interface 
        Function Func(X)

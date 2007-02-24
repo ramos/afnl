@@ -27,6 +27,8 @@ MODULE Constants
 
   USE NumTypes
 
+  IMPLICIT NONE
+
   ! Mathematical constants related to pi
 
   Complex (Kind=DPC), Parameter :: UNITIMAG_DPC = (0.0_DP, 1.0_DP)
@@ -85,9 +87,6 @@ MODULE Constants
   ! Other mathematical constants
   
   Real (kind=DP), Parameter :: GEULER_DP = 0.577215664901532860606512_DP
-
   Real (kind=SP), Parameter :: GEULER_SP = 0.577215664901532860606512_SP
-
-
 
 End MODULE Constants

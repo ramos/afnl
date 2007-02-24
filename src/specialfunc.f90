@@ -37,6 +37,8 @@ MODULE SpecialFunc
   USE Constants
   USE Error
 
+  IMPLICIT NONE
+
   ! Default tol
   Real (kind=DP), Parameter :: DEFTOL = 0.001_DP
 
@@ -58,7 +60,7 @@ MODULE SpecialFunc
   End Interface
 
 
-  Private DEFTOL, Theta3, ThetaChar_DPC, ThetaChar_SPC, Hermite_DP, &
+  Private DEFTOL, Theta3, ThetaChar_DPC, Hermite_DP, &
        &Hermite_SP, HermiteFunc_SP, HermiteFunc_DP, Basis_DPC, Basis_SPC
 
 CONTAINS
@@ -78,6 +80,7 @@ CONTAINS
     Real (kind=DP), Intent (In) :: X
     
     Real (kind=DP) :: Stp, Coef(6), Temp
+    Integer :: I
 
     Save Coef, Stp
     Data Coef, Stp /76.18009172947146_DP, -86.50532032941677_DP, &
@@ -119,7 +122,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: Tol
     
     Complex (kind=DPC) :: z2, ThetaOld ! Real value, with modulus.
-    
+    Integer :: k
     
     Value = (1.D0, 0.D0)
     ThetaOld = Value + 2*Tol
@@ -358,6 +361,7 @@ CONTAINS
     Real (kind=DP), Intent (out), Optional :: Dval
 
     Real (Kind=DP) :: Y0, Y1
+    Integer :: I
 
     If (n < 0) Then
        CALL Abort("Hermite_DP", "I dont know what Hn(X) with n<0 is!")
@@ -405,6 +409,7 @@ CONTAINS
     Real (kind=SP), Intent (out), Optional :: Dval
 
     Real (Kind=SP) :: Y0, Y1
+    Integer :: I
 
     If (n < 0) Then
        CALL Abort("Hermite_SP", "I dont know what Hn(X) with n<0 is!")
@@ -454,7 +459,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Prec
 
     Complex (Kind=DPC) :: OldVal, w
-    Real (Kind=DP) :: u
+    Real (Kind=DP) :: u, Tol
     Integer :: Kit
 
     If (Present(Prec)) Then
@@ -509,7 +514,7 @@ CONTAINS
     Real (kind=SP), Intent (in), Optional :: Prec
 
     Complex (Kind=SPC) :: OldVal, w
-    Real (Kind=SP) :: u
+    Real (Kind=SP) :: u, Tol
     Integer :: Kit
 
     If (Present(Prec)) Then

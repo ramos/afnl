@@ -30,6 +30,8 @@ MODULE Root
   USE NumTypes
   USE Error
   USE Constants
+
+  IMPLICIT NONE
   
   Real (kind=SP), Parameter :: DEFTOL_SP = 2.0E-2_SP
   Real (kind=DP), Parameter :: DEFTOL_DP = 2.0E-2_DP
@@ -323,7 +325,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: aout, bout
     Real (kind=DP), Intent (in), Optional :: Tolerance
 
-    Real (kind=DP) :: Err, a, b
+    Real (kind=DP) :: Err, a, b, Tol
 
     Interface
        Function F(X)
@@ -630,7 +632,7 @@ CONTAINS
     Real (kind=SP), Intent (in) :: aout, bout
     Real (kind=SP), Intent (in), Optional :: Tolerance
 
-    Real (kind=SP) :: Err, a, b
+    Real (kind=SP) :: Err, a, b, Tol
 
     Interface
        Function F(X)

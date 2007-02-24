@@ -28,6 +28,7 @@ MODULE Fourier
   USE Constants, ONLY: PI => PI_DP, DPI => TWOPI_DP, UnitImag_DPC
   USE NumTypes
 
+  IMPLICIT NONE
 
   Type Fourier_Serie
      Complex (kind=DPC), Pointer :: Coef(:) => Null()
@@ -119,7 +120,7 @@ MODULE Fourier
 
   Private PI, DPI, Add, Add_2D, Prod, Prod_2D, Equal, Equal_2D,&
        & Eval_Serie_1D, Eval_Serie_2D, Sub, Sub_2D, Prodcte, &
-       & Procte_2D, ExpS, ExpS_2D, Neg, Neg_2D, Pos, Pos_2D, &
+       & Prodcte_2D, ExpS, ExpS_2D, Neg, Neg_2D, Pos, Pos_2D, &
        & DFT_1D, DFT_2D, FFT_1D, NewExp_1D, NewExp_2D, ConjgFS_1D, &
        & ConjgFS_2D
 
@@ -160,6 +161,7 @@ CONTAINS
 ! ********************************
 
     Type (Fourier_Serie_2D), Intent (out) :: Serie
+    Integer, Intent (in) :: Nterm
 
     CALL Init_Serie(Serie, Nterm)
 
@@ -255,6 +257,8 @@ CONTAINS
 ! ********************************
 
     Type (Fourier_Serie_2D), Intent (in) :: Serie1, Serie2
+
+    Integer :: I1, I2, N1, N2, Ntot
 
     If (Serie1%Nterm > Serie2%Nterm) Then
        Ntot = Serie2%Nterm
@@ -369,6 +373,7 @@ CONTAINS
 
     Type (Fourier_Serie), Intent (in) :: Serie1, Serie2
 
+    Integer :: I, J, Ntot
 
     If (Serie1%Nterm > Serie2%Nterm) Then
        Ntot = Serie2%Nterm
@@ -405,7 +410,7 @@ CONTAINS
     Integer, Intent (in) :: Nex
 
     Integer, Parameter :: Maxcfr = 32
-    Integer :: Bin(Maxcfr), Nmax
+    Integer :: Bin(Maxcfr), Nmax, I, Ierr
     Type (Fourier_Serie), Allocatable :: Acum(:)
 
     If (Nex == 0) Then
@@ -462,7 +467,7 @@ CONTAINS
     Integer, Intent (in) :: Nex
 
     Integer, Parameter :: Maxcfr = 30
-    Integer :: Bin(Maxcfr), Nmax
+    Integer :: Bin(Maxcfr), Nmax, I
     Type (Fourier_Serie) :: Acum
 
     If (Nex == 0) Then
@@ -508,7 +513,7 @@ CONTAINS
     Integer, Intent (in) :: Nex
 
     Integer, Parameter :: Maxcfr = 30
-    Integer :: Bin(Maxcfr), Nmax
+    Integer :: Bin(Maxcfr), Nmax, I
     Type (Fourier_Serie_2D) :: Acum
 
     If (Nex == 0) Then
@@ -553,7 +558,7 @@ CONTAINS
     Integer, Intent (in) :: Nex
 
     Integer, Parameter :: Maxcfr = 32
-    Integer :: Bin(Maxcfr), Nmax
+    Integer :: Bin(Maxcfr), Nmax, I, Ierr
     Type (Fourier_Serie_2D), Allocatable :: Acum(:)
 
 !    CALL Init_Serie(ExpS, Serie%Nterm)
@@ -641,6 +646,8 @@ CONTAINS
 
     Type (Fourier_Serie), Intent (in) :: Serie
 
+    Integer :: Ierr
+
 !    If (Associated(Neg%Coef)) Deallocate(Neg%Coef)
     
     ALLOCATE(Neg%Coef(-Serie%Nterm:Serie%Nterm), STAT=Ierr)
@@ -665,6 +672,8 @@ CONTAINS
 ! ********************************
 
     Type (Fourier_Serie), Intent (in) :: Serie
+
+    Integer :: Ierr
 
 !    If (Associated(Pos%Coef)) Deallocate(Pos%Coef)
     
@@ -692,6 +701,8 @@ CONTAINS
 
     Type (Fourier_Serie_2D), Intent (in) :: Serie
 
+    Integer :: Ierr
+
 !    If (Associated(Neg%Coef)) Deallocate(Neg%Coef)
     
     ALLOCATE(Neg%Coef(-Serie%Nterm:Serie%Nterm, &
@@ -718,6 +729,8 @@ CONTAINS
 ! ********************************
 
     Type (Fourier_Serie_2D), Intent (in) :: Serie
+
+    Integer :: Ierr
 
 !    If (Associated(Pos%Coef)) Deallocate(Pos%Coef)
     
@@ -839,6 +852,8 @@ CONTAINS
     Integer, Intent (in) :: Nterm
     Type (Fourier_Serie), Intent (out) :: Serie
 
+    Integer :: I
+
     Interface
        Function Func(N1)
          USE NumTypes
@@ -870,6 +885,8 @@ CONTAINS
 
     Integer, Intent (in) :: Nterm
     Type (Fourier_Serie_2D), Intent (out) :: Serie
+
+    Integer :: I, J
 
     Interface
        Function Func(N1, N2)
@@ -904,6 +921,7 @@ CONTAINS
     Type (Fourier_Serie), Intent (in) :: Serie2
     Type (Fourier_Serie), Intent (out) :: Serie1
 
+    Integer :: Ierr
     
 !    If (Associated(Serie1%Coef)) Deallocate(Serie1%Coef)
 
@@ -931,6 +949,7 @@ CONTAINS
     Type (Fourier_Serie_2D), Intent (in) :: Serie2
     Type (Fourier_Serie_2D), Intent (out) :: Serie1
 
+    Integer :: Ierr
     
 !    If (Associated(Serie1%Coef)) Deallocate(Serie1%Coef)
 
@@ -963,6 +982,7 @@ CONTAINS
     Integer, Intent (in) :: Nespacio
     Type (Fourier_Serie), Intent (out) :: Serie
   
+    Integer :: Ierr
 
 !    If (Associated(Serie%Coef)) Deallocate(Serie%Coef)
     
@@ -991,6 +1011,7 @@ CONTAINS
     Integer, Intent (in) :: Nespacio
     Type (Fourier_Serie_2D), Intent (out) :: Serie
   
+    Integer :: Ierr
 
 !    If (Associated(Serie%Coef)) Deallocate(Serie%Coef)
     
@@ -1021,6 +1042,7 @@ CONTAINS
     Type (Fourier_Serie), Intent (in) :: Serie
     Real (kind=DP), Intent (in) :: X, Tx
 
+    Integer :: I
 
     Val = (0.0_DP, 0.0_DP)
     Do I = -Serie%Nterm, Serie%Nterm
@@ -1044,6 +1066,7 @@ CONTAINS
     Type (Fourier_Serie_2D), Intent (in) :: Serie
     Real (kind=DP), Intent (in) :: X, Y, Tx, Ty
 
+    Integer :: I, J
 
     Val = (0.0_DP, 0.0_DP)
     Do J = -Serie%Nterm, Serie%Nterm
@@ -1071,7 +1094,7 @@ CONTAINS
     Integer, Intent (in), Optional :: Isign
     
     Complex (Kind=DPC) :: Factor, Prefactor
-    Integer :: Side
+    Integer :: Side, I, J, Ntot, Nterm
 
     If (.not. Present(Isign)) Then
        Side = -1
@@ -1118,7 +1141,7 @@ CONTAINS
     
     Complex (Kind=DPC) :: Factor1, Factor2, Acum(Size(Data, 1)), &
          & PreFactor
-    Integer :: Side
+    Integer :: Side, K1, K2, N1, N2, Ntot, Nterm
 
     If (Present(Isign)) Then
        Side = Isign
@@ -1201,7 +1224,7 @@ CONTAINS
 
     Complex (kind=DPC) :: FFT(0:Size(Data)-1),&
          & Aux1(0:Size(Data)/2-1), Aux2(0:Size(Data)/2-1), Factor, FactorE
-
+    Integer :: I, Nsize, NewS
 
     Nsize = Size(Data)
     
@@ -1257,7 +1280,7 @@ CONTAINS
     Character (len=*), Intent (in) :: File 
 
     Character (len=21) :: Frmt
-
+    Integer :: N1
 
     Open (Unit = 23, File = File, Action = "WRITE")
 
@@ -1285,7 +1308,7 @@ CONTAINS
     Character (len=*), Intent (in) :: File 
 
     Character (len=21) :: Frmt
-
+    Integer :: N1, N2
 
     Open (Unit = 23, File = File, Action = "WRITE")
 
@@ -1314,6 +1337,7 @@ CONTAINS
     Type (Fourier_Serie), Intent (out) :: Serie
 
     Character (len=21) :: Frmt
+    Integer :: N1, Nterm
 
     Open (Unit = 23, File = File, Action = "READ")
 
@@ -1342,7 +1366,8 @@ CONTAINS
     Type (Fourier_Serie_2D), Intent (out) :: Serie
 
     Character (len=21) :: Frmt
-
+    Integer :: N1, N2, Nterm
+    
     Open (Unit = 23, File = File, Action = "READ")
 
     Read(23,'(I12)')Nterm
@@ -1370,6 +1395,8 @@ CONTAINS
 
     Type (Fourier_Serie), Intent (in) :: Serie
 
+    Integer :: K1
+
     CALL Init_Serie(Cserie, Serie%Nterm)
     
     Do K1 = -Serie%Nterm, Serie%Nterm
@@ -1389,6 +1416,8 @@ CONTAINS
 ! ********************************
 
     Type (Fourier_Serie_2D), Intent (in) :: Serie
+
+    Integer :: K1, K2
 
     CALL Init_Serie(Cserie, Serie%Nterm)
     

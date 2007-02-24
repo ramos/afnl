@@ -34,6 +34,7 @@ MODULE NonNumeric
   USE NumTypes
   USE Error
 
+  IMPLICIT NONE
 
   Interface Qsort
      Module Procedure Qsort_IN, Qsort_SP, Qsort_DP
@@ -69,7 +70,7 @@ CONTAINS
     Integer, Intent (in) :: X(:), Xo
     Integer, Intent (in), Optional :: Iin
 
-    Integer :: Nmin, Nmax, Nnew
+    Integer :: Nmin, Nmax, Nnew, Isize
 
 
     ISize = Size(X)
@@ -115,7 +116,7 @@ CONTAINS
     Real (kind=SP), Intent (in) :: X(:), Xo
     Integer, Intent (in), Optional :: Iin
 
-    Integer :: Nmin, Nmax, Nnew
+    Integer :: Nmin, Nmax, Nnew, Isize
 
 
     ISize = Size(X)
@@ -161,7 +162,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: X(:), Xo
     Integer, Intent (in), Optional :: Iin
 
-    Integer :: Nmin, Nmax, Nnew
+    Integer :: Nmin, Nmax, Nnew, Isize
 
 
     ISize = Size(X)
@@ -207,7 +208,8 @@ CONTAINS
     Integer, Intent (out), Optional :: Ipt(:)
     
     Integer :: Xcp(Size(X))
-    Integer :: Temp, Ip(Size(X)), Ipp(Size(X)), Itemp(Size(X))
+    Integer :: Temp, Ip(Size(X)), Ipp(Size(X)), Itemp(Size(X)), I,&
+         & Isize, Kmin, Kmax
     
 
 
@@ -271,7 +273,8 @@ CONTAINS
     Integer, Intent (out), Optional :: Ipt(:)
     
     Real (kind=SP) :: Xcp(Size(X)), Temp
-    Integer :: Ip(Size(X)), Ipp(Size(X)), Itemp(Size(X))
+    Integer :: Ip(Size(X)), Ipp(Size(X)), Itemp(Size(X)), Isize, &
+         & Kmin, Kmax, I
     
 
     Isize = Size(X)
@@ -350,7 +353,8 @@ CONTAINS
     Integer, Intent (out), Optional :: Ipt(:)
     
     Real (kind=DP) :: Xcp(Size(X)), Temp
-    Integer :: Ip(Size(X)), Ipp(Size(X)), Itemp(Size(X))
+    Integer :: Ip(Size(X)), Ipp(Size(X)), Itemp(Size(X)), I, Isize,&
+         & Kmin, Kmax
     
 
     Isize = Size(X)

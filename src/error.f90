@@ -27,6 +27,8 @@ MODULE Error
 ! *
 ! ***************************************************
 
+  IMPLICIT NONE
+
   Integer, Parameter :: stderr = 0
 
 CONTAINS
