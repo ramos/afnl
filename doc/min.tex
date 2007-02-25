@@ -1,0 +1,129 @@
+
+This is the documentation of the MODULE \texttt{Optimization}, a set
+of routines to Optimise (maximise or minimise) functions of one or
+several variables. Lot of work is needed to improve this module
+(conjugate gradient, simplex, etc...).
+
+\section{Function \texttt{Step(X, FStep, Tol) }}
+\index{step@Function \texttt{Step(X, FStep, Tol)}}
+
+\subsection{Description}
+
+The function \texttt{Step(X, FStep, Tol)} returns the position of the
+minimum of the Function \texttt{Fstep} with an optional precision
+\texttt{Tol}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X}:] Real single or double precision. An initial guess
+  of the position of the minimum.
+\item[\texttt{Fstep}:]  The function that we want to minimise. It can
+  be a function of one or several variables. In the case of one
+  variable functions an interface like the following should be
+  declared
+\begin{verbatim}
+  Interface
+     Function Fstep(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo
+       Real (kind=DP) :: Fstep
+     End Function Fstep
+  End Interface
+\end{verbatim}
+  In the case of a function of several variables, the interface block
+  should be like the following
+\begin{verbatim}
+  Interface
+     Function Fstep(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo(:)
+       Real (kind=DP) :: Fstep
+     End Function Fstep
+  End Interface
+\end{verbatim}
+
+\item[\texttt{Tol}:] Real single or double precision. As estimation of
+  the precision of the result. The dault value is $10^{-3}$.
+  
+\end{description}
+
+\subsection{Output}
+
+Real Single or double precision (same as the output). The position of
+a minimum of \texttt{Fstep}.
+
+\subsection{Example}
+
+\begin{verbatim}
+Program TestMin
+
+  USE NumTypes
+  USE Optimization
+
+  Integer, Parameter :: Ndim = 4
+  Real (kind=DP) :: XoM(Ndim), Xmin(Ndim)
+  
+  Interface
+     Function FstepM(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo(:)
+       Real (kind=DP) :: FstepM
+     End Function FstepM
+  End Interface
+  
+
+  ! Initial guess of the position of the minimum
+  XoM(1) = 1.373_DP
+  XoM(2) = 1.373_DP
+  XoM(3) = 1.373_DP
+  XoM(4) = 1.373_DP
+  
+
+  Write(*,*)'Initial Position: '
+  Do I = 1, Ndim
+     Write(*,'(1A,1I4,1A,1ES33.25)')'Variable ', I, " : ", XoM(I)
+  End Do
+  
+  Xmin = Step(XoM, FstepM, 1.0E-7_DP)
+  Write(*,*)
+  Write(*,*)'Position of the minimum: '
+  Do I = 1, Ndim
+     Write(*,'(1A,1I4,1A,1ES33.25)')'Variable ', I, " : ", Xmin(I)
+  End Do
+
+  Stop
+End Program TestMin
+
+! *******************************
+! *
+Function FstepM(Xo)
+! *
+! *******************************
+
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: Xo(:)
+  Real (kind=DP) :: FstepM
+
+  
+  FstepM = (Xo(1)-1.0_DP)**2 + &
+       & (Xo(2)-2.0_DP)**2 + &
+       & (Xo(3)+3.0_DP)**4 + &
+       & (Xo(4)-4.0_DP)**8 
+
+
+  Return
+End Function FstepM
+\end{verbatim}
+
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
+
