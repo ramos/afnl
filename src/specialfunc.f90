@@ -121,7 +121,7 @@ CONTAINS
     Complex (kind=DPC), Intent (in) :: z, tau
     Real (kind=DP), Intent (in) :: Tol
     
-    Complex (kind=DPC) :: z2, ThetaOld ! Real value, with modulus.
+    Complex (kind=DPC) :: ThetaOld ! Real value, with modulus.
     Integer :: k
     
     Value = (1.D0, 0.D0)
@@ -244,7 +244,7 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Prec
     
     Real (kind=DP) :: Tol
-    Complex (kind=DPC) :: zmod, Factor ! z with the necassary mod op.
+    Complex (kind=DPC) :: zmod ! z with the necassary mod op.
     
     If (Present(Prec)) Then
        Tol = Prec

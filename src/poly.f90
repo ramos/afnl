@@ -408,8 +408,8 @@ CONTAINS
 
     Real (kind=DP), Intent (in) :: X(:), Y(:)
     
-    Type (Pol) :: Base, Mul, P
-    Real (kind=DP) :: Coef(Size(X)), a(Size(X), Size(X))
+    Type (Pol) :: Base, Mul
+    Real (kind=DP) :: a(Size(X), Size(X))
     Integer :: I, J
 
     CALL Init(Interpol, Size(X)-1)

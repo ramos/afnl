@@ -532,7 +532,7 @@ CONTAINS
           X = X + h
        End Do
 
-       Sum = ( Sum + (b-a)*Val/Real(Ntrap, DP) ) / 3.0_DP
+       Sum = ( Sum + (b-aa)*Val/Real(Ntrap, DP) ) / 3.0_DP
     End If
     
 
@@ -840,7 +840,7 @@ CONTAINS
        SimpsonSingDw_DP = (9.0_DP * Old2N - OldN) / 8.0_DP
 
        If (Abs(SimpsonSingDw_DP - OldSum) < Tol) Then
-          SimpsonSingDw_DP = SimpsonSingDw_DP + Val
+          SimpsonSingDw_DP = SimpsonSingDw_DP 
           Return
        End If
        
@@ -965,7 +965,7 @@ CONTAINS
        SimpsonSingUp_DP = (9.0_DP * Old2N - OldN) / 8.0_DP
 
        If (Abs(SimpsonSingUp_DP - OldSum) < Tol) Then
-          SimpsonSingUp_DP = SimpsonSingUp_DP + Val
+          SimpsonSingUp_DP = SimpsonSingUp_DP 
           Return
        End If
        
@@ -1004,9 +1004,6 @@ CONTAINS
     Real (kind=DP), Intent (in), Optional :: Tol
     Real (kind=DP) :: Finales(Size(Iniciales))
     Real (kind=DP) :: R, F, h
-    Real (kind=DP) :: R1(Size(Iniciales)), R2(Size(Iniciales)), &
-         & R3(Size(Iniciales)), R4(Size(Iniciales)), &
-         & Y1(Size(Iniciales)), Aux(Size(Iniciales))
 
     Interface
        Function Feuler(X, Y) Result (Func)
@@ -1026,8 +1023,8 @@ CONTAINS
     R = Xo
     Finales = Iniciales
     Do While (R .lt. Xfin)
-       Finales = Finales + Tol * Feuler(R, Finales)
-       R = R + Tol
+       Finales = Finales + h * Feuler(R, Finales)
+       R = R + h
     End Do
 
     Return
