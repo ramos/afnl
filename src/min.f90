@@ -36,7 +36,16 @@ MODULE Optimization
      Module Procedure Step_DP, MultiStep_DP, Step_SP, MultiStep_SP
   End Interface
 
-  Private Step_DP, MultiStep_DP, Step_SP, MultiStep_SP
+  Interface MaxPosition
+     Module Procedure MaxPosition_2D_DP!, MaxPosition_2D_SP
+  End Interface
+
+  Interface InterpolMinMax
+     Module Procedure InterpolMinMax_2D_DP
+  End Interface
+
+  Private Step_DP, MultiStep_DP, Step_SP, MultiStep_SP, &
+       & MaxPosition_2D_DP!, MaxPosition_2D_SP, InterpolMinMax_2D_DP
 
 CONTAINS
 
@@ -245,6 +254,111 @@ CONTAINS
     Return
   End Function MultiStep_SP
 
+! **********************************************
+! *                                            *
+  Integer Function MaxPosition_2D_DP(Z, IposX, IposY) 
+! *                                            *
+! **********************************************
+! * Locates the number of maximums and its 
+! * positions of the data Z(:,:).
+! **********************************************
+
+    Real (kind=DP), Intent (in) :: Z(:,:)
+    Integer, Intent (out) :: IposX(:), IposY(:)
+
+    Real (kind=DP) :: Val, Zcp(0:Size(Z,1)+1, 0:Size(Z,2)+1)
+    Integer :: I, J, Ipos(2)
+
+    MaxPosition_2D_DP = 0
+    
+    Zcp(1:Size(Z,1),1:Size(Z,2)) = Z
+    Zcp(0,1:Size(Z,2)) = Z(Size(Z,1),:)
+    Zcp(Size(Z,1)+1,1:Size(Z,2)) = Z(1,:)
+    Zcp(1:Size(Z,1),0) = Z(:,Size(Z,2))
+    Zcp(1:Size(Z,1),Size(Z,2)+1) = Z(:,1)
+    
+    Zcp(0,0) = Z(Size(Z,1),Size(Z,2))
+    Zcp(0,Size(Z,2)+1) = Z(Size(Z,1),1)
+    Zcp(Size(Z,1)+1,0) = Z(1,Size(Z,2))
+    Zcp(Size(Z,1)+1,Size(Z,2)+1) = Z(1,1)
+    
+    Do I = 1, Size(Z,1)
+       Do J = 1, Size(Z,2)
+          Ipos = MaxLoc(Z(I-1:I+1,J-1:J+1))
+          If ( (Ipos(1) == 2).and.(Ipos(2) == 2) ) Then
+             MaxPosition_2D_DP = MaxPosition_2D_DP + 1
+             IposX(MaxPosition_2D_DP) = I
+             IposY(MaxPosition_2D_DP) = J
+          End If
+       End Do
+    End Do
+
+    Return
+  End Function MaxPosition_2D_DP
+
+! **********************************************
+! *                                            *
+  Function InterpolMinMax_2D_DP(X, Y, Z) Result (PosMax) 
+! *                                            *
+! **********************************************
+! * Locates the number of maximums and its 
+! * positions of the data Z(:,:).
+! **********************************************
+
+    USE Linear
+    
+    Real (kind=DP), Intent (in) :: X(:), Y(:), Z(:,:)
+    Real (kind=DP) :: PosMax(2)
+
+    Integer :: I, J
+    Real (kind=DP) :: Ma(5,5), b(5)
+    
+    
+    Ma(1,1) = X(1)**2
+    Ma(1,2) = X(1)
+    Ma(1,3) = Y(2)**2
+    Ma(1,4) = Y(2)
+    Ma(1,5) = 1.0_DP
+    b(1) = Z(1,2)
+
+    Ma(2,1) = X(2)**2
+    Ma(2,2) = X(2)
+    Ma(2,3) = Y(3)**2
+    Ma(2,4) = Y(3)
+    Ma(2,5) = 1.0_DP
+    b(2) = Z(2,3)
+
+    Ma(3,1) = X(2)**2
+    Ma(3,2) = X(2)
+    Ma(3,3) = Y(2)**2
+    Ma(3,4) = Y(2)
+    Ma(3,5) = 1.0_DP
+    b(3) = Z(2,2)
+
+    Ma(4,1) = X(2)**2
+    Ma(4,2) = X(2)
+    Ma(4,3) = Y(1)**2
+    Ma(4,4) = Y(1)
+    Ma(4,5) = 1.0_DP
+    b(4) = Z(2,1)
+
+    Ma(5,1) = X(3)**2
+    Ma(5,2) = X(3)
+    Ma(5,3) = Y(2)**2
+    Ma(5,4) = Y(2)
+    Ma(5,5) = 1.0_DP
+    b(5) = Z(3,2)
+
+!    Do I = 1, 5
+!       Write(stderr,'(100ES10.2)')(Ma(I,J), J = 1, 5)
+!    End Do
+
+    CALL LUSolve(Ma, b)
+    PosMax(1) = -b(2)/(2.0_DP*b(1))
+    PosMax(2) = -b(4)/(2.0_DP*b(3))
+    
+    Return
+  End Function InterpolMinMax_2D_DP
 
 
 End MODULE Optimization

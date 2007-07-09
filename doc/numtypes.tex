@@ -29,17 +29,28 @@ Here we will define \texttt{A} as a single precision real, \texttt{D}
 as a double precision real, \texttt{Ac} as a single precision complex,
 and \texttt{Dc} as a double precision complex.
 
-\begin{verbatim}
-   .
-   .
+
+\begin{lstlisting}[emph=DP,moreemph=SP,moreemph=DPC,moreemph=SPC,emphstyle=\color{blue},frame=trBL,caption=Definition
+  of data types.,
+  label=Numtypes]
+   Program Types_of_Data
    USE NumTypes
-   .
-   .
+
+
    Real (kind=SP) :: A
    Real (kind=DP) :: D
    Complex (kind=SPC) :: Ac
    Complex (kind=DPC) :: Dc
-   .
-   .
-\end{verbatim}
+
+   Write(*,*)Kind(A), Kind(Aa)
+
+
+   End Program Types_of_Data
+\end{lstlisting}
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
 

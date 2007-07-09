@@ -57,7 +57,11 @@ a minimum of \texttt{Fstep}.
 
 \subsection{Example}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Step,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Minimising a function.,
+                   label=step]
 Program TestMin
 
   USE NumTypes
@@ -118,7 +122,79 @@ Function FstepM(Xo)
 
   Return
 End Function FstepM
-\end{verbatim}
+\end{lstlisting}
+
+\section{Function \texttt{MaxPosition(FVal, IpX, IpY) }}
+\index{maxposition@Function \texttt{MaxPosition(FVal, IpX, IpY)}}
+
+\subsection{Description}
+
+Given a two dimensional array of values \texttt{FVal(:,:)}, the
+function \texttt{MaxPosition(FVal, IpX, IpY)} returns the number of
+local maxima of \texttt{FVal(:,:)} and its positions in the one
+dimensional arrays \texttt{IpX(:)}and \texttt{IpY(:)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Fval(:,:)}:] Real single or double precision. The values
+  of a function in a two dimensional grid of points.
+
+\item[\texttt{IpX(:)}:] Integer. A one dimensional array that contains
+  the value of $X$ for the positions of the maxima.
+
+\item[\texttt{IpY(:)}:] Integer. A one dimensional array that contains
+  the value of $Y$ for the positions of the maxima.
+
+\end{description}
+
+\subsection{Output}
+
+Integer. The number of local maxima of the input.
+\texttt{FVal(:,:)}. 
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=MaxPosition,emphstyle=\color{blue},frame=trBL,caption=Example
+  of the usage of the routine \texttt{MaxPosition}., label=MaxPosition]
+Program MaxLoc
+
+  USE NumTypes
+  USE Constants 
+  USE Optimization
+  USE Error
+  
+  IMPLICIT NONE
+
+  Integer :: I, J, IsX, IsY, Nmax
+  Character (len=200) :: Filename
+  Real (kind=DP) :: DnullX, DnullY
+  Real (kind=DP), Allocatable :: F(:,:)
+  Integer ::  IpX(10), IpY(10)
+
+  Write(stderr,*)"SizeX, SizeY, Filename"
+  Read(*,*)IsX, IsY, Filename
+
+  Allocate(F(IsX,IsY))
+  Open (Unit=666, File=Trim(Filename), Action="READ")
+  Do I = 1, IsX
+     Do J = 1, IsY
+        Read(666,*)DnullX, DnullY, F(I,J)
+        Write(stderr,*)DnullX, DnullY, F(I,J)
+     End Do
+  End Do
+  Close(666)
+
+  Nmax = MaxPosition(F, IpX, IpY)
+  Write(*,*)"# Number of maxima: ", Nmax
+  Write(*,*)"# Positions of the maxima: "
+  Do I = 1, Nmax
+     Write(*,*)IpX(I), IpY(I)
+  End Do
+
+  Stop
+End Program MaxLoc
+\end{lstlisting}
 
 
 

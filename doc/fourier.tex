@@ -23,9 +23,13 @@ number of modes.
 
 \subsection{Examples}
 
-A small example showing how to define a polynomial.
+A small example showing how to define a Fourier serie.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Defining a Fourier serie.,
+                   label=typef]
 Program TestFourier
 
   USE NumTypes
@@ -36,7 +40,7 @@ Program TestFourier
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{\texttt{Type Fourier\_Serie\_2D}}
 
@@ -59,7 +63,11 @@ modes, and the number of modes.
 
 A small example showing how to define a polynomial.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Defining a two-dimensional Fourier serie.,
+                   label=typef2]
 Program TestFourier
 
   USE NumTypes
@@ -70,7 +78,8 @@ Program TestFourier
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
+
 
 \section{Assignment}
 
@@ -85,7 +94,11 @@ This example uses the \texttt{Init\_Serie} subroutine. For details of
 the usage of this function look at the section~(\ref{sc:InitSerie}),
 page~(\pageref{sc:InitSerie}). 
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Assigning Fourier series.,
+                   label=assignf]
 Program TestFourier
 
   USE NumTypes
@@ -107,7 +120,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{+}}
 
@@ -123,7 +136,11 @@ This example uses the \texttt{Init\_Serie} subroutine. For details of
 the usage of this function look at the section~(\ref{sc:InitSerie}),
 page~(\pageref{sc:InitSerie}). 
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Adding Fourier series.,
+                   label=addf]
 Program TestFourier
 
   USE NumTypes
@@ -150,7 +167,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{-}}
 
@@ -162,7 +179,11 @@ short Fourier Series are zero.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Subtracting Fourier series.,
+                   label=subf]
 Program TestFourier
 
   USE NumTypes
@@ -186,20 +207,24 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{*}}
 
 \subsection{Description}
 
-You can naturally multiply one or two dimensional Fourier series, in
+You can naturally multiply one or two dimensional Fourier series, in 
 which case the convolution of the Fourier Modes is performed. If they
 have different sizes, it is assumed that the non defined modes of the
 short Fourier Series are zero.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the convolution of Fourier series.,
+                   label=prodf]
 Program TestFourier
 
   USE NumTypes
@@ -222,7 +247,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{**}}
 
@@ -235,7 +260,11 @@ times.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=''Exponentiating'' Fourier series.,
+                   label=expf]
 Program TestFourier
 
   USE NumTypes
@@ -265,7 +294,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Subroutine \texttt{Init\_Serie(FS,Ns)}}
@@ -292,7 +321,11 @@ Any of the examples of some of the previous sections are aldo good
 examples of the use of the \texttt{Init\_Serie} subroutine. Here we
 simply repeat one of them.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Init_Serie,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Initialising a Fourier series.,
+                   label=init_serie]
 Program TestFourier
 
   USE NumTypes
@@ -315,7 +348,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Eval\_Serie(FS, X, [Y], Tx, [Ty]) }}
 \index{Eval@Function \texttt{Eval\_Serie(FS, X, [Y], Tx, [Ty]) }}
@@ -345,7 +378,11 @@ in \texttt{FS} at the point \texttt{(X[,Y])}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Eval_Serie,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Evaluating a Fourier series at a point.,
+                   label=eval_serie]
 Program TestFourier
 
   USE NumTypes
@@ -369,12 +406,12 @@ Program TestFourier
   FS3 = FS1*FS2
 
   Write(*,'(2ES33.25)')Eval_Serie(FS1,0.12_DP,1.0_DP) * &
-       & Eval_Serie(FS2,0.12_DP,1.0_DP)
+                     & Eval_Serie(FS2,0.12_DP,1.0_DP)
   Write(*,'(2ES33.25)')Eval_Serie(FS3,0.12_DP,1.0_DP)
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Unit(FS, Ns)}}
@@ -396,7 +433,11 @@ Fourier series and sets the zero mode equal to 1.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Unit,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining a constant Fourier series.,
+                   label=unit]
 Program TestFourier
 
   USE NumTypes
@@ -424,7 +465,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{DFT(Data, Is)}}
@@ -467,7 +508,12 @@ dimensional.
 
 This example compute the discrete Fourier transform of $f(x_i) =
 \sin(x_i)$. 
-\begin{verbatim}
+
+\begin{lstlisting}[emph=DFT,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Discrete Fourier Transform.,
+                   label=dft]
 Program TestFourier
 
   USE NumTypes
@@ -492,7 +538,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Conjg(FS)}}
 \index{Conjg@Function \texttt{Conjg(FS)}}
@@ -519,7 +565,11 @@ Type \texttt{Fourier\_Serie} if \texttt{FS} is of type
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Conjg,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Conjugate Fourier Series.,
+                   label=conjg]
 Program TestFourier
 
   USE NumTypes
@@ -544,7 +594,7 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{Save\_Serie(FS, File)}}
 \index{Save@Subroutine \texttt{Save\_Serie(FS, File)}}
@@ -565,7 +615,11 @@ Write the Fourier series \texttt{FS} to the file \texttt{File}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Save_Serie,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Saving a Fourier Serie in a file.,
+                   label=save_serie]
 Program TestFourier
 
   USE NumTypes
@@ -588,7 +642,8 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
+
 
 \section{Subroutine \texttt{Read\_Serie(FS, File)}}
 \index{Read@Subroutine \texttt{Read\_Serie(FS, File)}}
@@ -609,7 +664,11 @@ Reads the Fourier series \texttt{FS} stored in the file \texttt{File}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Read_Serie,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Reading a Fourier serie from a file.,
+                   label=read_serie]
 Program TestFourier
 
   USE NumTypes
@@ -636,5 +695,10 @@ Program TestFourier
 
   Stop
 End Program TestFourier
-\end{verbatim}
+\end{lstlisting}
 
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 

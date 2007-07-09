@@ -11,16 +11,19 @@ of \texttt{FORTRAN 90} routines that allow to write errors.
 This variable has the unit number of standard error.
 
 \subsubsection{Examples}
-
-\begin{verbatim}
+\begin{lstlisting}[emph=stderr,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Standard error unit.,
+                   label=stderr]
 Program Test
   USE Error
 
-  Write(stderr,*)'This is printed in standard error.'
+  Write(stderr,*)''This is printed in standard error.''
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Subroutine \texttt{perror([routine], msg)}}
@@ -45,7 +48,11 @@ where the program has crashed.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=perror,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Print error message.,
+                   label=perror]
 Program Test
   USE Error
 
@@ -55,7 +62,7 @@ Program Test
   Read(*,*)N1,N2
 
   If (N2 == 0) Then
-    CALL Perror('Test', 'Division by cero. I will print the product of the two numbers')
+    CALL Perror('Test', 'Division by cero. See the product: ')
     Write(*,*)N1*N2
   Else 
     Write(*,*)N1/N2
@@ -63,7 +70,7 @@ Program Test
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{abort([routine], msg)}}
 \index{abort@Subroutine \texttt{abort([routine], msg)}}
@@ -87,7 +94,11 @@ used as the routine where the program has crashed.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=abort,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Print error message and stop a program.,
+                   label=abort]
 Program Test
   USE Error
 
@@ -104,5 +115,10 @@ Program Test
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 

@@ -25,7 +25,11 @@ degree.
 
 A small example showing how to define a polynomial.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Defining a polynomial.,
+                   label=typepol]
 Program TestPoly
 
   USE NumTypes
@@ -36,7 +40,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Assignment}
 
@@ -48,7 +52,11 @@ array of real numbers, that are interpreted as the coefficients.
 \subsection{Examples}
 
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Assigning polynomials.,
+                   label=assignpol]
 Program TestPoly
 
   USE NumTypes
@@ -75,7 +83,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{+}}
 
@@ -85,7 +93,11 @@ You can naturally sum \texttt{Pol} data types.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Adding polynomials.,
+                   label=pluspol]
 Program TestPoly
 
   USE NumTypes
@@ -121,7 +133,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{-}}
 
@@ -131,7 +143,11 @@ You can subtract \texttt{Pol} data types.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Substracting polynomials.,
+                   label=minuspol]
 Program TestPoly
 
   USE NumTypes
@@ -167,7 +183,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Operator \texttt{*}}
 
@@ -178,7 +194,11 @@ data types with double precision real numbers.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the product of two polynomials.,
+                   label=prodpol]
 Program TestPoly
 
   USE NumTypes
@@ -214,7 +234,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Subroutine \texttt{Init(P, Dgr)}}
@@ -234,7 +254,11 @@ Allocate memory space for the coefficients of a \texttt{Pol} type.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Init,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Initialising a polynomial data type.,
+                   label=initpol]
 Program TestPoly
 
   USE NumTypes
@@ -258,7 +282,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Degree(P)}}
 \index{Degree@Function \texttt{Degree(P)}}
@@ -280,7 +304,11 @@ Integer. The degree of the polynomial \texttt{P}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Degree,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Returns the degree of a polynomial.,
+                   label=degree]
 Program TestPoly
 
   USE NumTypes
@@ -317,7 +345,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Value(P, X)}}
@@ -342,7 +370,12 @@ point \texttt{X}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Value,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computes the values of a polynomial at some
+                   points.,
+                   label=valuepol]
 Program TestPoly
 
   USE NumTypes
@@ -382,7 +415,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Deriv(P)}}
@@ -405,7 +438,11 @@ Type \texttt{Pol}. Another polynomial: the derivative of \texttt{P}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Deriv,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the derivative of a polynomial.,
+                   label=derivpol]
 Program TestPoly
 
   USE NumTypes
@@ -445,7 +482,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Integra(P, Cte)}}
 \index{Integra@Function \texttt{Integra(P, Cte)}}
@@ -470,7 +507,11 @@ Type \texttt{Pol}. Another polynomial: the integral of \texttt{P}.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Integra,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the integral of a polynomial.,
+                   label=integrapol]
 Program TestPoly
 
   USE NumTypes
@@ -510,7 +551,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{InterpolValue(X, Y, Xo)}}
 \index{Interpol@Function \texttt{InterpolValue(X, Y, Xo)}}
@@ -538,7 +579,11 @@ Real double precision. The value of the interpolation polynomial in
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=InterpolValue,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Compute values of the Interpolation polynomial.,
+                   label=interpolvalue]
 Program TestPoly
 
   USE NumTypes
@@ -564,7 +609,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Interpol(X, Y)}}
 \index{Interpol@Function \texttt{Interpol(X, Y)}}
@@ -587,7 +632,11 @@ Type \texttt{Pol}. The interpolation polynomial.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Interpol,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computes the interpolation polynomial.,
+                   label=interpol]
 Program TestPoly
 
   USE NumTypes
@@ -614,7 +663,7 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{Spline(X, Y, Ypp0, YppN, Pols)}}
 \index{Spline@Subroutine \texttt{Spline(X, Y, Ypp0, YppN, Pols)}}
@@ -638,7 +687,11 @@ Compute the cubic spline interpolation polynomial that pass trough
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Spline,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computes the cubic spline interpolation polynomial.,
+                   label=spline]
 Program TestPoly
 
   USE NumTypes
@@ -671,6 +724,10 @@ Program TestPoly
 
   Stop
 End Program TestPoly
-\end{verbatim}
+\end{lstlisting}
 
 
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 

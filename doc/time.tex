@@ -28,7 +28,11 @@ hour, etc\dots
 
 A small example defining a \texttt{tm} data type.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Defining a Time data type.,
+                   label=typetm]
 Program Test
 
   USE NumTypes
@@ -46,7 +50,7 @@ Program Test
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{gettime()}}
 \index{gettime@Function \texttt{gettime()}}
@@ -69,7 +73,11 @@ time.
 
 A small program that prints the current year.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=gettime,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining the current date and time.,
+                   label=gettime]
 Program Test
 
   USE NumTypes
@@ -83,7 +91,7 @@ Program Test
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{isleap(Nyr)}}
 \index{isleap@Function \texttt{isleap(Nyr)}}
@@ -115,7 +123,11 @@ Logical.  \texttt{.true.} if \texttt{Nyr} is a leap year, and
 
 A small program that tell us if the current year is leap.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=isleap,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Are we in a leap year?.,
+                   label=isleap]
 Program Test
 
   USE NumTypes
@@ -133,7 +145,7 @@ Program Test
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{asctime(t)}}
 \index{asctime@Function \texttt{asctime(t)}}
@@ -166,7 +178,11 @@ Character (len=24). A 24 length character string with the format
 
 A small program that prints the current time.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=asctime,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Printing current date/time.,
+                   label=asctime]
 Program Test
 
   USE NumTypes
@@ -178,7 +194,7 @@ Program Test
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Day\_of\_Week(Day, Month, Year)}}
 \index{Day_of_the_week@Function \texttt{Day\_of\_Week(Day, Month, Year)}}
@@ -207,8 +223,11 @@ Integer. The day of the week since sunday, thus a number between 0 and
 A small program that prints the date and time of the first of
 january of 1900.
 
-\begin{verbatim}
-
+\begin{lstlisting}[emph=Day_Of_Week,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Day of week of the first of January 1900.,
+                   label=day_of_week]
 Program Test
 
   USE NumTypes
@@ -227,10 +246,9 @@ Program Test
 
   Write(*,*)asctime(Oneday)
 
-
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 
 % Local Variables: 

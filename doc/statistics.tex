@@ -26,7 +26,11 @@ of the values.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Mean,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Mean of a vector of numbers.,
+                   label=mean]
 Program Tests
 
   USE NumTypes
@@ -44,7 +48,7 @@ Program Tests
 
   Stop
 End Program Tests
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Var(X)}}
@@ -68,7 +72,11 @@ variance of the values.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Var,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Variance of a set of numbers.,
+                   label=var]
 Program Tests
 
   USE NumTypes
@@ -86,7 +94,7 @@ Program Tests
 
   Stop
 End Program Tests
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Stddev(X)}}
@@ -112,7 +120,11 @@ standard deviation of the values.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Stddev,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Compputing the standard deviation.,
+                   label=stddev]
 Program Tests
 
   USE NumTypes
@@ -130,7 +142,7 @@ Program Tests
 
   Stop
 End Program Tests
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Moment(X, k)}}
 \index{Moment@Function \texttt{Moment(X, k)}}
@@ -155,7 +167,12 @@ the numbers.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Moment,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the k$^{\text{\underline{th}}}$
+                   moment of a data set.,
+                   label=moment]
 Program Tests
 
   USE NumTypes
@@ -173,7 +190,7 @@ Program Tests
 
   Stop
 End Program Test
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
 \index{Normal@Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
@@ -201,7 +218,11 @@ mean will be 0, and the standard deviation 1.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Normal,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a normal distribution.,
+                   label=normal]
 Program Tests
 
   USE NumTypes
@@ -221,7 +242,7 @@ Program Tests
 
   Stop
 End Program Tests
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{Histogram(Val, Ndiv, Ntics, Vmin, Vmax,
     h)}} 
@@ -253,7 +274,11 @@ in each interval.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Histogram,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Making Histograms.,
+                   label=histogram]
 Program Tests
 
   USE NumTypes
@@ -276,7 +301,7 @@ Program Tests
 
   Stop
 End Program Tests
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{LinearReg(X, Y, Yerr, [Func], Coef, Cerr, ChisqrV)}} 
 \index{LinearReg@Subroutine \texttt{LinearReg(X, Y, Yerr, [Func], Coef, Cerr, ChisqrV)}} 
@@ -359,8 +384,11 @@ one-dimensional fittings).
 
 \subsection{Examples}
 
-\begin{verbatim}
-
+\begin{lstlisting}[emph=LinearReg,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Doing linear regressions.,
+                   label=linearreg]
 Program Tests
 
   USE NumTypes
@@ -434,5 +462,11 @@ Function Fd(X, i)
 
   Return
 End Function FD
-\end{verbatim}
+\end{lstlisting}
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
 

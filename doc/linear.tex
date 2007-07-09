@@ -28,7 +28,11 @@ value) of $M$ are in the diagonal.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Pivoting,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Pivoting data of a matrix
+                   label=pivoting]
 Program TestLinear
 
   USE NumTypes
@@ -57,7 +61,7 @@ Program TestLinear
 
   Stop
 End Program TestLinear
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Subroutine \texttt{LU(M, Ipiv, Idet)}}
@@ -109,7 +113,11 @@ $L$ and $U$ are returned \emph{overwriting} $M$.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=LU,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Making the LU decomposition.,
+                   label=lu]
 Program TestLinear
 
   USE NumTypes
@@ -165,7 +173,7 @@ Program TestLinear
 
   Stop
 End Program TestLinear
-\end{verbatim}
+\end{lstlisting}
 
 \section{Subroutine \texttt{LUsolve(M, b)}}
 \index{LUsolve@Subroutine \texttt{LUsolve(M, b)}}
@@ -194,7 +202,11 @@ Solves the linear system of equations
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=LUsolve,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Solving systems of linear equations.,
+                   label=lusolve]
 Program TestLinear
 
   USE NumTypes
@@ -223,7 +235,7 @@ Program TestLinear
 
   Stop
 End Program TestLinear
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Det(M)}}
@@ -246,7 +258,11 @@ The value of the determinant. Same precision as the input argument.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Det,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the determinant of a matrix.,
+                   label=det]
 Program TestLinear
 
   USE NumTypes
@@ -268,5 +284,10 @@ Program TestLinear
 
   Stop
 End Program TestLinear
-\end{verbatim}
+\end{lstlisting}
 
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 

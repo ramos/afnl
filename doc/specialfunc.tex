@@ -26,7 +26,11 @@ A real Double precision (DP).
 
 This program should write the factorial of the first $100$ numbers.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=GammaLn,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Gamma Function.,
+                   label=gammaln]
 Program TestSpecialFunc
 
   USE NumTypes
@@ -43,9 +47,7 @@ Program TestSpecialFunc
 
   Stop
 End Program TestSpecialFunc
-
-\end{verbatim}
-
+\end{lstlisting}
 
 \section{Function \texttt{Theta(i, z, tau, Prec)}}
 \index{Theta@Function \texttt{Theta(i, z, tau, Prec)}}
@@ -86,7 +88,11 @@ Double Precision Complex (SPC).
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Theta,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Jacobi Theta functions.,
+                   label=theta]
 Program TestSpecialFunc
 
   USE NumTypes
@@ -108,9 +114,7 @@ Program TestSpecialFunc
 
   Stop
 End Program TestSpecialFunc
-
-\end{verbatim}
-
+\end{lstlisting}
 
 \section{Function \texttt{ThetaChar(a, b, z, tau, Prec)}}
 \index{Theta@Function \texttt{ThetaChar(a, b, z, tau, Prec)}}
@@ -143,7 +147,11 @@ Complex Single or Double precision, the same as the input values.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=ThetaChar,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Jacobi Theta functions with characteristics.,
+                   label=thetachar]
 Program TestSpecialFunc
 
   USE NumTypes
@@ -174,7 +182,7 @@ Program TestSpecialFunc
 
   Stop
 End Program TestSpecialFunc
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Hermite(n,x,Dval)}}
 \index{Hermite@Function \texttt{Hermite(n,x,Dval)}}
@@ -204,8 +212,11 @@ $n^{\underline{\text{th}}}$ Hermite Polynomial in the point X.
 
 \subsection{Examples}
 
-\begin{verbatim}
-
+\begin{lstlisting}[emph=Hermite,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the first 31 Hermite numbers.,
+                   label=hermite]
 Program TestSpecialFunc
 
   USE NumTypes
@@ -220,10 +231,9 @@ Program TestSpecialFunc
      Write(*,'(1I4,1ES33.25)')q, Hermite(q, 0.0_DP)
   End Do
 
-
   Stop
 End Program TestSpecialFunc
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{HermiteFunc(n,x,Dval)}}
 \index{Hermite@Function \texttt{HermiteFunc(n,x,Dval)}}
@@ -257,9 +267,11 @@ $n^{\underline{\text{th}}}$ Hermite function in the point X.
 
 \subsection{Examples}
 
-\begin{verbatim}
-
-
+\begin{lstlisting}[emph=HermiteFunc,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Compute the Hermite functions.,
+                   label=hermitefunc]
 Program TestSpecialFunc
 
   USE NumTypes
@@ -282,7 +294,7 @@ Program TestSpecialFunc
 
   Stop
 End Program TestSpecialFunc
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Basis(X1, X2, n, s, q, itau, Prec) }}
 \index{Basis@Function \texttt{Basis(X1, X2, n, s, q, itau, Prec) }}
@@ -319,7 +331,12 @@ Complex single or double precision, depends of the input  arguments.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Basis,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the bassi of a special Hilbert
+                   space (details in~\cite{Gonzalez-Arroyo:2004xu}).,
+                   label=basis]
 Program TestSpecialFunc
 
   USE NumTypes
@@ -348,5 +365,10 @@ Program TestSpecialFunc
 
   Stop
 End Program TestSpecialFunc
-\end{verbatim}
+\end{lstlisting}
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
 

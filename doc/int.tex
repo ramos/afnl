@@ -51,7 +51,11 @@ integral.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Trapecio,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Example of integration of a function using \texttt{Trpecio}.,
+                   label=trapecio]
 Program Test
   USE NumTypes
   USE Integration
@@ -89,7 +93,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Simpson(a, b, Func, [Tol])}}
 \index{Simpson@Function \texttt{Simpson(a, b, Func, [Tol])}}
@@ -137,7 +141,11 @@ integral.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Simpson,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Exmaple of integration of a function using \texttt{Simpson}.,
+                   label=simpson]
 Program Test
   USE NumTypes
   USE Integration
@@ -175,7 +183,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
 \index{TrapecioAb@Function \texttt{TrapecioAb(a, b, Func, [Tol])}}
@@ -222,7 +230,12 @@ single (double) precision. The value of the integral.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=TrapecioAB,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating a function using the open
+                   trapezoid rule.,
+                   label=trapecioab]
 Program Test
   USE NumTypes
   USE Integration
@@ -260,7 +273,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{SimpsonAb(a, b, Func, [Tol])}}
@@ -309,7 +322,12 @@ single (double) precision. The value of the integral.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=SimpsonAB,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Exmaple of integration using the open
+                   Simpson rule.,
+                   label=simpsoab]
 Program Test
   USE NumTypes
   USE Integration
@@ -347,7 +365,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
 \index{SimpsonInfUp@Function \texttt{SimpsonInfUp(a, Func, [Tol])}}
@@ -395,7 +413,11 @@ single (double) precision. The value of the integral.
 
 \subsection{examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=SimpsonInfUP,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integration of a function between 0 and $\infty$.,
+                   label=simpsoninfup]
 Program Test
   USE NumTypes
   USE Integration
@@ -433,7 +455,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{SimpsonInfDw(a, Func, [Tol])}}
@@ -482,7 +504,12 @@ single (double) precision. The value of the integral.
 
 \subsection{examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=SimpsonInfDW,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating a function between $-\infty$
+                   and 0.,
+                   label=simpsoninfdw]
 Program Test
   USE NumTypes
   USE Integration
@@ -520,7 +547,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
 \index{SinpsonSingUp@Function \texttt{SimpsonSingUp(a, b, Func, [Tol], gamma)}}
@@ -572,7 +599,12 @@ single (double) precision. The value of the integral.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=SimpsonSingUP,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating functions with singularities in
+                   the upper limit.,
+                   label=SimpsonSingUP]
 Program Test
   USE NumTypes
   USE Integration
@@ -610,7 +642,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
 \index{SimpsonSingDw@Function \texttt{SimpsonSingDw(a, b, Func, [Tol], gamma)}}
@@ -662,7 +694,12 @@ single (double) precision. The value of the integral.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=SimpsonSingDW,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating functions with singularities in
+                   the lower limit.,
+                   label=simpsonsingdw]
 Program Test
   USE NumTypes
   USE Integration
@@ -680,7 +717,7 @@ Program Test
 
   Tol = 1.0E-6_DP
   Write(*,*)'Integral of 1/sqrt(x) between 0 and 1:'
-  Write(*,*)SimpsonSingUp(0.0_DP, 1.0_DP, Fint, Tol, 0.5_DP)
+  Write(*,*)SimpsonSingDw(0.0_DP, 1.0_DP, Fint, Tol, 0.5_DP)
 
   Stop
 End Program Test
@@ -700,7 +737,7 @@ Function Fint(X)
 
   Return
 End Function Fint
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
 \index{Euler@Function \texttt{Euler(Init, Xo, Xfin, Feuler, [Tol])}}
@@ -787,7 +824,11 @@ so if we plot $y_1(1)$ and $y_2(1)$ we will obtain the values
 $\sin(1)$ and $y_2(1)$. In the following example, we will compare the
 result of integrating the differential equations with the exact values.
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Euler,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating differential equations with Euler.,
+                   label=euler]
 Program Test
   USE NumTypes
   USE Integration
@@ -828,7 +869,7 @@ End Program Test
     
     Return
   End Function FEuler
-\end{verbatim}
+\end{lstlisting}
 
 \section{Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
 \index{Rgnkta@Function \texttt{Rgnkta(Init, Xo, Xfin, Feuler, [Tol])}}
@@ -916,7 +957,12 @@ $\sin(1)$ and $y_2(1)$. In the following example, we will compare the
 values obtained with \texttt{Euler}, with \texttt{Rgnkta} and the
 exact ones. 
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Rgnkta,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating differential equations with the
+                   Runge-Kutta method,
+                   label=rgnkta]
 Program Test
   USE NumTypes
   USE Integration
@@ -961,5 +1007,10 @@ End Program Test
     
     Return
   End Function FEuler
-\end{verbatim}
+\end{lstlisting}
 
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 

@@ -29,7 +29,12 @@ Returns the complex roots of a polynomial of degree 2, 3 or 4.
 
 \subsection{Examples}
 
-\begin{verbatim}
+
+\begin{lstlisting}[emph=RootPol,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing roots of polynomials.,
+                   label=rootpol]
 Program TestRoot
 
   USE NumTypes
@@ -72,8 +77,7 @@ Program TestRoot
 
   Stop
 End Program TestRoot
-\end{verbatim}
-
+\end{lstlisting}
 
 \section{Function \texttt{Newton(Xo,  Fnew,  [Tol]) }}
 \index{Newton@Function \texttt{Newton(Xo,  Fnew,  [Tol]) }}
@@ -118,7 +122,12 @@ Real single or double precision. The position of the root.
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Newton,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing roots of non-linear functions
+                   with the Newton method.,
+                   label=newton]
 Program TestRoot
 
   USE NumTypes
@@ -166,7 +175,7 @@ Subroutine FNew(Xo, F, D)
 
   Return
 End Subroutine FNew
-\end{verbatim}
+\end{lstlisting}
 
 
 \section{Function \texttt{Bisec(a,  b,  Fbis,  [Tol])}}
@@ -211,7 +220,11 @@ Real single or double precision. The position of the root of
 
 \subsection{Examples}
 
-\begin{verbatim}
+\begin{lstlisting}[emph=Bisec,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing roots with the bisection method.,
+                   label=bisec]
 Program TestRoot
 
   USE NumTypes
@@ -256,5 +269,12 @@ Function FBis(X)
 
   Return
 End Function FBis
-\end{verbatim}
+\end{lstlisting}
+
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
 

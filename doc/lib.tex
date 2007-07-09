@@ -64,6 +64,7 @@
 \usepackage[usenames,dvipsnames]{color}
 \usepackage{xmpincl}
 \usepackage{slashed}
+\usepackage{listings}
 
 \newcommand{\ñ}{\~n}
 \newcommand{\h}{\hslash}
@@ -102,7 +103,16 @@
 \includexmp{CC_Attribution-Share_Alike_2.5_Spain}
 \fi
 \begin{document}
-
+\lstset{basicstyle=\small,
+  keywordstyle=\color[rgb]{0.6,0,0}\ttfamily,
+  language=[95]Fortran,
+  commentstyle=\color[rgb]{0,0.48,0},
+  stringstyle=\em,
+  frameround=fttt,
+  numbers=left,
+  numberstyle=\tiny,
+  stepnumber=2,
+  showstringspaces=false}
 
 % Cabeceras 
 \pagestyle{companion}
@@ -122,6 +132,8 @@
 \tableofcontents
 \clearpage
 \listoftables
+\clearpage
+\lstlistoflistings
 \clearpage
 
 % Introduccion
