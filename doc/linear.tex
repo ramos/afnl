@@ -16,7 +16,8 @@ value) of $M$ are in the diagonal.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{M(:,:)}: ] Real single or double precision two dimensional
+\item[\texttt{M(:,:)}: ] Real or complex single or double precision
+  two dimensional 
   array. Initially it contains the matrix to permute, after calling
   the routine, it contains the permuted matrix. \emph{Note that $M$ is
     overwritten when calling this routine}. 
@@ -101,7 +102,8 @@ $L$ and $U$ are returned \emph{overwriting} $M$.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{M(:,:)}: ] Real single or double precision two dimensional
+\item[\texttt{M(:,:)}: ] Real or complex single or double precision
+  two dimensional 
   array. Initially it contains the matrix to decompose, after calling
   the routine, it contains $L$ in its lower part, and $U$ in its upper
   part. \emph{Note that $M$ is overwritten when calling this routine}.
@@ -191,10 +193,11 @@ Solves the linear system of equations
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{M(:,:)}: ] Real single or double precision two
+\item[\texttt{M(:,:)}: ] Real or complex single or double precision two
   dimensional array. The matrix of coefficients. \emph{$M$ is
     overwritten when solving the system}. 
-\item[\texttt{b(:)}: ] Real single or double precision one dimensional
+\item[\texttt{b(:)}: ] Real or complex single or double precision one
+  dimensional 
   array. The independent terms before calling the routine, and the
   solution of the linear system of equations after calling
   it. \emph{Note that $b$ is overwritten when calling this routine}.  
@@ -248,8 +251,8 @@ Computes the determinant of the matrix $M$.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{M(:,:)}: ] Real or double precision two dimensional
-  array. The matrix whose determinant we want to know.
+\item[\texttt{M(:,:)}: ] Real or complex, simple or double precision
+  two dimensional array. The matrix whose determinant we want to know.
 \end{description}
 
 \subsection{Output}
