@@ -4,8 +4,123 @@ use of the \texttt{MODULE NumTypes}, and \texttt{MODULE Error} so
 please read the documentation of these modules \emph{before} reading
 this. 
 
-\section{Subroutine \texttt{Qsort(X,Ipt)}}
-\index{Qsort@Subroutine \texttt{Qsort(X,Ipt)}}
+\section{Subroutine \texttt{Swap(X,Ind1,Ind2)}}
+\index{Swap@Subroutine \texttt{Swap(X,Ind1,Ind2)}}
+
+\subsection{Description}
+
+Swaps elements \texttt{Ind1} and \texttt{Ind2} of the array
+\texttt{X(:)}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}: ] Integer, real single or real double precision one
+  dimensional array. \emph{Note that
+    $X$ is overwritten when calling this routine}. 
+\item[\texttt{Ind1, Ind2}: ] Integer. The elements that we want to
+  permute. 
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Swap,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Sorting data.,
+                   label=swap]
+Program TestNN
+
+  USE NumTypes
+  USE NonNumeric
+
+  Integer, Parameter :: Nmax = 10
+  Integer :: Ima(Nmax), I
+
+
+  ! Fill Ima(:) 
+  Forall (I=1:Nmax) Ima(I) = I
+
+  ! Plot the numbers
+  Do I = 1, Nmax
+     Write(*,'(1000I10)')Ima(I)
+  End Do
+
+  ! Swap first and last elemetns of Ima(:) and plot them.
+  CALL Swap(Ima, 1, Nmax)
+  Write(*,*)'# With first and last elements permuted: '
+  Do I = 1, Nmax
+     Write(*,'(1000I10)')Ima(I)
+  End Do
+
+
+  Stop
+End Program TestNN
+\end{lstlisting}
+
+\section{Subroutine \texttt{Insrt(X[, Ipt])}}
+\index{Insrt@Subroutine \texttt{Insrt(X[, Ipt])}}
+
+\subsection{Description}
+
+Sort the elements of \texttt{X(:)} in ascendant order\footnote{This
+  routine uses \emph{insertion sort}, and is much slower than
+  \texttt{Qsort}. To sort more than 10 elements, use \texttt{Qsort}
+  unless you know what you are doing.}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}: ] Integer, real single or real double precision one
+  dimensional array. Initially it contains unsorted numbers, and after
+  calling the routine, it contains the sorted elements. \emph{Note that
+    $X$ is overwritten when calling this routine}. 
+\item[\texttt{Ipt(:)}: ] Integer vector, Optional. It returns the
+  permutation made to \texttt{X(:)} to sort it.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Insrt,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Sorting data.,
+                   label=insrt]
+Program TestNN
+
+  USE NumTypes
+  USE NonNumeric
+
+  Integer, Parameter :: Nmax = 10
+  Integer :: Ima(Nmax)
+  Real (kind=DP) :: X(Nmax), Y(Nmax)
+
+
+  ! Fill X(:) with random data, and define Y(:)
+  CALL Random_Number(X)
+  Y = Sin(12.34_DP*(X-0.5_DP))
+
+  ! Plot an unsorted data table
+  Do I = 1, Nmax
+     Write(*,'(1000ES13.5)')X(I), Y(I)
+  End Do
+
+  ! Sort them, and plot the table again. Same points, but this time
+  ! sorted 
+  CALL Insrt(X, Ima)
+  Write(*,*)'# Again, this time sorted: '
+  Do I = 1, Nmax
+     Write(*,'(1000ES13.5)')X(I), Y(Ima(I))
+  End Do
+
+
+  Stop
+End Program TestNN
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{Qsort(X[, Ipt])}}
+\index{Qsort@Subroutine \texttt{Qsort(X[, Ipt])}}
 
 \subsection{Description}
 
@@ -62,8 +177,8 @@ End Program TestNN
 \end{lstlisting}
 
 
-\section{Function \texttt{Locate(X, $\mathtt{X_0}$, Iin)}}
-\index{Locate@Function \texttt{Locate(X, $\mathtt{X_0}$, Iin)}}
+\section{Function \texttt{Locate(X, $\mathtt{X_0}$[, Iin])}}
+\index{Locate@Function \texttt{Locate(X, $\mathtt{X_0}$[, Iin])}}
 
 \subsection{Description}
 

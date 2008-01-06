@@ -1,5 +1,5 @@
 
-F90=f90
+F90=ifort -warn all
 F90OPT=
 
 VPATH=src

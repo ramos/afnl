@@ -20,6 +20,7 @@
 ! 
 
 ! $ v. 1.0; Released: 21/09/2005; $
+! $ v. 2.0; Released: 26/12/2007; $
 
 ! ***********************************************************
 ! *
@@ -33,29 +34,67 @@ MODULE Polynomial
   IMPLICIT NONE
 
   Type Pol
-     Real (kind=DP), Pointer :: Coef(:) => Null()
+     Real (kind=DP), Allocatable :: Coef(:)
      Integer :: dg
   End Type Pol
 
+  Type CmplxPol
+     Complex (kind=DPC), Allocatable :: Coef(:)
+     Integer :: dg
+  End Type CmplxPol
+
 
   Interface Assignment (=)
-     Module Procedure IgualM, IgualP
+     Module Procedure IgualM, IgualP, IgualCM, IgualCP
   End Interface
 
   Interface Operator (+)
-     Module Procedure SumaP
+     Module Procedure SumaP, SumaCP
   End Interface
 
   Interface Operator (-)
-     Module Procedure RestaP
+     Module Procedure RestaP, RestaCP
   End Interface
 
   Interface Operator (*)
-     Module Procedure MultP, MultCl, MultCr
+     Module Procedure MultP, MultCl, MultCr, MultCP, MultCCl, &
+          & MultCCr, MultCCCl, MultCCCr
   End Interface
-     
 
-  Private IgualM, IgualP, SumaP, RestaP, MultP, MultCl, MultCr
+
+  Interface Init
+     Module Procedure Init, InitC
+  End Interface
+
+  Interface Degree
+     Module Procedure Degree, DegreeC
+  End Interface
+
+  Interface Value
+     Module Procedure Value, ValueC
+  End Interface
+
+  Interface Deriv
+     Module Procedure Deriv, DerivC
+  End Interface
+
+  Interface Integra
+     Module Procedure Integra, IntegraC
+  End Interface
+
+  Interface InterPolValue
+     Module Procedure InterPolValue, InterPolValueC
+  End Interface
+
+  Interface InterPol
+     Module Procedure InterPol, InterPolC
+  End Interface
+
+
+  Private IgualM, IgualP, SumaP, RestaP, MultP, MultCl, MultCr, &
+       & IgualCM, IgualCP, SumaCP, RestaCP, MultCP, MultCCl, &
+       & MultCCr, MultCCCr, MultCCCl, DerivC, IntegraC, InitC, &
+       & DegreeC, ValueC, InterPolValueC, InterPolC
 
 
 CONTAINS
@@ -141,15 +180,10 @@ CONTAINS
 
     Type (Pol), Intent (in) :: Pol1, Pol2
 
-    Type (Pol) :: PP1, PP2 ! Local copies of the input poly
     Integer :: I1, I2
 
     I1 = Pol1%dg
-    CALL Init(PP1, I1)
-    PP1 = Pol1
     I2 = Pol2%dg
-    CALL Init(PP2, I2)
-    PP2 = Pol2
     CALL Init(Su, Max(I1,I2))
 
     If (I1 > I2) Then
@@ -160,7 +194,6 @@ CONTAINS
        Su%Coef(0:I1) = Pol1%Coef(0:I1) + Pol2%Coef(0:I1)
     End If
 
-    Deallocate(PP1%Coef, PP2%Coef)
 
     Return
   End Function SumaP
@@ -176,26 +209,19 @@ CONTAINS
 
     Type (Pol), Intent (in) :: Pol1, Pol2
 
-    Type (Pol) :: PP1, PP2 ! Local copies of the input poly
     Integer :: I1, I2
 
     I1 = Pol1%dg
-    CALL Init(PP1, I1)
-    PP1 = Pol1
     I2 = Pol2%dg
-    CALL Init(PP2, I2)
-    PP2 = Pol2
     CALL Init(Su, Max(I1,I2))
 
     If (I1 > I2) Then
-       Su%Coef = PP1%Coef
-       Su%Coef(0:I2) = PP1%Coef(0:I2) - PP2%Coef(0:I2)
+       Su%Coef = Pol1%Coef
+       Su%Coef(0:I2) = Pol1%Coef(0:I2) - Pol2%Coef(0:I2)
     Else
-       Su%Coef = -PP2%Coef
-       Su%Coef(0:I1) = PP1%Coef(0:I1) - PP2%Coef(0:I1)
+       Su%Coef = -Pol2%Coef
+       Su%Coef(0:I1) = Pol1%Coef(0:I1) - Pol2%Coef(0:I1)
     End If
-
-    Deallocate(PP1%Coef, PP2%Coef)
 
     Return
   End Function RestaP
@@ -210,26 +236,19 @@ CONTAINS
 
     Type (Pol), Intent (in) :: Pol1, Pol2
 
-    Type (Pol) :: PP1, PP2 ! Local copies of the input poly
     Integer :: I, J, Igrado1, Igrado2
 
     Igrado1 = Pol1%dg
-    CALL Init(PP1, Igrado1)
-    PP1 = Pol1
     Igrado2 = Pol2%dg
-    CALL Init(PP2, Igrado2)
-    PP2 = Pol2
     CALL Init(MultP, Igrado1 + Igrado2)
 
 
     MultP%Coef = 0.0_DP
     Do I = 0, Igrado1
        Do J = 0, Igrado2
-          MultP%Coef(I+J) = MultP%Coef(I+J) + PP1%Coef(I)*PP2%Coef(J)
+          MultP%Coef(I+J) = MultP%Coef(I+J) + Pol1%Coef(I)*Pol2%Coef(J)
        End Do
     End Do
-
-    Deallocate(PP1%Coef, PP2%Coef)
 
     Return
   End Function MultP
@@ -245,17 +264,12 @@ CONTAINS
     Type (Pol), Intent (in) :: Pol2
     Real (kind=DP), Intent (in) :: C
 
-    Type (Pol) :: PP2
     Integer :: Igrado2
 
     Igrado2 = Pol2%dg
-    CALL Init(PP2, Igrado2)
-    PP2 = Pol2
     CALL Init(MultP, Igrado2)
 
-    MultP%Coef = C*PP2%Coef
-
-    Deallocate(PP2%Coef)
+    MultP%Coef = C*Pol2%Coef
 
     Return
   End Function MultCl
@@ -271,17 +285,13 @@ CONTAINS
     Type (Pol), Intent (in) :: Pol2
     Real (kind=DP), Intent (in)  :: C
 
-    Type (Pol) :: PP2
     Integer :: Igrado2
 
     Igrado2 = Pol2%dg
-    CALL Init(PP2, Igrado2)
-    PP2 = Pol2
     CALL Init(MultP, Igrado2)
 
-    MultP%Coef = C*PP2%Coef
+    MultP%Coef = C*Pol2%Coef
 
-    Deallocate(PP2%Coef)
 
     Return
   End Function MultCr
@@ -323,7 +333,7 @@ CONTAINS
     CALL Init(Deriv, P%dg-1)
     
     Do I = 0, P%dg - 1
-       Deriv%Coef(I) = (I+1)*P%Coef(I+1)
+       Deriv%Coef(I) = Real(I+1, kind=DP)*P%Coef(I+1)
     End Do
     
     Return
@@ -510,5 +520,398 @@ CONTAINS
 
     Return
   End Subroutine Spline
+
+!  *********************************************
+!  *                                           *
+  Subroutine InitC(P, Ngrad)
+!  *                                           *
+!  *********************************************
+!  * Init a polinomial of degree Ngrad
+!  *********************************************
+
+    Type (CmplxPol), Intent (inout) :: P
+    Integer, Intent (in) :: Ngrad
+
+
+    ALLOCATE(P%Coef(0:Ngrad))
+
+    P%Coef = Cmplx(0.0_DP, kind=DPC)
+    P%dg = Ngrad
+
+    Return
+  End Subroutine InitC
+
+!  *********************************************
+!  *                                           *
+  Integer Function DegreeC(P)
+!  *                                           *
+!  *********************************************
+!  * Returns the degree of a ploy.
+!  *********************************************
+
+    Type (CmplxPol) :: P
+
+    DegreeC = P%dg
+
+    Return
+  End Function DegreeC
+
+!  *********************************************
+!  *                                           *
+  Subroutine IgualCP(Pol1, Pol2)
+!  *                                           *
+!  *********************************************
+!  * Equate two polinomials
+!  *********************************************
+
+    Type (CmplxPol), Intent(out) :: Pol1
+    Type (CmplxPol), Intent(in) :: Pol2
+
+    CALL Init(Pol1, Pol2%dg)
+    Pol1%Coef = Pol2%Coef
+    
+    Return
+  End Subroutine IgualCP
+
+!  *********************************************
+!  *                                           *
+  Subroutine IgualCM(P, Coef)
+!  *                                           *
+!  *********************************************
+!  * Iguala un polinomio a un Vector de 
+!  * coeficientes
+!  *********************************************
+
+    Type (CmplxPol), Intent (out) :: P
+    Complex (kind=DPC), Intent (in) :: Coef(:)
+
+    CALL Init(P,Size(Coef)-1)
+    P%Coef = Coef
+    
+    Return
+  End Subroutine IgualCM
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function SumaCP(Pol1, Pol2) Result (Su)
+!  *                                           *
+!  *********************************************
+!  * Suma Dos polinomios
+!  * 
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol1, Pol2
+
+    Integer :: I1, I2
+
+    I1 = Pol1%dg
+    I2 = Pol2%dg
+    CALL Init(Su, Max(I1,I2))
+
+    If (I1 > I2) Then
+       Su%Coef = Pol1%Coef
+       Su%Coef(0:I2) = Pol1%Coef(0:I2) + Pol2%Coef(0:I2)
+    Else
+       Su%Coef = Pol2%Coef
+       Su%Coef(0:I1) = Pol1%Coef(0:I1) + Pol2%Coef(0:I1)
+    End If
+
+
+    Return
+  End Function SumaCP
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function RestaCP(Pol1, Pol2) Result (Su)
+!  *                                           *
+!  *********************************************
+!  * Resta Dos polinomios
+!  * 
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol1, Pol2
+
+    Integer :: I1, I2
+
+    I1 = Pol1%dg
+    I2 = Pol2%dg
+    CALL Init(Su, Max(I1,I2))
+
+    If (I1 > I2) Then
+       Su%Coef = Pol1%Coef
+       Su%Coef(0:I2) = Pol1%Coef(0:I2) - Pol2%Coef(0:I2)
+    Else
+       Su%Coef = -Pol2%Coef
+       Su%Coef(0:I1) = Pol1%Coef(0:I1) - Pol2%Coef(0:I1)
+    End If
+
+    Return
+  End Function RestaCP
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function MultCP(Pol1, Pol2) Result (MultP)
+!  *                                           *
+!  *********************************************
+!  * Product of two poly
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol1, Pol2
+
+    Integer :: I, J, Igrado1, Igrado2
+
+    Igrado1 = Pol1%dg
+    Igrado2 = Pol2%dg
+    CALL Init(MultP, Igrado1 + Igrado2)
+
+    MultP%Coef = 0.0_DP
+    Do I = 0, Igrado1
+       Do J = 0, Igrado2
+          MultP%Coef(I+J) = MultP%Coef(I+J) + Pol1%Coef(I)*Pol2%Coef(J)
+       End Do
+    End Do
+
+    Return
+  End Function MultCP
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function MultCCl(C, Pol2) Result (MultP)
+!  *                                           *
+!  *********************************************
+!  * Product of two poly
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol2
+    Real (kind=DP), Intent (in) :: C
+
+    Integer :: Igrado2
+
+    Igrado2 = Pol2%dg
+    CALL Init(MultP, Igrado2)
+
+    MultP%Coef = C*Pol2%Coef
+
+    Return
+  End Function MultCCl
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function MultCCCl(C, Pol2) Result (MultP)
+!  *                                           *
+!  *********************************************
+!  * Product of two poly
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol2
+    Complex (kind=DPC), Intent (in) :: C
+
+    Integer :: Igrado2
+
+    Igrado2 = Pol2%dg
+    CALL Init(MultP, Igrado2)
+
+    MultP%Coef = C*Pol2%Coef
+
+    Return
+  End Function MultCCCl
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function MultCCr(Pol2, C) Result (MultP)
+!  *                                           *
+!  *********************************************
+!  * Product of two poly
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol2
+    Real (kind=DP), Intent (in)  :: C
+
+    Integer :: Igrado2
+
+    Igrado2 = Pol2%dg
+    CALL Init(MultP, Igrado2)
+
+    MultP%Coef = C*Pol2%Coef
+
+
+    Return
+  End Function MultCCr
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function MultCCCr(Pol2, C) Result (MultP)
+!  *                                           *
+!  *********************************************
+!  * Product of two poly
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: Pol2
+    Complex (kind=DPC), Intent (in)  :: C
+
+    Integer :: Igrado2
+
+    Igrado2 = Pol2%dg
+    CALL Init(MultP, Igrado2)
+
+    MultP%Coef = C*Pol2%Coef
+
+
+    Return
+  End Function MultCCCr
+
+!  *********************************************
+!  *                                           *
+  Complex (kind=DPC) Function ValueC(Polin, X)
+!  *                                           *
+!  *********************************************
+!  * Evaluates a Poly in X.
+!  *********************************************
+    
+    Type (CmplxPol), Intent (in) :: Polin
+    Complex (kind=DPC), Intent (in) :: X
+
+    Integer :: I
+
+    ValueC = Polin%Coef(Polin%dg)*X
+    Do I = Polin%dg-1, 1, -1
+       ValueC = (ValueC + Polin%Coef(I))*X
+    End Do
+    ValueC = ValueC + Polin%Coef(0)
+
+    Return
+  End Function ValueC
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function DerivC(P) Result (Deriv)
+!  *                                           *
+!  *********************************************
+!  * Calculates de derivative of a poly.
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: P
+
+    Integer :: I
+
+    CALL Init(Deriv, P%dg-1)
+    
+    Do I = 0, P%dg - 1
+       Deriv%Coef(I) = Real(I+1, kind=DP)*P%Coef(I+1)
+    End Do
+    
+    Return
+  End Function DerivC
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function IntegraC(P, C) Result (Integra)
+!  *                                           *
+!  *********************************************
+!  * Integra un polinomio
+!  * 
+!  *********************************************
+
+    Type (CmplxPol), Intent (in) :: P
+    Complex (kind=DPC), Optional :: C
+
+    Integer :: I
+
+    CALL Init(Integra, P%dg + 1)
+
+    If (Present(C)) Then
+       Integra%Coef(0) = C
+    Else
+       Integra%Coef(0) = 0.D0
+    End If
+       
+    Do I = 1, Integra%dg
+       Integra%Coef(I) = P%Coef(I-1)/Real(I,kind=DP)
+    End Do
+    
+    Return
+  End Function IntegraC
+
+!  *********************************************
+!  *                                           *
+  Complex (kind=DPC) Function InterpolValueC(X, Y, Xo)
+!  *                                           *
+!  *********************************************
+!  * Calculates the value of the Interpolation 
+!  * polynomial of data X(:), Y(:) in the point 
+!  * Xo.
+!  *********************************************
+
+    Complex (kind=DPC), Intent (in) :: X(:), Y(:), Xo
+
+    Complex (kind=DPC) :: a(Size(X),Size(X))
+    Integer :: I, J, Npoints
+
+    Npoints = Size(X)
+    a = (0.0_DP, 0.0_DP) 
+    a(:,1) = Y(:)
+    Do J = 2, Npoints
+       Do I = J, Npoints
+          a(I,J) = ( (Xo-X(I-J+1))*a(I,J-1) + (X(I)-Xo)*a(I-1,J-1) ) &
+               & / (X(I) - X(I-J+1))
+       End Do
+    End Do
+    
+    InterpolValueC = a(Npoints, Npoints)
+
+    Return
+  End Function InterpolValueC
+
+!  *********************************************
+!  *                                           *
+  Type (CmplxPol) Function InterpolC(X, Y) Result (InterPol)
+!  *                                           *
+!  *********************************************
+!  * Calculates the Interpolation polynomial of
+!  * data X(:), Y(:) using divided diference and
+!  * the Newton form of the Interpolating 
+!  * polynomial.
+!  * 
+!  * NOTE:
+!  * In general this problem has a lot of 
+!  * numerical errors, so it is much more 
+!  * interesting to calculate the value of the 
+!  * interpolating polynomial using the function 
+!  * InterpolValue of this Module. 
+!  *********************************************
+
+    Complex (kind=DPC), Intent (in) :: X(:), Y(:)
+    
+    Type (CmplxPol) :: Base, Mul
+    Complex (kind=DPC) :: a(Size(X), Size(X))
+    Integer :: I, J
+
+    CALL Init(Interpol, Size(X)-1)
+    CALL Init(Base,0)
+    CALL Init(Mul,1)
+
+    ! First we construct the Divided diferences
+    a = 0.0_DP 
+    a(:,1) = Y(:)
+    Do J = 2, Interpol%dg + 1
+       Do I = J, Interpol%dg + 1
+          a(I,J) = ( a(I,J-1) - a(I-1,J-1) ) / (X(I) - X(I-J+1))
+       End Do
+    End Do
+
+    ! Now construc the Polynomial in the Newton form.
+    Interpol%Coef(0) = Y(1)
+    Base%Coef(0) = 1.0_DP
+    Do I = 1, Interpol%dg
+       Mul%Coef(1) = 1.0_DP
+       Mul%Coef(0) = -X(I)
+       Base = Base * Mul
+
+       Interpol = Interpol + a(I+1,I+1)*Base
+    End Do
+
+    Return
+  End Function InterpolC
+
 
 End MODULE Polynomial

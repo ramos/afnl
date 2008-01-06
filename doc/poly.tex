@@ -42,12 +42,53 @@ Program TestPoly
 End Program TestPoly
 \end{lstlisting}
 
+\section{\texttt{Type CmplxPol}}
+
+\subsection{Description}
+
+A new data type \texttt{CmplxPol} is defined to work with complex
+polynomials. This type has two components: The coefficients of the
+polynomial, and the degree. 
+
+All the routines, operators, etc\dots defined in this module works for
+complex as well as for real polynomials.
+
+\subsection{Components}
+
+\begin{description}
+\item[\texttt{Coef(:)}: ] Complex double precision one dimensional
+  array.
+\item[\texttt{dg}:] Integer. The degree of the polynomial.
+\end{description}
+
+\subsection{Examples}
+
+A small example showing how to define a polynomial of complex coefficients.
+
+\begin{lstlisting}[emph=Type,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Defining a polynomial.,
+                   label=typepolC]
+Program TestPoly
+
+  USE NumTypes
+  USE Error
+  USE Polynomial
+
+  Type (CmplxPol) :: P1
+
+  Stop
+End Program TestPoly
+\end{lstlisting}
+
 \section{Assignment}
 
 \subsection{Description}
 
-You can directly assign one defined polynomial to another, or to an
-array of real numbers, that are interpreted as the coefficients. 
+You can directly assign one defined polynomial (complex or real) to
+another, or to an array of real numbers, that are interpreted as the
+coefficients. 
 
 \subsection{Examples}
 
@@ -89,7 +130,7 @@ End Program TestPoly
 
 \subsection{Description}
 
-You can naturally sum \texttt{Pol} data types.
+You can naturally sum \texttt{Pol} or \texttt{CmplxPol} data types.
 
 \subsection{Examples}
 
@@ -139,7 +180,7 @@ End Program TestPoly
 
 \subsection{Description}
 
-You can subtract \texttt{Pol} data types.
+You can subtract \texttt{Pol} or \texttt{CmplxPol} data types.
 
 \subsection{Examples}
 
@@ -189,8 +230,9 @@ End Program TestPoly
 
 \subsection{Description}
 
-You can naturally multiply \texttt{Pol} data types and \texttt{Pol}
-data types with double precision real numbers.
+You can naturally multiply \texttt{Pol} data types, \texttt{Pol}
+data types with double precision real numbers, \texttt{CmplxPol} data
+types and \texttt{CmplxPol} data types with real or complex numbers.
 
 \subsection{Examples}
 
@@ -242,14 +284,15 @@ End Program TestPoly
 
 \subsection{Description}
 
-Allocate memory space for the coefficients of a \texttt{Pol} type.
+Allocate memory space for the coefficients of a \texttt{Pol} or a
+\texttt{CmplxPol} type. 
 
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{P}:] Type \texttt{Pol}. The polynomial that you want
-  to allocate space for.
-\item[\texttt{Dgr}] Integer. The degree of the polynomial.
+\item[\texttt{P}:] Type \texttt{Pol} or \texttt{CmplxPol}. The
+  polynomial that you want to allocate space for.
+\item[\texttt{Dgr}:] Integer. The degree of the polynomial.
 \end{description}
 
 \subsection{Examples}
@@ -294,8 +337,8 @@ Returns the degree of the polynomial \texttt{P}.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose degree we want to
-  know.  
+\item[\texttt{P}:] Type \texttt{Pol} or \texttt{CmplxPol}. The
+  polynomial whose degree we want to know.  
 \end{description}
 
 \subsection{Output}
@@ -358,9 +401,10 @@ Computes the value of the polynomial \texttt{P} in the point \texttt{X}.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{P}:] Type \texttt{Pol}. The polynomial.
-\item[\texttt{X}:] Real double precision. The point in which you want
-  to compute the value.
+\item[\texttt{P}:] Type \texttt{Pol} or \texttt{CmplxPol}. The polynomial.
+\item[\texttt{X}:] Real double precision if \texttt{P} is of type
+  \texttt{Pol} and Complex double precision if \texttt{P} is
+  \texttt{CmplxPol}. The point in which you want to compute the value.
 \end{description}
 
 \subsection{Output}
@@ -428,8 +472,8 @@ Computes the derivative of the polynomial \texttt{P}.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose derivative
-  we want to compute.
+\item[\texttt{P}:] Type \texttt{Pol} or \texttt{CmplxPol}. The
+  polynomial whose derivative we want to compute.
 \end{description}
 
 \subsection{Output}
@@ -484,7 +528,7 @@ Program TestPoly
 End Program TestPoly
 \end{lstlisting}
 
-\section{Function \texttt{Integra(P, Cte)}}
+\section{Function \texttt{Integra(P[, Cte])}}
 \index{Integra@Function \texttt{Integra(P, Cte)}}
 
 \subsection{Description}
@@ -495,10 +539,11 @@ present then it is used as \emph{integration constant}.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{P}:] Type \texttt{Pol}. The polynomial whose integral
-  we want to compute.
-\item[\texttt{Cte}:] Real single or double precision. Optional. The
-  constant of integration. If not present, the default value is 0.
+\item[\texttt{P}:] Type \texttt{Pol} or \texttt{CmplxPol}. The
+  polynomial whose integral we want to compute.
+\item[\texttt{Cte}:] Optional. Real double precision if \texttt{P} is
+  of type \texttt{Pol} and Complex double precision if \texttt{P} is 
+  \texttt{CmplxPol}. If not present, the default value is 0.
 \end{description}
 
 \subsection{Output}
@@ -564,16 +609,17 @@ Computes the value of the interpolation polynomial that pass trough
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{X(:), Y(:)}:] Real double precision one dimensional
-  arrays. Specify the points at which the interpolation polynomial
-  should pass. 
-\item[\texttt{Xo}:] The point at which you want to compute the
-  interpolation polynomial.
+\item[\texttt{X(:), Y(:)}:] Real double precision or Complex double
+  precision one dimensional arrays. Specify the points at which the
+  interpolation polynomial should pass. 
+\item[\texttt{Xo}:] Same type as \texttt{X(:)} and \texttt{Y(.)}. The
+  point at which you want to compute the interpolation polynomial.
 \end{description}
 
 \subsection{Output}
 
-Real double precision. The value of the interpolation polynomial in
+Real double precision if input is real and complex double precision if
+input is complex. The value of the interpolation polynomial in
 \texttt{Xo}. 
 
 
@@ -621,14 +667,15 @@ very unstable}.
 \subsection{Arguments}
 
 \begin{description}
-\item[\texttt{X(:), Y(:)}:] Real double precision one dimensional
-  array. Specify the points at which the interpolation polynomial
-  should pass. 
+\item[\texttt{X(:), Y(:)}:] Real double precision or Complex double
+  precision one dimensional arrays. Specify the points at which the
+  interpolation polynomial should pass. 
 \end{description}
 
 \subsection{Output}
 
-Type \texttt{Pol}. The interpolation polynomial.
+Type \texttt{Pol} if input is real, and \texttt{CmplxPol} if input is
+complex. The interpolation polynomial. 
 
 \subsection{Examples}
 

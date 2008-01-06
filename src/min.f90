@@ -266,7 +266,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: Z(:,:)
     Integer, Intent (out) :: IposX(:), IposY(:)
 
-    Real (kind=DP) :: Val, Zcp(0:Size(Z,1)+1, 0:Size(Z,2)+1)
+    Real (kind=DP) :: Zcp(0:Size(Z,1)+1, 0:Size(Z,2)+1)
     Integer :: I, J, Ipos(2)
 
     MaxPosition_2D_DP = 0
@@ -310,7 +310,6 @@ CONTAINS
     Real (kind=DP), Intent (in) :: X(:), Y(:), Z(:,:)
     Real (kind=DP) :: PosMax(2)
 
-    Integer :: I, J
     Real (kind=DP) :: Ma(5,5), b(5)
     
     

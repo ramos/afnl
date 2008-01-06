@@ -504,7 +504,7 @@ CONTAINS
     Real (kind=DP), Intent (inout) :: Sum
 
     Integer :: Ntrap, I
-    Real (kind=DP) :: Val, h, X, a, b
+    Real (kind=DP) :: Val, h, X, b
 
     Interface 
        Function Func(X)
@@ -808,7 +808,7 @@ CONTAINS
     Real (kind=DP), intent (in) :: a, b, gamma
     Real (kind=DP), Intent (in), Optional :: Eps
 
-    Real (kind=DP) :: Tol, OldN, Old2N, Val, OldSum
+    Real (kind=DP) :: Tol, OldN, Old2N, OldSum
     Integer :: I
 
     Interface 
@@ -933,7 +933,7 @@ CONTAINS
     Real (kind=DP), intent (in) :: a, b, gamma
     Real (kind=DP), Intent (in), Optional :: Eps
 
-    Real (kind=DP) :: Tol, OldN, Old2N, Val, OldSum
+    Real (kind=DP) :: Tol, OldN, Old2N, OldSum
     Integer :: I
 
     Interface 
@@ -1003,7 +1003,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: Iniciales(:), Xo, Xfin
     Real (kind=DP), Intent (in), Optional :: Tol
     Real (kind=DP) :: Finales(Size(Iniciales))
-    Real (kind=DP) :: R, F, h
+    Real (kind=DP) :: R, h
 
     Interface
        Function Feuler(X, Y) Result (Func)
@@ -1048,7 +1048,7 @@ CONTAINS
     Real (kind=DP), Intent (in) :: Iniciales(:), Xo, Xfin
     Real (kind=DP), Intent (in), Optional :: Tol
     Real (kind=DP) :: Finales(Size(Iniciales))
-    Real (kind=DP) :: R, F, h
+    Real (kind=DP) :: R, h
     Real (kind=DP) :: R1(Size(Iniciales)), R2(Size(Iniciales)), &
          & R3(Size(Iniciales)), R4(Size(Iniciales)), &
          & Y1(Size(Iniciales)), Aux(Size(Iniciales))
@@ -1967,10 +1967,7 @@ CONTAINS
     Real (kind=SP), Intent (in) :: Iniciales(:), Xo, Xfin
     Real (kind=SP), Intent (in), Optional :: Tol
     Real (kind=SP) :: Finales(Size(Iniciales))
-    Real (kind=SP) :: R, F, h
-    Real (kind=SP) :: R1(Size(Iniciales)), R2(Size(Iniciales)), &
-         & R3(Size(Iniciales)), R4(Size(Iniciales)), &
-         & Y1(Size(Iniciales)), Aux(Size(Iniciales))
+    Real (kind=SP) :: R, h
 
     Interface
        Function Feuler(X, Y) Result (Func)
@@ -2014,7 +2011,7 @@ CONTAINS
     Real (kind=SP), Intent (in) :: Iniciales(:), Xo, Xfin
     Real (kind=SP), Intent (in), Optional :: Tol
     Real (kind=SP) :: Finales(Size(Iniciales))
-    Real (kind=SP) :: R, F, h
+    Real (kind=SP) :: R, h
     Real (kind=SP) :: R1(Size(Iniciales)), R2(Size(Iniciales)), &
          & R3(Size(Iniciales)), R4(Size(Iniciales)), &
          & Y1(Size(Iniciales)), Aux(Size(Iniciales))

@@ -31,14 +31,12 @@ MODULE Fourier
   IMPLICIT NONE
 
   Type Fourier_Serie
-     Complex (kind=DPC), Pointer :: Coef(:) => Null()
-!     Complex (kind=DPC), Allocatable :: Coef(:)
+     Complex (kind=DPC), Allocatable :: Coef(:)
      Integer :: Nterm
   End Type Fourier_Serie
   
   Type Fourier_Serie_2D
-     Complex (kind=DPC), Pointer :: Coef(:,:) => Null()
-!     Complex (kind=DPC), Allocatable :: Coef(:,:)
+     Complex (kind=DPC), Allocatable :: Coef(:,:)
      Integer :: Nterm
   End Type Fourier_Serie_2D
   
@@ -53,16 +51,12 @@ MODULE Fourier
   
   Interface Operator (*)
      Module Procedure Prod, Prod_2D, Prodcte, Prodcte_2D, Prodcte2,&
-          & Prodcte2_2D, &
-          & ProdCcte, ProdCcte_2D, ProdCcte2, ProdCcte2_2D
+          & Prodcte2_2D, ProdCcte, ProdCcte_2D, ProdCcte2, &
+          & ProdCcte2_2D 
   End Interface
-
-!  Interface Operator (/)
-!     Module Procedure Div_1D, Div_2D
-!  End Interface
   
   Interface Operator (**)
-     Module Procedure NewExp_1D, NewExp_2D
+     Module Procedure ExpS, ExpS_2D
   End Interface
   
   Interface Assignment (=)
@@ -90,14 +84,6 @@ MODULE Fourier
      Module Procedure DFT_1D, DFT_2D
   End Interface
 
-  Interface FFT
-     Module Procedure FFT_1D!, FFT_2D
-  End Interface
-
-  Interface FFT2N
-     Module Procedure FFT2N_1D!, FFT_2D
-  End Interface
-
   Interface ExpS
      Module Procedure ExpS, ExpS_2D
   End Interface
@@ -121,7 +107,7 @@ MODULE Fourier
   Private PI, DPI, Add, Add_2D, Prod, Prod_2D, Equal, Equal_2D,&
        & Eval_Serie_1D, Eval_Serie_2D, Sub, Sub_2D, Prodcte, &
        & Prodcte_2D, ExpS, ExpS_2D, Neg, Neg_2D, Pos, Pos_2D, &
-       & DFT_1D, DFT_2D, FFT_1D, NewExp_1D, NewExp_2D, ConjgFS_1D, &
+       & DFT_1D, DFT_2D, NewExp_1D, NewExp_2D, ConjgFS_1D, &
        & ConjgFS_2D
 
 CONTAINS
@@ -409,7 +395,7 @@ CONTAINS
     Type (Fourier_Serie), Intent (in) :: Serie
     Integer, Intent (in) :: Nex
 
-    Integer, Parameter :: Maxcfr = 32
+    Integer, Parameter :: Maxcfr = 30
     Integer :: Bin(Maxcfr), Nmax, I, Ierr
     Type (Fourier_Serie), Allocatable :: Acum(:)
 
@@ -423,7 +409,7 @@ CONTAINS
     Do I = 1, Maxcfr
        Bin(I) = Int(Mod(Nex, 2**I)/(2**(I-1)))
        If (Bin(I) == 1) Nmax = I
-!       Write(*,*)Bin(I)
+       Write(*,*)Bin(I)
     End Do
 
     Allocate(Acum(Nmax), STAT = Ierr)
@@ -444,10 +430,6 @@ CONTAINS
        End If
     End Do
     
-!    Do I = 1, Nmax
-!       If (Associated(Acum(I)%Coef)) Nullify(Acum(I)%Coef)
-!    End Do
-
     Deallocate(Acum)
    
     Return
@@ -594,11 +576,6 @@ CONTAINS
        End If
     End Do
     
-!    Do I = 1, Nmax
-!       Write(0,*)I
-!       If (Associated(Acum(I)%Coef)) Nullify(Acum(I)%Coef)
-!    End Do
-    
     Deallocate(Acum)
    
     Return
@@ -648,8 +625,7 @@ CONTAINS
 
     Integer :: Ierr
 
-!    If (Associated(Neg%Coef)) Deallocate(Neg%Coef)
-    
+
     ALLOCATE(Neg%Coef(-Serie%Nterm:Serie%Nterm), STAT=Ierr)
     
     If (Ierr > 0) Then
@@ -675,7 +651,6 @@ CONTAINS
 
     Integer :: Ierr
 
-!    If (Associated(Pos%Coef)) Deallocate(Pos%Coef)
     
     ALLOCATE(Pos%Coef(-Serie%Nterm:Serie%Nterm), STAT=Ierr)
     
@@ -703,7 +678,6 @@ CONTAINS
 
     Integer :: Ierr
 
-!    If (Associated(Neg%Coef)) Deallocate(Neg%Coef)
     
     ALLOCATE(Neg%Coef(-Serie%Nterm:Serie%Nterm, &
          & -Serie%Nterm:Serie%Nterm), STAT=Ierr)
@@ -732,7 +706,6 @@ CONTAINS
 
     Integer :: Ierr
 
-!    If (Associated(Pos%Coef)) Deallocate(Pos%Coef)
     
     ALLOCATE(Pos%Coef(-Serie%Nterm:Serie%Nterm, &
          & -Serie%Nterm:Serie%Nterm), STAT=Ierr)
@@ -923,7 +896,6 @@ CONTAINS
 
     Integer :: Ierr
     
-!    If (Associated(Serie1%Coef)) Deallocate(Serie1%Coef)
 
     ALLOCATE(Serie1%Coef(-Serie2%Nterm:Serie2%Nterm), STAT=Ierr)
 
@@ -951,7 +923,6 @@ CONTAINS
 
     Integer :: Ierr
     
-!    If (Associated(Serie1%Coef)) Deallocate(Serie1%Coef)
 
     ALLOCATE(&
          & Serie1%Coef&
@@ -984,7 +955,6 @@ CONTAINS
   
     Integer :: Ierr
 
-!    If (Associated(Serie%Coef)) Deallocate(Serie%Coef)
     
     ALLOCATE(Serie%Coef(-Nespacio:Nespacio), STAT=Ierr)
 
@@ -1013,7 +983,6 @@ CONTAINS
   
     Integer :: Ierr
 
-!    If (Associated(Serie%Coef)) Deallocate(Serie%Coef)
     
     ALLOCATE(Serie%Coef(-Nespacio:Nespacio, -Nespacio:Nespacio),&
          & STAT=Ierr)
@@ -1182,91 +1151,6 @@ CONTAINS
     Return
   End Function DFT_2D
   
-! ********************************
-! *
-  Type (Fourier_Serie) Function FFT_1D(Data, Isign) Result (FFT)
-! *
-! ********************************
-! * Calculates the Fast Fourier
-! * Transformation from the complex
-! * data stored in data.
-! *
-! * This routine does not work!!!
-! ********************************
-
-    Complex (kind=DPC), Intent (in) :: Data(:)
-    Integer, Intent (in), Optional :: Isign
-    
-    Complex (Kind=DPC) :: Omega
-    Complex (kind=DPC), Allocatable :: DataFic(:), Modos(:)
-
-    CALL Init_Serie(FFT, 45)
-
-
-
-  End Function FFT_1D
-
-! ********************************
-! *
-  Recursive Function FFT2N_1D(Data) Result (FFT)
-! *
-! ********************************
-! * Calculates the Fast Fourier 
-! * Transform of an integer power 
-! * of 2 set of complex data stored 
-! * in Data(:)
-! *
-! * This routine does not work!!!
-! ********************************
-
-    Complex (kind=DPC), Intent (in) :: Data(:)
-!    Integer, Intent (in) :: Ntot
-
-    Complex (kind=DPC) :: FFT(0:Size(Data)-1),&
-         & Aux1(0:Size(Data)/2-1), Aux2(0:Size(Data)/2-1), Factor, FactorE
-    Integer :: I, Nsize, NewS
-
-    Nsize = Size(Data)
-    
-    Factor = exp(-DPI*UnitImag_DPC/Real(Nsize,kind=DP))
-
-    If (Nsize == 2) Then
-
-       FFT(0) = Data(1) + Data(2)
-       FFT(1) = Data(1) - Data(2)
-!       FFT(2) = FFT(0)
-
-    Else
-       NewS = Int(Nsize / 2)
-
-       Aux1 = FFT2N_1D(Data(1:Nsize:2))
-       Aux2 = FFT2N_1D(Data(2:Nsize:2))
-
-       Write(*,*)'Comprobacion 1:'
-!       Write(*,*)Data(1:Nsize:2)
-       Write(*,*)Aux1
-       Write(*,*)'Fin 1:'
-       
-
-       Write(*,*)'Comprobacion 2:'
-!       Write(*,*)Data(2:Nsize:2)
-       Write(*,*)Aux2
-       Write(*,*)'Fin 2:'
-
-       Do I = 0, News
-          FactorE = Factor ** I
-          FFT(I) = Aux1(I) + FactorE * Aux2(I)
-          FFT(I+NewS) = Aux1(I) - FactorE * Aux2(I)
-       End Do
-
-    End If
-
-
-!    Write(*,*)FFT
-
-    Return
-  End Function FFT2N_1D
-
 ! ********************************
 ! *
   Subroutine Save_1D(Serie, File)
