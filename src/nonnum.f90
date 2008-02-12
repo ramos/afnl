@@ -432,7 +432,7 @@ CONTAINS
 
     ! For a list with Isw number of elements or
     ! less use Insrt
-    Integer, Parameter :: Isw = 5
+    Integer, Parameter :: Isw = 10
 
     Real (kind=SP), Intent (inout) :: X(:)
     Integer, Intent (out), Optional :: Ipt(:)
@@ -591,7 +591,7 @@ CONTAINS
 
     ! For a list with Isw number of elements or
     ! less use Insrt
-    Integer, Parameter :: Isw = 5
+    Integer, Parameter :: Isw = 10
 
     Real (kind=DP), Intent (inout) :: X(:)
     Integer, Intent (out), Optional :: Ipt(:)
@@ -750,7 +750,7 @@ CONTAINS
 
     ! For a list with Isw number of elements or
     ! less use Insrt
-    Integer, Parameter :: Isw = 5
+    Integer, Parameter :: Isw = 10
 
     Integer, Intent (inout) :: X(:)
     Integer, Intent (out), Optional :: Ipt(:)

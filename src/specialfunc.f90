@@ -59,9 +59,13 @@ MODULE SpecialFunc
      Module Procedure Basis_DPC, Basis_SPC
   End Interface
 
+  Interface Factorial
+     Module Procedure Factorial_DP
+  End Interface
 
   Private DEFTOL, Theta3, ThetaChar_DPC, Hermite_DP, &
-       &Hermite_SP, HermiteFunc_SP, HermiteFunc_DP, Basis_DPC, Basis_SPC
+       &Hermite_SP, HermiteFunc_SP, HermiteFunc_DP, Basis_DPC,&
+       & Basis_SPC, Factorial_DP
 
 CONTAINS
 
@@ -550,5 +554,47 @@ CONTAINS
     Return
   End Function Basis_SPC
 
+! *************************************
+! *
+  Real (kind=DP) Function Factorial_DP(N)
+! *
+! *************************************
+! * Compute the factorial of an integer
+! * number. DP version.
+! *************************************
+
+    Integer, Parameter :: Nbrute = 51
+    Integer, Intent (in) :: N
+
+    Real (kind=DP), Save :: SFact(Nbrute)
+    Integer, Save :: Ncompt
+    
+    Integer :: I
+
+
+    If ( (N == 0).or.(N == 1) ) Then
+       Factorial_DP = 1.0_DP
+       Return
+    Else If (N < 0) Then
+       CALL abort('Factorial_DP', &
+            & 'I dont know to compute negative factorials')
+    End If
+
+    SFact(1) = 1.0_DP
+    Ncompt = 1
+    If (N < Ncompt) Then
+       Factorial_DP = SFact(N)
+    Else If (N <= Nbrute) Then
+       Do I = Ncompt+1, N
+          SFact(I) = Real(I,kind=DP)*SFact(I-1)
+       End Do
+       Ncompt = N
+       Factorial_DP = SFact(N)
+    Else
+       Factorial_DP = Exp(GammaLn(Real(N,kind=SP)+1.0_DP))
+    End If
+          
+    Return
+  End Function Factorial_DP
 
 End MODULE SpecialFunc

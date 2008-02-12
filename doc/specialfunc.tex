@@ -367,6 +367,51 @@ Program TestSpecialFunc
 End Program TestSpecialFunc
 \end{lstlisting}
 
+\section{Function \texttt{Factorial(N)}}
+\index{Factorial@Function \texttt{Factorial(N)}}
+
+\subsection{Description}
+
+Compute $N!$. Better (faster and more accurate for small numbers) than
+the use of \texttt{GammaLn} to compute the factorial of a number.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{N}:] Integer. The number to compute the factorial.
+\end{description}
+
+\subsection{Output}
+
+A real Double precision (DP).
+
+\subsection{Examples}
+
+This program should write the factorial of the first $100$ numbers.
+
+\begin{lstlisting}[emph=Factorial,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the factorial.,
+                   label=gammaln]
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Integer :: q
+
+
+  Do q = 1, 100
+     Write(*,'(1A13,1I4,1A3,1ES33.25)')'Factorial of:', q, ' = ',&
+          & Factorial(q)
+  End Do
+
+
+  Stop
+End Program TestSpecialFunc
+\end{lstlisting}
+
 % Local Variables: 
 % mode: latex
 % TeX-master: "lib"
