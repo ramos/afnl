@@ -57,6 +57,10 @@ MODULE Statistics
      Module Procedure ChiSqr_DP, ChiSqr_SP
   End Interface
 
+  Interface Laplace
+     Module Procedure Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP
+  End Interface
+
   Interface Histogram
      Module Procedure Histogram_SP, Histogram_DP
   End Interface
@@ -72,7 +76,8 @@ MODULE Statistics
        & Stddev_DP, Var_DP, Mean_DP, Moment_DP, &
        & Stddev_SP, Var_SP, Mean_SP, Moment_SP, ChiSqr_SP, &
        & ChiSqr_DP, LinearReg_DP, LinearReg_SP, LinearReg_Pol_DP, &
-       & LinearReg_Pol_SP, MultiLinearReg_DP, MultiLinearReg_SP
+       & LinearReg_Pol_SP, MultiLinearReg_DP, MultiLinearReg_SP, &
+       & Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP
 
 CONTAINS
 
@@ -1054,6 +1059,94 @@ CONTAINS
 
     Return
   End Subroutine MultiLinearReg_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Laplace_SP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with Laplace(Rmu, Rb) 
+!  * distribution in the intent (out) Real SP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X
+    Real (kind=SP), Intent (in) :: Rmu, Rb
+    Real (kind=SP) :: U
+    
+    CALL Random_Number(U)
+    U = U - 0.5_SP
+
+    X = Rmu - Rb * Sign(Log(1-2.0_SP*Abs(U)), U)
+
+    Return
+  End Subroutine  Laplace_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Laplace_DP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with Laplace(Rmu, Rb) 
+!  * distribution in the intent (out) Real DP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X
+    Real (kind=DP), Intent (in) :: Rmu, Rb
+    Real (kind=DP) :: U
+    
+    CALL Random_Number(U)
+    U = U - 0.5_DP
+
+    X = Rmu - Rb * Sign(Log(1-2.0_DP*Abs(U)), U)
+
+    Return
+  End Subroutine  Laplace_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Laplace2_SP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with Laplace(Rmu, Rb) 
+!  * distribution in the intent (out) Real SP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent (in) :: Rmu, Rb
+    Real (kind=SP) :: U(Size(X))
+    
+    CALL Random_Number(U)
+    U = U - 0.5_SP
+
+    X(:) = Rmu - Rb * Sign(Log(1-2.0_SP*Abs(U(:))), U(:))
+
+    Return
+  End Subroutine  Laplace2_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Laplace2_DP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with Laplace(Rmu, Rb) 
+!  * distribution in the intent (out) Real DP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent (in) :: Rmu, Rb
+    Real (kind=DP) :: U(Size(X))
+    
+    CALL Random_Number(U)
+    U = U - 0.5_DP
+
+    X(:) = Rmu - Rb * Sign(Log(1-2.0_DP*Abs(U(:))), U(:))
+
+    Return
+  End Subroutine  Laplace2_DP
 
 
 End MODULE Statistics

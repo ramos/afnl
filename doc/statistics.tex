@@ -229,14 +229,62 @@ Program Tests
   USE Error
   USE Statistics
 
-  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
-  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
-       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
 
 
   CALL Normal(X, 1.23_DP, 0.345_DP)
   ! Now compute the mean and standard deviation of the data
   Write(*,*)'We should obtain 1.23 and 0.345: '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{Laplace(X, Rm, Rb)}}
+\index{Laplace@Subroutine \texttt{Laplace(X, Rm, Rb)}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a Laplace distribution with mean
+\texttt{Rm}, and variance $2\mathtt{Rb}^2$. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[\texttt{Rm}:] Real (Single or Double precision). The
+  mean of the Laplace distribution.
+\item[\texttt{Rb}:] Real (Single or Double precision). The
+  width of the Laplace distribution (i.e. The variance is
+  $2\mathtt{Rb}^2$).
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Laplace,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a Laplace distribution.,
+                   label=laplace]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
+
+
+  CALL Laplace(X, 1.23_DP, 1.0_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 1.23 and sqrt(2): '
   Write(*,'(ES33.25)')Mean(X), Stddev(X)
 
 
