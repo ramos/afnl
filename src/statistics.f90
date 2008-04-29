@@ -61,9 +61,22 @@ MODULE Statistics
      Module Procedure Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP
   End Interface
 
+  Interface FishTipp
+     Module Procedure FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP
+  End Interface
+
   Interface Histogram
      Module Procedure Histogram_SP, Histogram_DP
   End Interface
+
+  Interface Irand
+     Module Procedure Irand_S, Irand_V
+  End Interface
+
+  Interface EstBstrp
+     Module Procedure EstBstrp_H, EstBstrp
+  End Interface
+
 
   Interface LinearReg
      Module Procedure LinearReg_DP, LinearReg_SP, &
@@ -71,13 +84,16 @@ MODULE Statistics
           & MultiLinearReg_DP, MultiLinearReg_SP
   End Interface
 
+
   Private NormalS, NormalV, NormalS2, NormalV2, &
        & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP, &
        & Stddev_DP, Var_DP, Mean_DP, Moment_DP, &
        & Stddev_SP, Var_SP, Mean_SP, Moment_SP, ChiSqr_SP, &
        & ChiSqr_DP, LinearReg_DP, LinearReg_SP, LinearReg_Pol_DP, &
        & LinearReg_Pol_SP, MultiLinearReg_DP, MultiLinearReg_SP, &
-       & Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP
+       & Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP, &
+       & FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP, &
+       & Irand_S, Irand_V, EstBstrp_H
 
 CONTAINS
 
@@ -1148,5 +1164,279 @@ CONTAINS
     Return
   End Subroutine  Laplace2_DP
 
+!  *********************************************
+!  *                                           *
+  Subroutine FishTipp_SP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with FishTipp(Rmu, Rb) 
+!  * distribution in the intent (out) Real SP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X
+    Real (kind=SP), Intent (in) :: Rmu, Rb
+    Real (kind=SP) :: U
+    
+    CALL Random_Number(U)
+
+    X = Rmu - Rb * Log(-Log(U))
+
+    Return
+  End Subroutine  FishTipp_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine FishTipp_DP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with FishTipp(Rmu, Rb) 
+!  * distribution in the intent (out) Real DP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X
+    Real (kind=DP), Intent (in) :: Rmu, Rb
+    Real (kind=DP) :: U
+    
+    CALL Random_Number(U)
+
+    X = Rmu - Rb * Log(-Log(U))
+
+    Return
+  End Subroutine  FishTipp_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine FishTipp2_SP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with FishTipp(Rmu, Rb) 
+!  * distribution in the intent (out) Real SP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent (in) :: Rmu, Rb
+    Real (kind=SP) :: U(Size(X))
+    
+    CALL Random_Number(U)
+
+    X = Rmu - Rb * Log(-Log(U(:)))
+
+    Return
+  End Subroutine  FishTipp2_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine FishTipp2_DP(X, Rmu, Rb)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with FishTipp(Rmu, Rb) 
+!  * distribution in the intent (out) Real DP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent (in) :: Rmu, Rb
+    Real (kind=DP) :: U(Size(X))
+    
+    CALL Random_Number(U)
+
+    X = Rmu - Rb * Log(-Log(U(:)))
+
+    Return
+  End Subroutine  FishTipp2_DP
+
+! ********************************************
+! *
+  Function Irand_S(I, J)
+! *
+! ********************************************
+! * Generates a Random integer number between
+! * I and J.
+! ********************************************
+
+    Integer, Intent (in) :: I, J
+    Integer :: Irand_s
+    
+    Real (kind=DP) :: U
+    
+    CALL Random_Number(U)
+    Irand_S = Int(U*(J-I+1)) + 1
+
+    Return
+  End Function Irand_S
+
+! ********************************************
+! *
+  Subroutine Irand_V(Ir, I, J)
+! *
+! ********************************************
+! * Fills Ir(:) with Random integers numbers
+! * between I and J.
+! ********************************************
+
+    Integer, Intent (in) :: I, J
+    Integer, Intent (out) :: Ir(:)
+    
+    Real (kind=DP) :: U(Size(Ir))
+    
+    CALL Random_Number(U)
+    Ir = Int(U*(J-I+1)) + 1
+
+    Return
+  End Subroutine Irand_V
+
+! ********************************************
+! *
+  Subroutine Bootstrap(Ibt)
+! *
+! ********************************************
+! * Generates Nb Bootstrap sequence of N numbers 
+! * each. Ibt is an integer two dimensional 
+! * array of sizes N x Nb
+! ********************************************
+
+    Integer, Intent (out) :: Ibt(:,:)
+
+    Integer :: Nb, N, I
+
+    Nb = Size(Ibt,2)
+    N  = Size(Ibt,1)
+
+    Do I = 1, N
+       CALL Irand(Ibt(I,:), 1, N) 
+    End Do
+
+    Return
+  End Subroutine Bootstrap
+
+! ********************************************
+! *
+  Subroutine ReadBstrp(Ibt, Filename)
+! *
+! ********************************************
+! * Reads Nb Bootstrap sequence of N numbers 
+! * each. Ibt is an integer two dimensional 
+! * array of sizes N x Nb in the file Filename.
+! ********************************************
+
+    Integer, Intent (out) :: Ibt(:,:)
+    Character (len=*), Intent (in) :: Filename
+
+    Integer :: I, J
+    Character (len=40) :: Fmt 
+
+    Open (Unit=55, File = Trim(Filename), ACTION="READ")
+    Write(Fmt,'(1A1,1I12,1A4)')'(',Size(Ibt,1),'I12)'
+    Do I = 1, Size(Ibt,2)
+       Read(55,Fmt)(Ibt(J,I), J=1, Size(Ibt,1)) 
+    End Do
+
+    Return
+  End Subroutine ReadBstrp
+
+! ********************************************
+! *
+  Subroutine SaveBstrp(Ibt, Filename)
+! *
+! ********************************************
+! * Saves Nb Bootstrap sequence of N numbers 
+! * each. Ibt is an integer two dimensional 
+! * array of sizes N x Nb in the file Filename.
+! ********************************************
+  
+    Integer, Intent (in) :: Ibt(:,:)
+    Character (len=*), Intent (in) :: Filename
+
+    Integer :: I, J
+    Character (len=40) :: Fmt 
+
+    Open (Unit=55, File = Trim(Filename), ACTION="WRITE")
+    Write(Fmt,'(1A1,1I12,1A4)')'(',Size(Ibt,1),'I12)'
+    Do I = 1, Size(Ibt,2)
+       Write(55,Fmt)(Ibt(J,I), J=1, Size(Ibt,1)) 
+    End Do
+
+    Return
+  End Subroutine SaveBstrp
+
+! ********************************************
+! *
+  Subroutine EstBstrp(Data, Ibt, Func, Val, Err)
+! *
+! ********************************************
+! * Estimates using the Bottstrap method the 
+! * average and error of an estimator given as
+! * a user suplied function
+! ********************************************
+  
+    Real (kind=DP), Intent (in) :: Data(:)
+    Integer, Intent (in) :: Ibt(:,:)
+    Real (kind=DP), Intent (out) :: Val, Err
+
+    Real (kind=DP) :: Rest(Size(Ibt,2))
+    Integer :: I, Nb
+
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+
+    Val = Func(Data)
+    
+    Nb = Size(Ibt,2)
+    Do I = 1, Nb
+       Rest(I) = Func(Data(Ibt(:,I)))     
+    End Do
+    Err = Stddev(Rest)
+
+    Return
+  End Subroutine EstBstrp
+
+! ********************************************
+! *
+  Subroutine EstBstrp_H(Data, Ibt, Func, Val, Err, Rest)
+! *
+! ********************************************
+! * Estimates using the Bottstrap method the 
+! * average and error of an estimator given as
+! * a user suplied function. Returns info for writting
+! * the bootstrp histogram.
+! ********************************************
+  
+    Real (kind=DP), Intent (in) :: Data(:)
+    Integer, Intent (in) :: Ibt(:,:)
+    Real (kind=DP), Intent (out) :: Val, Err
+    Real (kind=DP), Intent (out) :: Rest(Size(Ibt,2))
+
+    Integer :: I, Nb
+
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+
+    Val = Func(Data)
+    
+    Nb = Size(Ibt,2)
+    Do I = 1, Nb
+       Rest(I) = Func(Data(Ibt(:,I)))     
+    End Do
+    Err = Stddev(Rest)
+
+    Return
+  End Subroutine EstBstrp_H
 
 End MODULE Statistics

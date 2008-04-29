@@ -244,6 +244,53 @@ End Program Tests
 \end{lstlisting}
 
 
+\section{Subroutine \texttt{FishTipp(X, Rm, Rb)}}
+\index{FishTipp@Subroutine \texttt{FishTipp(X, Rm, Rb)}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a Fisher-Tippet distribution with
+parameters\footnote{More info about this distribution in the
+  Wikipedia: \href{http://en.wikipedia.org/wiki/Fisher-Tippett_distribution}{\texttt{http://en.wikipedia.org/wiki/Fisher-Tippett\_distribution}}} \texttt{Rm}, and $2\mathtt{Rb}^2$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[\texttt{Rm}:] Real (Single or Double precision). 
+\item[\texttt{Rb}:] Real (Single or Double precision). 
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=FishTipp,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a Fisher-Tippet distribution.,
+                   label=fishtipp]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
+
+
+  CALL FishTipp(X, 2.00_DP, 1.00_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 2.57721... and 1.2782...: '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+
 \section{Subroutine \texttt{Laplace(X, Rm, Rb)}}
 \index{Laplace@Subroutine \texttt{Laplace(X, Rm, Rb)}}
 
@@ -257,7 +304,7 @@ Fills \texttt{X(:)} with numbers from a Laplace distribution with mean
 \begin{description}
 \item[\texttt{X(:)}:] Real (Single or Double precision) one
   dimensional array. A vector that will be filled with numbers
-  according to the normal distribution.
+  according to the Laplace distribution.
 \item[\texttt{Rm}:] Real (Single or Double precision). The
   mean of the Laplace distribution.
 \item[\texttt{Rb}:] Real (Single or Double precision). The
@@ -511,6 +558,189 @@ Function Fd(X, i)
   Return
 End Function FD
 \end{lstlisting}
+
+\section{Subroutine/Function \texttt{Irand([Irnd], N, M)}}
+\index{Irand@Subroutine/Function \texttt{Irand([Irnd], N, M)}}
+
+\subsection{Description}
+
+If present, fills \texttt{Irnd(:)} with random integer numbers between
+\texttt{N} and \texttt{M} with an uniform distribution. If
+\texttt{Irnd(:)} is not present returns a integer random number
+between \texttt{N} and \texttt{M}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Irnd(:)}:] Integer, Optional. A vector that will be
+  filled with integer numbers according to a uniform distribution.
+\item[\texttt{N}:] Integer. The minimum number that we can obtain.
+\item[\texttt{M}:] Integer. The maximum number that we can obtain.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Irand,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining integer random numbers.,
+                   label=irand]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Integer :: Irnd(Nmax)
+
+
+  CALL Irand(Irnd, 0, 1)
+  ! Now compute the mean 
+  Write(*,*)'We should obtain 0.5: '
+  Write(*,'(ES33.25)')Mean(Real(Irnd(:),kind=DP))
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{BootStrap(Ibt)}}
+\index{Bootstrap@Subroutine \texttt{BootStrap(Ibt)}}
+
+\subsection{Description}
+
+Generates $\mathtt{N_b}$ bootstrap sequence of $\mathtt{N}$ numbers
+each. These bootstraps are returned in the two dimensional integer
+array $\mathtt{Ibt(:,:)}$ of size $\mathtt{N_b\times N}$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Ibt(:)}:] Integer. A two dimensional array of size
+  $\mathtt{N_b\times N}$, where $\mathtt{N_b}$ is the number of
+  bootstraps, and $\mathtt{N}$ is the range of each bootstrap.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Bootstrap,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Resampling some data.,
+                   label=bootstrap]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 8, Nbt = 5
+  Real (kind=DP) :: X(Nmax)
+  Integer :: Ib(Nbt, Nmax), I, J
+
+
+  CALL Random_Number(X)
+  ! Generate 5 bootstraps
+  CALL BootStrap(Ib)
+
+  ! Write the original sample, and the bootstraps
+  Write(*,'(1000ES33.25)')(X(J), J=1, Nmax) 
+  Do I = 1, Nbt
+     Write(*,'(1000ES33.25)')(X(Ib(J)), J=1, Nmax) 
+  End Do
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{SaveBstrp(Ibt, Filename)}}
+\index{SaveBstrp@Subroutine \texttt{SaveBstrp(Ibt, Filename)}}
+
+\subsection{Description}
+
+Saves the bootstrap stored in $\mathtt{Ibt}$ and saves it in the file
+\texttt{Filename}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Ibt(:)}:] Integer. A two dimensional array of size
+  $\mathtt{N_b\times N}$, where $\mathtt{N_b}$ is the number of
+  bootstraps, and $\mathtt{N}$ is the range of each bootstrap.
+\item[\texttt{Filename}: ] Character (len=*). A file name to save the
+  resampling data.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=SaveBstrp,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Reading the resampling info.,
+                   label=SaveBstrp]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 8, Nbt = 5
+  Integer :: Ib(Nbt, Nmax)
+
+
+  ! Generate 5 bootstraps
+  CALL BootStrap(Ib)
+
+  ! Save it
+  SaveBstrp(Ibt, 'example.bst')
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{ReadBstrp(Ibt, Filename)}}
+\index{ReadBstrp@Subroutine \texttt{ReadBstrp(Ibt, Filename)}}
+
+\subsection{Description}
+
+Reads the bootstrap stored in the file \texttt{Filename}, and returns
+it in  $\mathtt{Ibt}$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Ibt(:)}:] Integer. A two dimensional array of size
+  $\mathtt{N_b\times N}$, where $\mathtt{N_b}$ is the number of
+  bootstraps, and $\mathtt{N}$ is the range of each bootstrap.
+\item[\texttt{Filename}: ] Character (len=*). A file name to read the
+  resampling data.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=ReadBstrp,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Saving the resampling info.,
+                   label=ReadBstrp]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 8, Nbt = 5
+  Integer :: Ib(Nbt, Nmax)
+
+
+  ! Read a saved Bootstrap.
+  ReadBstrp(Ibt, 'example.bst')
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
 
 
 % Local Variables: 
