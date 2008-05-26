@@ -28,6 +28,7 @@ MODULE Statistics
   USE NumTypes
   USE Constants, ONLY: TWOPI_DP, TWOPI_SP
   USE Error  
+  USE NonNumeric
   USE Linear
 
   IMPLICIT NONE
@@ -1263,7 +1264,7 @@ CONTAINS
     Real (kind=DP) :: U
     
     CALL Random_Number(U)
-    Irand_S = Int(U*(J-I+1)) + 1
+    Irand_S = Int((J-I+2)*U + I-1)
 
     Return
   End Function Irand_S
@@ -1283,7 +1284,7 @@ CONTAINS
     Real (kind=DP) :: U(Size(Ir))
     
     CALL Random_Number(U)
-    Ir = Int(U*(J-I+1)) + 1
+    Ir = Int((J-I+2)*U + I-1)
 
     Return
   End Subroutine Irand_V
@@ -1438,5 +1439,79 @@ CONTAINS
 
     Return
   End Subroutine EstBstrp_H
+
+! ********************************************
+! *
+  Subroutine BstrpConfInt(Data, Ibt, alpha, Func, dmin, dpls)
+! *
+! ********************************************
+! * Estimates using the Bootstrap method a confidence
+! * interval of alpha for the the estimator
+! * given as a user suplied function. Returns info 
+! * for writting the bootstrp histogram. Returns 
+! * interval as (dmin, dpls).
+! ********************************************
+
+    Real (kind=DP), Intent (in) :: Data(:), alpha
+    Integer, Intent (in) :: Ibt(:,:)
+    Real (kind=DP), Intent (out) :: dmin, dpls
+
+    Real (kind=DP) :: Rest(Size(Ibt,2))
+    Integer :: Nb, Nm, Np, I
+
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+    
+    Nb = Size(Ibt,2)
+    Do I = 1, Nb
+       Rest(I) = Func(Data(Ibt(:,I)))     
+    End Do
+    CALL Qsort(Rest)
+    
+    Nm = Int(alpha*Nb)/200.0_DP
+    dmin = (Rest(Nm) + Rest(Nm+1))/2.0_DP
+    Np = Nb - Nm
+    dpls = (Rest(Nb) + Rest(Nb+1))/2.0_DP
+
+    Return
+  End Subroutine BstrpConfInt
+
+!  *********************************************
+!  *                                           *
+  Subroutine NonLinearReg_DP(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)
+!  *                                           *
+!  *********************************************
+!  * Given a set of points (X(:), Y(:)), this routine 
+!  * fit the points to a function given by the routine
+!  * Func that also returns the first derivatives. 
+!  * The errors in the coefficients are returned in 
+!  * Cerr(:), and the ChiSqr is returned.
+!  *********************************************
+
+    Real (kind=DP), Intent(in) :: X(:), Y(:), Yerr(:)
+    Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
+
+    Real (kind=DP) :: Rlambda = 1.0E-2_DP
+
+    Interface
+       Subroutine Func(X, Cf, Valf, ValD)
+         
+         USE NumTypes
+
+         Real (kind=DP), Intent (in) :: X, Cf(:)
+         Real (kind=DP) :: Valf, ValD
+         
+       End Subroutine Func
+    End Interface
+
+    Return
+  End Subroutine NonLinearReg_DP
 
 End MODULE Statistics
