@@ -78,12 +78,31 @@ MODULE Statistics
      Module Procedure EstBstrp_H, EstBstrp
   End Interface
 
+  Interface NonLinearReg
+     Module Procedure NonLinearReg_DP, NonLinearReg_SP, &
+          & MultiNonLinearReg_DP, MultiNonLinearReg_SP
+  End Interface
 
   Interface LinearReg
      Module Procedure LinearReg_DP, LinearReg_SP, &
           & LinearReg_Pol_DP, LinearReg_Pol_SP, &
           & MultiLinearReg_DP, MultiLinearReg_SP
   End Interface
+
+  
+  ! Parameters to tune the Nonlinear fitting routines:
+  !
+  !  - Rlambda_DEF: Default value used in the Levenberg-Marquardt
+  !             algorithm.
+  !  - RFACTOR_DEF: Factor of increasing/decreasing Rlambda
+  !                 after iterations.
+  !  - TOL: Amount that the ChiSqr must. Used with 
+  !         Nconv to stop the iteration.
+  !  - Nconv: The number of times the Chisqr must decrease
+  !           less than TOL to stop the iteration.
+  Real (kind=DP) :: TOL = 1.0E-2_DP, Rlambda_DEF = 1.0E-3_DP, &
+       & RFACTOR_DEF = 10.0_DP
+  Integer :: Nconv = 2
 
 
   Private NormalS, NormalV, NormalS2, NormalV2, &
@@ -94,7 +113,9 @@ MODULE Statistics
        & LinearReg_Pol_SP, MultiLinearReg_DP, MultiLinearReg_SP, &
        & Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP, &
        & FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP, &
-       & Irand_S, Irand_V, EstBstrp_H
+       & Irand_S, Irand_V, EstBstrp_H, NonLinearReg_DP, TOL, &
+       & Rlambda_DEF, Nconv, RFACTOR_DEF, NonLinearReg_SP, &
+       & MultiNonLinearReg_SP
 
 CONTAINS
 
@@ -1264,7 +1285,7 @@ CONTAINS
     Real (kind=DP) :: U
     
     CALL Random_Number(U)
-    Irand_S = Int((J-I+2)*U + I-1)
+    Irand_S = Int((J-I+1)*U + I)
 
     Return
   End Function Irand_S
@@ -1284,7 +1305,7 @@ CONTAINS
     Real (kind=DP) :: U(Size(Ir))
     
     CALL Random_Number(U)
-    Ir = Int((J-I+2)*U + I-1)
+    Ir = Int((J-I+1)*U + I)
 
     Return
   End Subroutine Irand_V
@@ -1492,13 +1513,20 @@ CONTAINS
 !  * fit the points to a function given by the routine
 !  * Func that also returns the first derivatives. 
 !  * The errors in the coefficients are returned in 
-!  * Cerr(:), and the ChiSqr is returned.
+!  * Cerr(:), and the ChiSqr per degree of freedom is 
+!  * returned. This routine uses the Levenberg-Marquardt 
+!  * algorithm
 !  *********************************************
 
     Real (kind=DP), Intent(in) :: X(:), Y(:), Yerr(:)
     Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
 
-    Real (kind=DP) :: Rlambda = 1.0E-2_DP
+    Real (kind=DP) :: alphap(Size(Coef), Size(Coef)), Rlambda, &
+         & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
+
+    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)), Idet
+
+    Logical :: Cnt = .True.
 
     Interface
        Subroutine Func(X, Cf, Valf, ValD)
@@ -1506,12 +1534,555 @@ CONTAINS
          USE NumTypes
 
          Real (kind=DP), Intent (in) :: X, Cf(:)
-         Real (kind=DP) :: Valf, ValD
+         Real (kind=DP), Intent (out) :: Valf, ValD(Size(Cf))
          
        End Subroutine Func
     End Interface
 
+    Npoints = Size(X)
+    Npar = Size(Coef)
+    Rlambda = Rlambda_DEF
+    
+    Do While (Cnt)
+       alphap = 0.0_DP
+       DCoef = 0.0_DP
+       Cold = CalcCh2()
+       Do K = 1, Npoints
+          CALL Func(X(K), Coef, Vf, VD)
+          Do I = 1, Npar          
+             DCoef(I) = DCoef(I) + (Y(K) - Vf)/Yerr(K)**2 * VD(I)
+             Do J = 1, Npar
+                alphap(I,J) = alphap(I,J) + &
+                     & ( VD(I)*VD(J) )/Yerr(K)**2
+             End Do
+          End Do
+       End Do
+       
+       Do I = 1, Npar
+          alphap(I,I) = alphap(I,I)*(Rlambda + 1.0_DP)
+       End Do
+
+       Cnew = 0.0_DP
+       
+       CALL LuSolve(alphap, DCoef)
+       Coef = Coef + DCoef
+       Cnew = CalcCh2()
+       Cdif = CNew - Cold
+       If (Cdif > 0.0_DP) Then
+          RLambda = RFACTOR_DEF*RLambda
+          Coef = Coef - DCoef
+          kont = 0
+       Else
+          RLambda = RLambda/RFACTOR_DEF
+          If (Abs(Cdif) < TOL) Then
+             kont = kont + 1
+          Else 
+             kont = 0
+          End If
+       End If
+       
+       If (kont >= Nconv) Then 
+          ChiSqrV = Cnew/Real(Npoints - Npar, kind=DP)
+          Do K = 1, Npoints
+             CALL Func(X(K), Coef, Vf, VD)
+             Do I = 1, Npar          
+                Do J = 1, Npar
+                   alphap(I,J) = alphap(I,J) + &
+                        & ( VD(I)*VD(J) )/Yerr(K)**2
+                End Do
+             End Do
+          End Do
+          
+          CALL LU(alphap, Ipiv, Idet)
+          Do J = 1, Npar
+             Do I = 1, Npar
+                If (Ipiv(I) == J) Then
+                   DCoef(I) = 1.0_DP
+                Else
+                   DCoef(I) = 0.0_DP
+                End If
+             End Do
+             
+             Do I = 2, Npar
+                DCoef(I) = DCoef(I) - & 
+                     & Dot_Product(alphap(I,1:I-1),DCoef(1:I-1))
+             End Do
+             DCoef(Npar) = DCoef(Npar) / alphap(Npar, Npar)
+             Do I = Npar - 1, J, -1
+                DCoef(I) = DCoef(I) - &
+                     & Dot_Product(alphap(I, I+1:Npar),DCoef(I+1:Npar))
+                DCoef(I) = DCoef(I) / alphap(I, I)
+             End Do
+             Cerr(J) = Sqrt(Abs(DCoef(J)))
+          End Do
+          
+          Cnt = .False.
+       End If
+    End Do
+
     Return
+
+  CONTAINS
+
+    Function CalcCh2()
+
+      Real (kind=DP) :: VVF, VVD(Size(Coef))
+      Real (kind=DP) :: CalcCh2
+
+      Integer :: Ii
+
+      CalcCh2 = 0.0_DP
+      Do Ii = 1, Npoints
+         CALL Func(X(Ii), Coef, VVf, VVd)
+         CalcCh2 = CalcCh2 + ( (Y(Ii) - VVf)/Yerr(Ii) )**2
+      End Do
+
+      Return
+    End Function CalcCh2
+
   End Subroutine NonLinearReg_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine NonLinearReg_SP(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)
+!  *                                           *
+!  *********************************************
+!  * Given a set of points (X(:), Y(:)), this routine 
+!  * fit the points to a function given by the routine
+!  * Func that also returns the first derivatives. 
+!  * The errors in the coefficients are returned in 
+!  * Cerr(:), and the ChiSqr per degree of freedom is 
+!  * returned. This routine uses the Levenberg-Marquardt 
+!  * algorithm
+!  *********************************************
+
+    Real (kind=SP), Intent(in) :: X(:), Y(:), Yerr(:)
+    Real (kind=SP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
+
+    Real (kind=SP) :: alphap(Size(Coef), Size(Coef)), Rlambda, &
+         & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
+
+    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)), Idet
+
+    Logical :: Cnt = .True.
+
+    Interface
+       Subroutine Func(X, Cf, Valf, ValD)
+         
+         USE NumTypes
+
+         Real (kind=SP), Intent (in) :: X, Cf(:)
+         Real (kind=SP), Intent (out) :: Valf, ValD(Size(Cf))
+         
+       End Subroutine Func
+    End Interface
+
+    Npoints = Size(X)
+    Npar = Size(Coef)
+    Rlambda = Rlambda_DEF
+    
+    Do While (Cnt)
+       alphap = 0.0_SP
+       DCoef = 0.0_SP
+       Cold = CalcCh2()
+       Do K = 1, Npoints
+          CALL Func(X(K), Coef, Vf, VD)
+          Do I = 1, Npar          
+             DCoef(I) = DCoef(I) + (Y(K) - Vf)/Yerr(K)**2 * VD(I)
+             Do J = 1, Npar
+                alphap(I,J) = alphap(I,J) + &
+                     & ( VD(I)*VD(J) )/Yerr(K)**2
+             End Do
+          End Do
+       End Do
+       
+       Do I = 1, Npar
+          alphap(I,I) = alphap(I,I)*(Rlambda + 1.0_SP)
+       End Do
+
+       Cnew = 0.0_SP
+       
+       CALL LuSolve(alphap, DCoef)
+       Coef = Coef + DCoef
+       Cnew = CalcCh2()
+       Cdif = CNew - Cold
+       If (Cdif > 0.0_SP) Then
+          RLambda = RFACTOR_DEF*RLambda
+          Coef = Coef - DCoef
+          kont = 0
+       Else
+          RLambda = RLambda/RFACTOR_DEF
+          If (Abs(Cdif) < TOL) Then
+             kont = kont + 1
+          Else 
+             kont = 0
+          End If
+       End If
+       
+       If (kont >= Nconv) Then 
+          ChiSqrV = Cnew/Real(Npoints - Npar, kind=SP)
+          Do K = 1, Npoints
+             CALL Func(X(K), Coef, Vf, VD)
+             Do I = 1, Npar          
+                Do J = 1, Npar
+                   alphap(I,J) = alphap(I,J) + &
+                        & ( VD(I)*VD(J) )/Yerr(K)**2
+                End Do
+             End Do
+          End Do
+          
+          CALL LU(alphap, Ipiv, Idet)
+          Do J = 1, Npar
+             Do I = 1, Npar
+                If (Ipiv(I) == J) Then
+                   DCoef(I) = 1.0_SP
+                Else
+                   DCoef(I) = 0.0_SP
+                End If
+             End Do
+             
+             Do I = 2, Npar
+                DCoef(I) = DCoef(I) - & 
+                     & Dot_Product(alphap(I,1:I-1),DCoef(1:I-1))
+             End Do
+             DCoef(Npar) = DCoef(Npar) / alphap(Npar, Npar)
+             Do I = Npar - 1, J, -1
+                DCoef(I) = DCoef(I) - &
+                     & Dot_Product(alphap(I, I+1:Npar),DCoef(I+1:Npar))
+                DCoef(I) = DCoef(I) / alphap(I, I)
+             End Do
+             Cerr(J) = Sqrt(Abs(DCoef(J)))
+          End Do
+          
+          Cnt = .False.
+       End If
+    End Do
+
+    Return
+
+  CONTAINS
+
+    Function CalcCh2()
+
+      Real (kind=SP) :: VVF, VVD(Size(Coef))
+      Real (kind=SP) :: CalcCh2
+
+      Integer :: Ii
+
+      CalcCh2 = 0.0_SP
+      Do Ii = 1, Npoints
+         CALL Func(X(Ii), Coef, VVf, VVd)
+         CalcCh2 = CalcCh2 + ( (Y(Ii) - VVf)/Yerr(Ii) )**2
+      End Do
+
+      Return
+    End Function CalcCh2
+
+  End Subroutine NonLinearReg_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNonLinearReg_DP(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)
+!  *                                           *
+!  *********************************************
+!  * Given a set of points (X(:), Y(:)), this routine 
+!  * fit the points to a function given by the routine
+!  * Func that also returns the first derivatives. 
+!  * The errors in the coefficients are returned in 
+!  * Cerr(:), and the ChiSqr per degree of freedom is 
+!  * returned. This routine uses the Levenberg-Marquardt 
+!  * algorithm
+!  *********************************************
+
+    Real (kind=DP), Intent(in) :: X(:,:), Y(:), Yerr(:)
+    Real (kind=DP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
+
+    Real (kind=DP) :: alphap(Size(Coef), Size(Coef)), Rlambda, &
+         & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
+
+    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)),&
+         & Idet, Ndim
+
+    Logical :: Cnt = .True.
+
+    Interface
+       Subroutine Func(X, Cf, Valf, ValD)
+         
+         USE NumTypes
+
+         Real (kind=DP), Intent (in) :: X(:), Cf(:)
+         Real (kind=DP), Intent (out) :: Valf, ValD(Size(Cf))
+         
+       End Subroutine Func
+    End Interface
+
+    Npoints = Size(X,1)
+    Ndim = Size(X,2)
+    Npar = Size(Coef)
+    Rlambda = Rlambda_DEF
+    
+    Do While (Cnt)
+       alphap = 0.0_DP
+       DCoef = 0.0_DP
+       Cold = CalcCh2()
+       Do K = 1, Npoints
+          CALL Func(X(K,:), Coef, Vf, VD)
+          Do I = 1, Npar          
+             DCoef(I) = DCoef(I) + (Y(K) - Vf)/Yerr(K)**2 * VD(I)
+             Do J = 1, Npar
+                alphap(I,J) = alphap(I,J) + &
+                     & ( VD(I)*VD(J) )/Yerr(K)**2
+             End Do
+          End Do
+       End Do
+       
+       Do I = 1, Npar
+          alphap(I,I) = alphap(I,I)*(Rlambda + 1.0_DP)
+       End Do
+
+       Cnew = 0.0_DP
+       
+       CALL LuSolve(alphap, DCoef)
+       Coef = Coef + DCoef
+       Cnew = CalcCh2()
+       Cdif = CNew - Cold
+       If (Cdif > 0.0_DP) Then
+          RLambda = RFACTOR_DEF*RLambda
+          Coef = Coef - DCoef
+          kont = 0
+       Else
+          RLambda = RLambda/RFACTOR_DEF
+          If (Abs(Cdif) < TOL) Then
+             kont = kont + 1
+          Else 
+             kont = 0
+          End If
+       End If
+       
+       If (kont >= Nconv) Then 
+          ChiSqrV = Cnew/Real(Npoints - Npar, kind=DP)
+          Do K = 1, Npoints
+             CALL Func(X(K,:), Coef, Vf, VD)
+             Do I = 1, Npar          
+                Do J = 1, Npar
+                   alphap(I,J) = alphap(I,J) + &
+                        & ( VD(I)*VD(J) )/Yerr(K)**2
+                End Do
+             End Do
+          End Do
+          
+          CALL LU(alphap, Ipiv, Idet)
+          Do J = 1, Npar
+             Do I = 1, Npar
+                If (Ipiv(I) == J) Then
+                   DCoef(I) = 1.0_DP
+                Else
+                   DCoef(I) = 0.0_DP
+                End If
+             End Do
+             
+             Do I = 2, Npar
+                DCoef(I) = DCoef(I) - & 
+                     & Dot_Product(alphap(I,1:I-1),DCoef(1:I-1))
+             End Do
+             DCoef(Npar) = DCoef(Npar) / alphap(Npar, Npar)
+             Do I = Npar - 1, J, -1
+                DCoef(I) = DCoef(I) - &
+                     & Dot_Product(alphap(I, I+1:Npar),DCoef(I+1:Npar))
+                DCoef(I) = DCoef(I) / alphap(I, I)
+             End Do
+             Cerr(J) = Sqrt(Abs(DCoef(J)))
+          End Do
+          
+          Cnt = .False.
+       End If
+    End Do
+
+    Return
+
+  CONTAINS
+
+    Function CalcCh2()
+
+      Real (kind=DP) :: VVF, VVD(Size(Coef))
+      Real (kind=DP) :: CalcCh2
+
+      Integer :: Ii
+
+      CalcCh2 = 0.0_DP
+      Do Ii = 1, Npoints
+         CALL Func(X(Ii,:), Coef, VVf, VVd)
+         CalcCh2 = CalcCh2 + ( (Y(Ii) - VVf)/Yerr(Ii) )**2
+      End Do
+
+      Return
+    End Function CalcCh2
+
+  End Subroutine MultiNonLinearReg_DP
+
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNonLinearReg_SP(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)
+!  *                                           *
+!  *********************************************
+!  * Given a set of points (X(:), Y(:)), this routine 
+!  * fit the points to a function given by the routine
+!  * Func that also returns the first derivatives. 
+!  * The errors in the coefficients are returned in 
+!  * Cerr(:), and the ChiSqr per degree of freedom is 
+!  * returned. This routine uses the Levenberg-Marquardt 
+!  * algorithm
+!  *********************************************
+
+    Real (kind=SP), Intent(in) :: X(:,:), Y(:), Yerr(:)
+    Real (kind=SP), Intent(out) :: Coef(:), Cerr(:), ChisqrV
+
+    Real (kind=SP) :: alphap(Size(Coef), Size(Coef)), Rlambda, &
+         & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
+
+    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)),&
+         & Idet, Ndim
+
+    Logical :: Cnt = .True.
+
+    Interface
+       Subroutine Func(X, Cf, Valf, ValD)
+         
+         USE NumTypes
+
+         Real (kind=SP), Intent (in) :: X(:), Cf(:)
+         Real (kind=SP), Intent (out) :: Valf, ValD(Size(Cf))
+         
+       End Subroutine Func
+    End Interface
+
+    Npoints = Size(X,1)
+    Ndim = Size(X,2)
+    Npar = Size(Coef)
+    Rlambda = Rlambda_DEF
+    
+    Do While (Cnt)
+       alphap = 0.0_SP
+       DCoef = 0.0_SP
+       Cold = CalcCh2()
+       Do K = 1, Npoints
+          CALL Func(X(K,:), Coef, Vf, VD)
+          Do I = 1, Npar          
+             DCoef(I) = DCoef(I) + (Y(K) - Vf)/Yerr(K)**2 * VD(I)
+             Do J = 1, Npar
+                alphap(I,J) = alphap(I,J) + &
+                     & ( VD(I)*VD(J) )/Yerr(K)**2
+             End Do
+          End Do
+       End Do
+       
+       Do I = 1, Npar
+          alphap(I,I) = alphap(I,I)*(Rlambda + 1.0_SP)
+       End Do
+
+       Cnew = 0.0_SP
+       
+       CALL LuSolve(alphap, DCoef)
+       Coef = Coef + DCoef
+       Cnew = CalcCh2()
+       Cdif = CNew - Cold
+       If (Cdif > 0.0_SP) Then
+          RLambda = RFACTOR_DEF*RLambda
+          Coef = Coef - DCoef
+          kont = 0
+       Else
+          RLambda = RLambda/RFACTOR_DEF
+          If (Abs(Cdif) < TOL) Then
+             kont = kont + 1
+          Else 
+             kont = 0
+          End If
+       End If
+       
+       If (kont >= Nconv) Then 
+          ChiSqrV = Cnew/Real(Npoints - Npar, kind=SP)
+          Do K = 1, Npoints
+             CALL Func(X(K,:), Coef, Vf, VD)
+             Do I = 1, Npar          
+                Do J = 1, Npar
+                   alphap(I,J) = alphap(I,J) + &
+                        & ( VD(I)*VD(J) )/Yerr(K)**2
+                End Do
+             End Do
+          End Do
+          
+          CALL LU(alphap, Ipiv, Idet)
+          Do J = 1, Npar
+             Do I = 1, Npar
+                If (Ipiv(I) == J) Then
+                   DCoef(I) = 1.0_SP
+                Else
+                   DCoef(I) = 0.0_SP
+                End If
+             End Do
+             
+             Do I = 2, Npar
+                DCoef(I) = DCoef(I) - & 
+                     & Dot_Product(alphap(I,1:I-1),DCoef(1:I-1))
+             End Do
+             DCoef(Npar) = DCoef(Npar) / alphap(Npar, Npar)
+             Do I = Npar - 1, J, -1
+                DCoef(I) = DCoef(I) - &
+                     & Dot_Product(alphap(I, I+1:Npar),DCoef(I+1:Npar))
+                DCoef(I) = DCoef(I) / alphap(I, I)
+             End Do
+             Cerr(J) = Sqrt(Abs(DCoef(J)))
+          End Do
+          
+          Cnt = .False.
+       End If
+    End Do
+
+    Return
+
+  CONTAINS
+
+    Function CalcCh2()
+
+      Real (kind=SP) :: VVF, VVD(Size(Coef))
+      Real (kind=SP) :: CalcCh2
+
+      Integer :: Ii
+
+      CalcCh2 = 0.0_SP
+      Do Ii = 1, Npoints
+         CALL Func(X(Ii,:), Coef, VVf, VVd)
+         CalcCh2 = CalcCh2 + ( (Y(Ii) - VVf)/Yerr(Ii) )**2
+      End Do
+
+      Return
+    End Function CalcCh2
+
+  End Subroutine MultiNonLinearReg_SP
+
+! ********************************************
+! *
+  Subroutine Permutation(Idx)
+! *
+! ********************************************
+! * Generates a random permutation.
+! ********************************************
+
+    Integer, Intent (out) :: Idx(:)
+
+    Integer :: I, J, Ns 
+
+    Ns = Size(Idx)
+
+    Forall (I=1:Ns) Idx(I) = I
+    Do I = 1, Ns
+       J = Irand(1, Ns)
+       If (I /= J) CALL Swap(Idx, I, J)
+    End Do
+
+    Return
+  End Subroutine Permutation
+
 
 End MODULE Statistics

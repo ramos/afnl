@@ -559,6 +559,165 @@ Function Fd(X, i)
 End Function FD
 \end{lstlisting}
 
+
+\section{Subroutine \texttt{NonLinearReg(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)}} 
+\index{NonLinearReg@Subroutine \texttt{NonLinearReg(X, Y, Yerr, Func, Coef, Cerr, ChisqrV)}} 
+
+\subsection{Description}
+
+Given a set of points \texttt{X(:)} and \texttt{Y(:)}, this routine
+performs a non-linear fit to a set of functions defined by
+\texttt{Func}.  
+
+This routine also performs multi-dimensional fitting, in which case
+the points are specified as \texttt{X(:,:)}, where the first argument
+tells which point, and the second which variable.
+
+This routine uses the Levenberg-Marquardt algorithm to perform the
+optimisation\footnote{\href{http://en.wikipedia.org/wiki/Levenberg-Marquardt_algorithm}{\texttt{http://en.wikipedia.org/wiki/Levenberg-Marquardt\_algorithm}}}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:[,:])}:] Real single or double precision one
+  dimensional array (for a one dimensional fit) or two dimensional
+  array (for a multidimensional fit). The
+  independent variables. For a multidimensional fit, the first argument
+  tells which point, and the second which variable. So the size of the
+  array should be \texttt{X(Npoints,Ndim)}.
+\item[\texttt{Y(:)}: ] Real single or double precision one dimensional
+  array. The dependent
+  variable.
+\item[\texttt{Yerr(:)}:] Real single or double precision one
+  dimensional array. The errors
+  of the points. If you don't have them, you should put all of them to
+  some non-zero value.
+\item[\texttt{Func}:] This routine define the functions to
+  fit. An interface like this should be provided
+\begin{verbatim}
+Interface
+   Subroutine Func(X, Cf, Valf, ValD)
+         
+     USE NumTypes
+
+     Real (kind=SP), Intent (in) :: X, Cf(:)
+     Real (kind=SP), Intent (out) :: Valf, ValD(Size(Cf))
+         
+   End Subroutine Func
+End Interface
+\end{verbatim}
+if you want to perform a one dimensional fitting, and like this
+\begin{verbatim}
+Interface
+   Subroutine Func(X, Cf, Valf, ValD)
+        
+     USE NumTypes
+
+     Real (kind=SP), Intent (in) :: X(:), Cf(:)
+     Real (kind=SP), Intent (out) :: Valf, ValD(Size(Cf))
+         
+   End Subroutine Func
+End Interface
+\end{verbatim}
+if it is a multidimensional fitting. 
+
+This routine returns the values of the function at $X$ for some values
+of the parameters given in $\mathtt{Cf}$ in the variable
+$\mathtt{Valf}$, and a vector with the derivatives (respect with the
+parameters) in $\mathtt{ValD(:)}$. 
+\item[\texttt{Coef(:)}: ] Real single or double precision one
+  dimensional array. Output. The
+  parameters that you want to determine.
+\item[\texttt{Cerr(:)}:] Real single or double precision one
+  dimensional array. Outpue. The errors
+  in the parameters.
+\item[\texttt{ChiSqr}: ] Real single or double precision. The $\chi^2$
+  per degree of freedom of the fit.
+\end{description}
+
+\subsection{Examples}
+
+In this example we will fit some generated data, with a Normal noise
+to the function
+\begin{displaymath}
+  f(x_1,x_2;a,b) = \sin(ax_1) + bx_1x_2
+\end{displaymath}
+We will generate the data with the values $a=2.0$ and $b=0.2$, so our
+fitting routine \emph{should} return this values within errors.
+
+The derivatives of the function (repect the parameters $a$ and $b$),
+as well as the value of function are given by the user routine
+\texttt{Func}. The derivatives are:
+\begin{eqnarray*}
+  \frac{\partial f(x_1,x_2;a,b)}{\partial a} &=& x_1\cos{ax_1} \\
+  \frac{\partial f(x_1,x_2;a,b)}{\partial b} &=& x_1x_2 \\
+\end{eqnarray*}
+
+
+\begin{lstlisting}[emph=NonLinearReg,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Doing non linear regressions.,
+                   label=linearreg]
+Program NLFit
+
+  USE NumTypes
+  USE Statistics
+
+  Interface
+     Subroutine Func(X, Cf, Valf, ValD)
+       
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: X(:), Cf(:)
+       Real (kind=DP), Intent (out) :: Valf, ValD(Size(Cf))
+       
+     End Subroutine Func
+  End Interface
+
+  Integer, Parameter :: Np = 20, Ndim = 2
+  Real (kind=DP) :: X(Np, Ndim), Y(Np), Ye(Np), Co(2), Vd(2), Ce(2), Ch
+
+  ! First Fill the data
+  CALL Random_Number(X)
+  X = 2.0_DP*(X - 0.5_DP)
+  Co(1) = 2.0_DP
+  Co(2) = 0.2_DP
+  CALL Normal(Ye, 0.0_DP, 0.5_DP)
+  Do I = 1, Np
+     CALL Func(X(I,:), Co, Y(I), Vd)
+     Y(I) = Y(I) + Ye(I)
+  End Do
+  
+
+  ! Now Perform the non linear fit
+  Co = 1.0_DP
+  CALL NonLinearReg(X, Y, Abs(Ye), Func, Co, Ce, Ch)
+  Do I = 1, Npar
+    Write(*,'(1A,100ES33.25)')'Parameter and error: ', Co(I), Ce(I)
+  End Do
+  Write(*,'(1A,100ES33.25)')&
+  & 'Chi Square per degree of freedom of the Fit: ', Ch
+
+
+  Stop
+End Program NLFit
+
+Subroutine Func(X, Cf, Valf, ValD)
+  
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: X(:), Cf(:)
+  Real (kind=DP), Intent (out) :: Valf, ValD(Size(Cf))
+
+  Valf = Sin(Cf(1)*X(1)) + Cf(2)*X(1)*X(2)
+  ValD(1) = X(1)*Cos(Cf(1)*X(1))
+  ValD(2) = X(1)*X(2)
+
+  
+End Subroutine Func
+\end{lstlisting}
+
 \section{Subroutine/Function \texttt{Irand([Irnd], N, M)}}
 \index{Irand@Subroutine/Function \texttt{Irand([Irnd], N, M)}}
 
@@ -604,6 +763,45 @@ Program Tests
   Stop
 End Program Tests
 \end{lstlisting}
+
+\section{Subroutine \texttt{Permutation(Idx)}}
+\index{Permutation@Subroutine \texttt{Permutation(Idx)}}
+
+\subsection{Description}
+
+Returns a random permutation of $\mathtt{N}$ elements. It uses the
+Knuth shuffle algorithm\footnote{\href{http://en.wikipedia.org/wiki/Knuth_shuffle}{\texttt{http://en.wikipedia.org/wiki/Knuth\_shuffle}}}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Idx(:): }] Integer  one dimensional array. Output. The
+  random permutation.
+\end{description}
+
+\begin{lstlisting}[emph=Permutation,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining a permutation.,
+                   label=Permutation]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 10
+  Integer :: Id(Nmax)
+
+
+  CALL Permutation(Id)
+  Write(*,'(100I3)')(Id(I), I = 1, Nmax)
+
+  Stop
+
+End Program Tests
+\end{lstlisting}
+
 
 \section{Subroutine \texttt{BootStrap(Ibt)}}
 \index{Bootstrap@Subroutine \texttt{BootStrap(Ibt)}}
@@ -739,6 +937,203 @@ Program Tests
 
   Stop
 End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{EstBstrp(Data, Ibt, Func, Val, Err[, Rest])}}
+\index{EstBstrp@Subroutine \texttt{EstBstrp(Data, Ibt, Func, Val, Err)}}
+
+\subsection{Description}
+
+Estimates using the Bootstrap method the average and error of an
+estimator given as a user supplied function.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Data(:)}:] Double precision Real. A one dimensional
+  array with the original sampling.
+\item[\texttt{ibt(:,:): }] Integer two dimensional array. The bootstrap
+  that we want to use to make the estimation.
+\item[\texttt{Func}: ] A user suplied function that returns the value
+  of the estimator. An interface block of the following type should be
+  defined. 
+\begin{verbatim}
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+\end{verbatim}
+\item[\texttt{Val}: ] Double precision real. Output. The value of the 
+  estimation of the parameter. 
+\item[\texttt{Err}: ] Double precision real. Output. An estimation of
+  the error in the estimation of the parameter. 
+\item[\texttt{Rest}: ] Double precision real one dimensional array
+  (same dimension as the number of bootstraps in
+  \texttt{Ibt}). Output. The value of the estimator for each
+  resampling. 
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=EstBstrp,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Estimating the average.,
+                   label=EstBstrp]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100, Nbt = 50
+  Integer :: Ib(Nbt, Nmax)
+  Real (kind=DP) :: Avg, Err, Data(Nmax), Rest(Nbt)
+
+  Interface 
+     Function F(X)
+       USE NumTypes
+         
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP) :: F
+
+     End Function F
+  End Interface
+
+  ! Read a saved Bootstrap, and the data from a file
+  ReadBstrp(Ibt, 'example.bst')
+  Open (Unit=22, File="data.dat")
+  Read(22,*)Data
+  Close(22)
+
+  ! And estimate the average
+  CALL EstBstrp(Data, Ibt, F, Avg, Err, Rest)
+
+  ! Print the Average of each resampling
+  Do I = 1, Nbt
+    Write(*,*)I, Rest(I)
+  End Do
+
+  Stop
+End Program Tests
+
+Function F(X)
+  USE NumTypes
+  USE Statistics
+         
+
+  Real (kind=DP), Intent (in) :: X(:)
+  Real (kind=DP) :: F
+
+  F = Mean(X)
+
+End Function F
+
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{BstrpConfInt(Data, Ibt, alpha, Func, dmin, dpls))}}
+\index{BstrpConfInt@Subroutine \texttt{BstrpConfInt(Data, Ibt, alpha, Func, dmin, dpls)}}
+
+\subsection{Description}
+
+Gives an Confidence interval for the estimator given as the user
+supplied function \texttt{Func}, such that
+\begin{displaymath}
+  \mathcal P(dmin<Func(Data)<dpls) = 1-2\alpha
+\end{displaymath}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Data(:)}:] Double precision Real. A one dimensional
+  array with the original sampling.
+\item[\texttt{ibt(:,:): }] Integer two dimensional array. The bootstrap
+  that we want to use to make the estimation.
+\item[\texttt{alpha}: ] Double precision real. The level of the
+  confidence interval. 
+\item[\texttt{Func}: ] A user suplied function that returns the value
+  of the estimator. An interface block of the following type should be
+  defined. 
+\begin{verbatim}
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+\end{verbatim}
+\item[\texttt{dmin}: ] Double precision real. Output. The lower limit
+  of the confidence interval.
+\item[\texttt{dpls}: ] Double precision real. Output. The higher limit
+  of the confidence interval.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=BstrpConfInt,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Giving a confidence interval.,
+                   label=BstrpConfInt]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 1000, Nb = 10000, Ndiv = 50
+  Real (kind=DP) :: Rdata(Nmax), Rmean(Nb), avg, Xmin, Xmax, h, Xac,&
+       & err, dmin, dpls
+  Integer :: Id(Nmax), Ib(Nmax, Nb), Ntics(Ndiv)
+
+  Interface 
+     Function F(X)
+       USE NumTypes
+         
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP) :: F
+       
+     End Function F
+  End Interface
+  
+  CALL Normal(Rdata)
+
+  avg = Mean(Rdata)
+  ! Now create the resamples
+  CALL Bootstrap(Ib)
+
+  CALL EstBstrp(Rdata, Ib, F, avg, Err, Rmean)
+  Write(*,*)'#', avg, Err, Mean(Rdata)
+
+  CALL BstrpConfInt(Rdata, Ib, 0.1_DP, F, dmin, dpls)
+  Write(*,*)'Intervalo:', dmin, dpls
+  Write(*,*)Avg - Dmin, Dpls - Avg
+  Write(*,*)(dpls - dmin)/2.0_DP, 1.64485_DP/Sqrt(Real(Nmax,kind=DP))
+
+  Stop
+
+End Program Tests
+
+Function F(X)
+  USE NumTypes
+  USE Statistics
+  
+  Real (kind=DP), Intent (in) :: X(:)
+  Real (kind=DP) :: F
+
+  F = Mean(X)
+  
+  Return
+End Function F
 \end{lstlisting}
 
 

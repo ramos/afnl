@@ -47,15 +47,8 @@ poly.o: numtypes.o error.o constants.o poly.f90
 fourier.o: numtypes.o error.o constants.o fourier.f90
 	$(F90) -c $^ -o $@
 
-genetics.o: numtypes.o error.o constants.o statistics.o genetics.f90
-	$(F90) -c $^ -o $@
-
-evolution.o: numtypes.o error.o constants.o genetics.o evolution.f90
-	$(F90) -c $^ -o $@
-
 lib: numtypes.o error.o constants.o statistics.o nonnum.o linear.o \
-	int.o min.o time.o specialfunc.o root.o poly.o fourier.o genetics.o \
-	evolution.o 
+	int.o min.o time.o specialfunc.o root.o poly.o fourier.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libf90.a *.o
