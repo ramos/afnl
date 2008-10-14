@@ -37,13 +37,52 @@ Program Tests
   USE Error
   USE Statistics
 
-  Integer, Parameter :: Nmax = 100, Npinta = 100, Npar = 4
-  Real (kind=DP) :: X(Nmax), Y(Nmax), Yer(Nmax), &
-       & Coef(Npar), Cerr(Npar), Corr, Xd(Nmax,2)
-
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
 
   CALL Random_Number(X)
   Write(*,'(ES33.25)')Mean(X)
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Function \texttt{Median(X)}}
+\index{Median@Function \texttt{Median(X)}}
+
+\subsection{Description}
+
+Compute the median value of the numbers stored in \texttt{X(:)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose median we want to compute.
+\end{description}
+
+\subsection{Output}
+
+A real double or simple precision (same type as the input). The median
+of the values.
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Median,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Median of a vector of numbers.,
+                   label=mean]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 5
+  Real (kind=SP) :: X(Nmax) = (/1.0, 1.0, 2.0, 4.0, 1.5/)  
+
+  Write(*,'(ES33.25)')Median(X)
 
 
   Stop
@@ -810,13 +849,13 @@ End Program Tests
 
 Generates $\mathtt{N_b}$ bootstrap sequence of $\mathtt{N}$ numbers
 each. These bootstraps are returned in the two dimensional integer
-array $\mathtt{Ibt(:,:)}$ of size $\mathtt{N_b\times N}$.
+array $\mathtt{Ibt(:,:)}$ of size $\mathtt{N\times N_b}$.
 
 \subsection{Arguments}
 
 \begin{description}
 \item[\texttt{Ibt(:)}:] Integer. A two dimensional array of size
-  $\mathtt{N_b\times N}$, where $\mathtt{N_b}$ is the number of
+  $\mathtt{N\times N_b}$, where $\mathtt{N_b}$ is the number of
   bootstraps, and $\mathtt{N}$ is the range of each bootstrap.
 \end{description}
 
@@ -835,7 +874,7 @@ Program Tests
 
   Integer, Parameter :: Nmax = 8, Nbt = 5
   Real (kind=DP) :: X(Nmax)
-  Integer :: Ib(Nbt, Nmax), I, J
+  Integer :: Ib(Nmax, Nbt), I, J
 
 
   CALL Random_Number(X)
@@ -864,7 +903,7 @@ Saves the bootstrap stored in $\mathtt{Ibt}$ and saves it in the file
 
 \begin{description}
 \item[\texttt{Ibt(:)}:] Integer. A two dimensional array of size
-  $\mathtt{N_b\times N}$, where $\mathtt{N_b}$ is the number of
+  $\mathtt{N\times N_b}$, where $\mathtt{N_b}$ is the number of
   bootstraps, and $\mathtt{N}$ is the range of each bootstrap.
 \item[\texttt{Filename}: ] Character (len=*). A file name to save the
   resampling data.
@@ -884,7 +923,7 @@ Program Tests
   USE Statistics
 
   Integer, Parameter :: Nmax = 8, Nbt = 5
-  Integer :: Ib(Nbt, Nmax)
+  Integer :: Ib(Nmax, Nbt)
 
 
   ! Generate 5 bootstraps
@@ -909,7 +948,7 @@ it in  $\mathtt{Ibt}$.
 
 \begin{description}
 \item[\texttt{Ibt(:)}:] Integer. A two dimensional array of size
-  $\mathtt{N_b\times N}$, where $\mathtt{N_b}$ is the number of
+  $\mathtt{N\times N_b}$, where $\mathtt{N_b}$ is the number of
   bootstraps, and $\mathtt{N}$ is the range of each bootstrap.
 \item[\texttt{Filename}: ] Character (len=*). A file name to read the
   resampling data.
@@ -929,7 +968,7 @@ Program Tests
   USE Statistics
 
   Integer, Parameter :: Nmax = 8, Nbt = 5
-  Integer :: Ib(Nbt, Nmax)
+  Integer :: Ib(Nmax, Nbt)
 
 
   ! Read a saved Bootstrap.
@@ -992,7 +1031,7 @@ Program Tests
   USE Statistics
 
   Integer, Parameter :: Nmax = 100, Nbt = 50
-  Integer :: Ib(Nbt, Nmax)
+  Integer :: Ib(Nmax, Nbt)
   Real (kind=DP) :: Avg, Err, Data(Nmax), Rest(Nbt)
 
   Interface 
@@ -1093,7 +1132,7 @@ Program Tests
   Integer, Parameter :: Nmax = 1000, Nb = 10000, Ndiv = 50
   Real (kind=DP) :: Rdata(Nmax), Rmean(Nb), avg, Xmin, Xmax, h, Xac,&
        & err, dmin, dpls
-  Integer :: Id(Nmax), Ib(Nmax, Nb), Ntics(Ndiv)
+  Integer :: Id(Nmax), Ib(Nb, Nmax), Ntics(Ndiv)
 
   Interface 
      Function F(X)

@@ -37,6 +37,10 @@ MODULE Statistics
      Module Procedure Mean_DP, Mean_SP
   End Interface
 
+  Interface Median
+     Module Procedure Median_DP, Median_SP
+  End Interface
+
   Interface Var
      Module Procedure Var_DP, Var_SP
   End Interface
@@ -102,7 +106,7 @@ MODULE Statistics
   !           less than TOL to stop the iteration.
   Real (kind=DP) :: TOL = 1.0E-2_DP, Rlambda_DEF = 1.0E-3_DP, &
        & RFACTOR_DEF = 10.0_DP
-  Integer :: Nconv = 2
+  Integer :: Nconv = 2, MaxIter = 10000
 
 
   Private NormalS, NormalV, NormalS2, NormalV2, &
@@ -115,7 +119,7 @@ MODULE Statistics
        & FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP, &
        & Irand_S, Irand_V, EstBstrp_H, NonLinearReg_DP, TOL, &
        & Rlambda_DEF, Nconv, RFACTOR_DEF, NonLinearReg_SP, &
-       & MultiNonLinearReg_SP
+       & MultiNonLinearReg_SP, Median_SP, Median_DP
 
 CONTAINS
 
@@ -134,6 +138,35 @@ CONTAINS
 
     Return
   End Function Mean_DP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=DP) Function Median_DP(X)
+!  *                                           *
+!  *********************************************
+!  * Returns the median value of the elements in 
+!  * the vector X(:)
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X(:)
+
+    Real (kind=DP) :: Xcp(Size(X))
+    Integer :: Ns, Nsd2
+
+    Xcp = X
+    Ns = Size(X)
+    Nsd2 = Int(Ns/2)
+
+    CALL Qsort(Xcp)
+    If (Mod(Ns,2) == 1) Then
+       Median_DP = Xcp(Nsd2+1)
+    Else
+       Median_DP = (Xcp(Nsd2) + Xcp(Nsd2+1))/2.0_DP
+    End If
+
+
+    Return
+  End Function Median_DP
 
 !  *********************************************
 !  *                                           *
@@ -291,6 +324,35 @@ CONTAINS
 
     Return
   End Function Mean_SP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=SP) Function Median_SP(X)
+!  *                                           *
+!  *********************************************
+!  * Returns the median value of the elements in 
+!  * the vector X(:)
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X(:)
+
+    Real (kind=SP) :: Xcp(Size(X))
+    Integer :: Ns, Nsd2
+
+    Xcp = X
+    Ns = Size(X)
+    Nsd2 = Int(Ns/2)
+
+    CALL Qsort(Xcp)
+    If (Mod(Ns,2) == 1) Then
+       Median_SP = Xcp(Nsd2+1)
+    Else
+       Median_SP = (Xcp(Nsd2) + Xcp(Nsd2+1))/2.0_SP
+    End If
+
+
+    Return
+  End Function Median_SP
 
 !  *********************************************
 !  *                                           *
@@ -1496,10 +1558,10 @@ CONTAINS
     End Do
     CALL Qsort(Rest)
     
-    Nm = Int(alpha*Nb)/200.0_DP
-    dmin = (Rest(Nm) + Rest(Nm+1))/2.0_DP
+    Nm = Int(alpha*Nb)!/200.0_DP
+    dmin = (Rest(Nm-1) + Rest(Nm) + Rest(Nm+1))/3.0_DP
     Np = Nb - Nm
-    dpls = (Rest(Nb) + Rest(Nb+1))/2.0_DP
+    dpls = (Rest(Np-1) + Rest(Np) + Rest(Np+1))/3.0_DP
 
     Return
   End Subroutine BstrpConfInt
@@ -1524,7 +1586,8 @@ CONTAINS
     Real (kind=DP) :: alphap(Size(Coef), Size(Coef)), Rlambda, &
          & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
 
-    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)), Idet
+    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)),&
+         & Idet, Ktot = 0
 
     Logical :: Cnt = .True.
 
@@ -1542,8 +1605,11 @@ CONTAINS
     Npoints = Size(X)
     Npar = Size(Coef)
     Rlambda = Rlambda_DEF
-    
+ 
+    Ktot = 0
+    Cnt = .True.
     Do While (Cnt)
+       Ktot = Ktot + 1
        alphap = 0.0_DP
        DCoef = 0.0_DP
        Cold = CalcCh2()
@@ -1581,7 +1647,8 @@ CONTAINS
           End If
        End If
        
-       If (kont >= Nconv) Then 
+       If ( (kont >= Nconv).or.(Ktot > MaxIter) ) Then
+!          Write(*,*)'Dentro: ', Kont, Ktot
           ChiSqrV = Cnew/Real(Npoints - Npar, kind=DP)
           Do K = 1, Npoints
              CALL Func(X(K), Coef, Vf, VD)
@@ -1662,7 +1729,8 @@ CONTAINS
     Real (kind=SP) :: alphap(Size(Coef), Size(Coef)), Rlambda, &
          & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
 
-    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)), Idet
+    Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)),&
+         & Idet, Ktot = 0
 
     Logical :: Cnt = .True.
 
@@ -1681,7 +1749,10 @@ CONTAINS
     Npar = Size(Coef)
     Rlambda = Rlambda_DEF
     
+    Ktot = 0
+    Cnt = .True.
     Do While (Cnt)
+       Ktot = Ktot + 1
        alphap = 0.0_SP
        DCoef = 0.0_SP
        Cold = CalcCh2()
@@ -1719,7 +1790,7 @@ CONTAINS
           End If
        End If
        
-       If (kont >= Nconv) Then 
+       If ( (kont >= Nconv).or.(Ktot > MaxIter) ) Then 
           ChiSqrV = Cnew/Real(Npoints - Npar, kind=SP)
           Do K = 1, Npoints
              CALL Func(X(K), Coef, Vf, VD)
@@ -1801,7 +1872,7 @@ CONTAINS
          & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
 
     Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)),&
-         & Idet, Ndim
+         & Idet, Ndim, Ktot = 0
 
     Logical :: Cnt = .True.
 
@@ -1821,7 +1892,10 @@ CONTAINS
     Npar = Size(Coef)
     Rlambda = Rlambda_DEF
     
+    Ktot = 0
+    Cnt = .True.
     Do While (Cnt)
+       Ktot = Ktot + 1
        alphap = 0.0_DP
        DCoef = 0.0_DP
        Cold = CalcCh2()
@@ -1859,7 +1933,7 @@ CONTAINS
           End If
        End If
        
-       If (kont >= Nconv) Then 
+       If ( (kont >= Nconv).or.(Ktot > MaxIter) ) Then 
           ChiSqrV = Cnew/Real(Npoints - Npar, kind=DP)
           Do K = 1, Npoints
              CALL Func(X(K,:), Coef, Vf, VD)
@@ -1942,7 +2016,7 @@ CONTAINS
          & Vf, Vd(Size(Coef)), Dcoef(Size(Coef)), Cold, Cnew, Cdif
 
     Integer :: Npoints, Npar, I, J, K, Kont = 0, Ipiv(Size(Coef)),&
-         & Idet, Ndim
+         & Idet, Ndim, Ktot = 0
 
     Logical :: Cnt = .True.
 
@@ -1962,7 +2036,10 @@ CONTAINS
     Npar = Size(Coef)
     Rlambda = Rlambda_DEF
     
+    Ktot = 0
+    Cnt = .True.
     Do While (Cnt)
+       Ktot = Ktot + 1
        alphap = 0.0_SP
        DCoef = 0.0_SP
        Cold = CalcCh2()
@@ -2000,7 +2077,7 @@ CONTAINS
           End If
        End If
        
-       If (kont >= Nconv) Then 
+       If ( (kont >= Nconv).or.(Ktot > MaxIter) ) Then 
           ChiSqrV = Cnew/Real(Npoints - Npar, kind=SP)
           Do K = 1, Npoints
              CALL Func(X(K,:), Coef, Vf, VD)
@@ -2083,6 +2160,5 @@ CONTAINS
 
     Return
   End Subroutine Permutation
-
 
 End MODULE Statistics

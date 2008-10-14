@@ -441,9 +441,7 @@ CONTAINS
     Type (Limits), Allocatable :: Stack(:)
     
     
-    Allocate(Stack(Size(X)))
-
-
+    Allocate(Stack(2*Size(X)))
 
     Stack(:)%Ileft = 0
     If (Present(Ipt)) Then
@@ -600,7 +598,7 @@ CONTAINS
     Type (Limits), Allocatable :: Stack(:)
     
     
-    Allocate(Stack(Size(X)))
+    Allocate(Stack(2*Size(X)))
 
 
 
@@ -759,7 +757,7 @@ CONTAINS
     Type (Limits), Allocatable :: Stack(:)
     
     
-    Allocate(Stack(Size(X)))
+    Allocate(Stack(2*Size(X)))
 
 
 
