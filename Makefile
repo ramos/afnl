@@ -1,5 +1,6 @@
 
 F90=ifort -warn all
+#F90=gfortran-4.2
 F90OPT=
 
 VPATH=src

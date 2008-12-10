@@ -231,153 +231,6 @@ Program Tests
 End Program Test
 \end{lstlisting}
 
-\section{Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
-\index{Normal@Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
-
-\subsection{Description}
-
-Fills \texttt{X(:)} with numbers from a normal distribution with mean
-\texttt{Rm}, and standard deviation \texttt{Rsig}. The parameters
-\texttt{Rm} and \texttt{Rsig} are optional. If they are not given the
-mean will be 0, and the standard deviation 1.
-
-\subsection{Arguments}
-
-\begin{description}
-\item[\texttt{X(:)}:] Real (Single or Double precision) one
-  dimensional array. A vector that will be filled with numbers
-  according to the normal distribution.
-\item[\texttt{Rm}:] Real (Single or Double precision), Optional. The
-  mean of the normal distribution. If not present the default value
-  is 0.
-\item[\texttt{Rsig}:] Real (Single or Double precision), Optional. The
-  standard deviation of the normal distribution.  If not present the
-  default value is 1. 
-\end{description}
-
-\subsection{Examples}
-
-\begin{lstlisting}[emph=Normal,
-                   emphstyle=\color{blue},
-                   frame=trBL,
-                   caption=Obtaining numbers with a normal distribution.,
-                   label=normal]
-Program Tests
-
-  USE NumTypes
-  USE Error
-  USE Statistics
-
-  Integer, Parameter :: Nmax = 100
-  Real (kind=DP) :: X(Nmax)
-
-
-  CALL Normal(X, 1.23_DP, 0.345_DP)
-  ! Now compute the mean and standard deviation of the data
-  Write(*,*)'We should obtain 1.23 and 0.345: '
-  Write(*,'(ES33.25)')Mean(X), Stddev(X)
-
-
-  Stop
-End Program Tests
-\end{lstlisting}
-
-
-\section{Subroutine \texttt{FishTipp(X, Rm, Rb)}}
-\index{FishTipp@Subroutine \texttt{FishTipp(X, Rm, Rb)}}
-
-\subsection{Description}
-
-Fills \texttt{X(:)} with numbers from a Fisher-Tippet distribution with
-parameters\footnote{More info about this distribution in the
-  Wikipedia: \href{http://en.wikipedia.org/wiki/Fisher-Tippett_distribution}{\texttt{http://en.wikipedia.org/wiki/Fisher-Tippett\_distribution}}} \texttt{Rm}, and $2\mathtt{Rb}^2$.
-
-\subsection{Arguments}
-
-\begin{description}
-\item[\texttt{X(:)}:] Real (Single or Double precision) one
-  dimensional array. A vector that will be filled with numbers
-  according to the normal distribution.
-\item[\texttt{Rm}:] Real (Single or Double precision). 
-\item[\texttt{Rb}:] Real (Single or Double precision). 
-\end{description}
-
-\subsection{Examples}
-
-\begin{lstlisting}[emph=FishTipp,
-                   emphstyle=\color{blue},
-                   frame=trBL,
-                   caption=Obtaining numbers with a Fisher-Tippet distribution.,
-                   label=fishtipp]
-Program Tests
-
-  USE NumTypes
-  USE Error
-  USE Statistics
-
-  Integer, Parameter :: Nmax = 100
-  Real (kind=DP) :: X(Nmax)
-
-
-  CALL FishTipp(X, 2.00_DP, 1.00_DP)
-  ! Now compute the mean and standard deviation of the data
-  Write(*,*)'We should obtain 2.57721... and 1.2782...: '
-  Write(*,'(ES33.25)')Mean(X), Stddev(X)
-
-
-  Stop
-End Program Tests
-\end{lstlisting}
-
-
-\section{Subroutine \texttt{Laplace(X, Rm, Rb)}}
-\index{Laplace@Subroutine \texttt{Laplace(X, Rm, Rb)}}
-
-\subsection{Description}
-
-Fills \texttt{X(:)} with numbers from a Laplace distribution with mean
-\texttt{Rm}, and variance $2\mathtt{Rb}^2$. 
-
-\subsection{Arguments}
-
-\begin{description}
-\item[\texttt{X(:)}:] Real (Single or Double precision) one
-  dimensional array. A vector that will be filled with numbers
-  according to the Laplace distribution.
-\item[\texttt{Rm}:] Real (Single or Double precision). The
-  mean of the Laplace distribution.
-\item[\texttt{Rb}:] Real (Single or Double precision). The
-  width of the Laplace distribution (i.e. The variance is
-  $2\mathtt{Rb}^2$).
-\end{description}
-
-\subsection{Examples}
-
-\begin{lstlisting}[emph=Laplace,
-                   emphstyle=\color{blue},
-                   frame=trBL,
-                   caption=Obtaining numbers with a Laplace distribution.,
-                   label=laplace]
-Program Tests
-
-  USE NumTypes
-  USE Error
-  USE Statistics
-
-  Integer, Parameter :: Nmax = 100
-  Real (kind=DP) :: X(Nmax)
-
-
-  CALL Laplace(X, 1.23_DP, 1.0_DP)
-  ! Now compute the mean and standard deviation of the data
-  Write(*,*)'We should obtain 1.23 and sqrt(2): '
-  Write(*,'(ES33.25)')Mean(X), Stddev(X)
-
-
-  Stop
-End Program Tests
-\end{lstlisting}
-
 \section{Subroutine \texttt{Histogram(Val, Ndiv, Ntics, Vmin, Vmax,
     h)}} 
 \index{Histogram@Subroutine \texttt{Histogram(Val, Ndiv, Ntics, Vmin, Vmax, h)}} 
@@ -755,6 +608,322 @@ Subroutine Func(X, Cf, Valf, ValD)
 
   
 End Subroutine Func
+\end{lstlisting}
+
+\section{Subroutine \texttt{SetLuxLevel(Ilevel)}}
+\index{SetLuxLevel@Subroutine \texttt{SetLuxLevel(Ilevel)}}
+
+\subsection{Description}
+
+This function changes the behaviour of the ``intrinsic''
+\texttt{Random\_Number} subroutine. To call the intrinsic
+\texttt{FORTRAN 90} routine, you should set the Luxury level to
+zero. Other values makes the \texttt{Random\_Number} subroutine use the
+Marsaglia and Zaman algorithm modified by
+M. L\"uscher~\cite{Luscher:1993dy}. This part of the code has some
+inspiration in the  \texttt{FORTRAN 90} implementation of Allan
+Miller. \textbf{Note:} This routine affects the way all the other
+routines that use pseudo random number generators works. That is to
+say, all the routines of this module that follow this one.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Ilevel}:] Integer. Set the way the random number
+  generator works. We have the following options:
+  \begin{itemize}
+  \item \texttt{Ilevel} $=0$. The default intrinsic \texttt{FROTRAN
+      90} routine is used. This is usually considered a \emph{bad},
+    non portable pseudo-random number generator, that you do not want
+    to use when correlations are important.
+  \item \texttt{Ilevel} $=1$. This is the original Marsaglia and
+    Zaman algorithm. Probably better than the intrinsic procedure, but
+    still with large correlations.
+  \item \texttt{Ilevel} $=2$. The M. L\"uscher modified version of the
+    algorithm with $p=48$. Still fail many tests, but a very good
+    pseudo-number generator for many things.
+  \item \texttt{Ilevel} $=3$. The M. L\"uscher modified version of the
+    algorithm with $p=97$. Theoretically still defective (fail the
+    serial correlation test).
+  \item \texttt{Ilevel} $=4$. The M. L\"uscher modified version of the
+    algorithm with $p=218$. Any theoretically possible correlation has
+    a very small probability of being observed. A value very similar
+    to this has been
+    used for large scale high precision lattice gauge theory
+    computations. This corresponds with the L\"uscher recommended level
+    0. 
+  \item \texttt{Ilevel} $=5$. The M. L\"uscher modified version of the
+    algorithm with $p=404$. Good for
+    anything you need the pseudo-random numbers (but cryptography, of
+    course). It seems completely pointless to use values of $p$ higher
+    than this.  This corresponds with the L\"uscher recommended level
+    1. This is the \textbf{default value}.
+  \item \texttt{Ilevel} $=6$. The M. L\"uscher modified version of the
+    algorithm with $p=794$. Good for
+    anything you need the pseudo-random numbers (but cryptography, of
+    course). Probably waste of computer resources.  This corresponds
+    with the L\"uscher recommended level 2. 
+  \item Other values of \texttt{Ilevel} $(>24)$. Sets the value of $p$
+    in the M. L\"uscher modified version of the algorithm. Don't use
+    it, unless you know what you are doing. 
+  \end{itemize}
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=SetLuxLevel,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Setting the Luxury level of the pseudo random number generator., 
+                   label=setluxlevel]
+Program Tests
+
+  USE NumTypes 
+  USE Statistics
+
+  Integer, Parameter :: NN = 70
+  Real (kind=SP) :: rr(NN)
+
+  CALL SetLuxLevel(5)
+  CALL Random_Number(rr)
+  Write(*,*)rr
+
+  
+  Stop
+End Program Tests
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{PutLuxSeed([ISeed(25)])}}
+\index{PutLuxSeed@Subroutine \texttt{PutLuxSeed([ISeed])}}
+
+\subsection{Description}
+
+Restarts the position in the Luxury pseudo-random number generator. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{ISeed(25)}:] Integer one dimensional array of 25
+  elements. Optional. If present, restarts the generator from an output
+  of \texttt{GetLuxSeed}. If not present, initialises the random
+  number generator.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=PutLuxSeed,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using a previously saved point in the generating process.,
+                   label=putluxseed]
+Program Tests
+
+  USE NumTypes 
+  USE Statistics
+
+  Integer, Parameter :: NN = 70
+  Real (kind=SP) :: rr(NN)
+  Integer :: Sd(25)
+
+
+  Open(Unit=69, File="seed.dat")
+  Read(69,*)Sd
+  CALL PutLuxSeed(Sd)
+  CALL Random_Number(rr)
+  Write(*,*)rr
+
+  
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{GetLuxSeed(ISeed(25))}}
+\index{GetLuxSeed@Subroutine \texttt{GetLuxSeed([ISeed])}}
+
+\subsection{Description}
+
+Saves the position in the Luxury pseudo-random number generator. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{ISeed(25)}:] Integer one dimensional array of 25
+  elements. Saves the position in the random number generator.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=GetLuxSeed,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Saving a point in the generating process.,
+                   label=getluxseed]
+Program Tests
+
+  USE NumTypes 
+  USE Statistics
+
+  Integer, Parameter :: NN = 70
+  Real (kind=SP) :: rr(NN)
+  Integer :: Sd(25)
+
+
+  CALL Random_Number(rr)
+  CALL GetLuxSeed(Sd)
+  Open(Unit=69, File="seed.dat")
+  Write(69,*)Sd
+
+  
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
+\index{Normal@Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a normal distribution with mean
+\texttt{Rm}, and standard deviation \texttt{Rsig}. The parameters
+\texttt{Rm} and \texttt{Rsig} are optional. If they are not given the
+mean will be 0, and the standard deviation 1.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[\texttt{Rm}:] Real (Single or Double precision), Optional. The
+  mean of the normal distribution. If not present the default value
+  is 0.
+\item[\texttt{Rsig}:] Real (Single or Double precision), Optional. The
+  standard deviation of the normal distribution.  If not present the
+  default value is 1. 
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Normal,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a normal distribution.,
+                   label=normal]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
+
+
+  CALL Normal(X, 1.23_DP, 0.345_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 1.23 and 0.345: '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{FishTipp(X, Rm, Rb)}}
+\index{FishTipp@Subroutine \texttt{FishTipp(X, Rm, Rb)}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a Fisher-Tippet distribution with
+parameters\footnote{More info about this distribution in the
+  Wikipedia: \href{http://en.wikipedia.org/wiki/Fisher-Tippett_distribution}{\texttt{http://en.wikipedia.org/wiki/Fisher-Tippett\_distribution}}} \texttt{Rm}, and $2\mathtt{Rb}^2$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[\texttt{Rm}:] Real (Single or Double precision). 
+\item[\texttt{Rb}:] Real (Single or Double precision). 
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=FishTipp,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a Fisher-Tippet distribution.,
+                   label=fishtipp]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
+
+
+  CALL FishTipp(X, 2.00_DP, 1.00_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 2.57721... and 1.2782...: '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{Laplace(X, Rm, Rb)}}
+\index{Laplace@Subroutine \texttt{Laplace(X, Rm, Rb)}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a Laplace distribution with mean
+\texttt{Rm}, and variance $2\mathtt{Rb}^2$. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the Laplace distribution.
+\item[\texttt{Rm}:] Real (Single or Double precision). The
+  mean of the Laplace distribution.
+\item[\texttt{Rb}:] Real (Single or Double precision). The
+  width of the Laplace distribution (i.e. The variance is
+  $2\mathtt{Rb}^2$).
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Laplace,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a Laplace distribution.,
+                   label=laplace]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
+
+
+  CALL Laplace(X, 1.23_DP, 1.0_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 1.23 and sqrt(2): '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
 \end{lstlisting}
 
 \section{Subroutine/Function \texttt{Irand([Irnd], N, M)}}

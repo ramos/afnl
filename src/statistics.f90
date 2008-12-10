@@ -93,6 +93,10 @@ MODULE Statistics
           & MultiLinearReg_DP, MultiLinearReg_SP
   End Interface
 
+  Interface Random_Number
+     Module Procedure My_Random_Number_SP, My_Random_Number_DP, &
+          & My_Random_Number_SP_S, My_Random_Number_DP_S
+  End Interface
   
   ! Parameters to tune the Nonlinear fitting routines:
   !
@@ -108,6 +112,18 @@ MODULE Statistics
        & RFACTOR_DEF = 10.0_DP
   Integer :: Nconv = 2, MaxIter = 10000
 
+  ! Parameters for Luxury random number generator
+  Integer, Parameter :: LUX_jump(6) = (/0, 24, 73, 194, 380, 770/)
+  Integer, Parameter :: LUX_base = 24
+  Integer :: LUX_RndLevel = 5 ! Default a cheap and bad 
+                          ! random number generator:
+                          ! the intrinsic F90 routine
+  Real (kind=SP) :: LUX_Seed(LUX_base)
+  Real (kind=SP) :: LUX_carry, LUX_lastbit
+  Logical :: LUX_FirstCall = .True.
+  Integer :: LUX_ir, LUX_is, LUX_next(LUX_base), LUX_Pos
+  
+
 
   Private NormalS, NormalV, NormalS2, NormalV2, &
        & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP, &
@@ -119,7 +135,11 @@ MODULE Statistics
        & FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP, &
        & Irand_S, Irand_V, EstBstrp_H, NonLinearReg_DP, TOL, &
        & Rlambda_DEF, Nconv, RFACTOR_DEF, NonLinearReg_SP, &
-       & MultiNonLinearReg_SP, Median_SP, Median_DP
+       & MultiNonLinearReg_SP, Median_SP, Median_DP, LUX_base, &
+       & LUX_seed, LUX_carry, LUX_lastbit, LUX_FirstCall, &
+       & LUX_RndLevel, LUX_Init, LUX_jump, My_Random_Number_SP, &
+       & My_Random_Number_DP, RanLux_SP, RanLux_DP, RanLux_SP_S,&
+       & My_Random_Number_SP_S, My_Random_Number_DP_S, RanLux_DP_S
 
 CONTAINS
 
@@ -1390,7 +1410,7 @@ CONTAINS
     N  = Size(Ibt,1)
 
     Do I = 1, N
-       CALL Irand(Ibt(I,:), 1, N) 
+       CALL Irand_V(Ibt(I,:), 1, N) 
     End Do
 
     Return
@@ -2160,5 +2180,321 @@ CONTAINS
 
     Return
   End Subroutine Permutation
+
+! ********************************************
+! *
+  Subroutine PutLuxSeed(ISeed)
+! *
+! ********************************************
+! * 
+! ********************************************
+
+    Integer, Intent (in), Optional :: ISeed(LUX_base+1)
+
+    Integer :: I, jseed, it24, k 
+
+
+    If (LUX_FirstCall) Then
+       LUX_FirstCall = .False.
+       CALL LUX_Init()
+    End If
+       
+    If (Present(Iseed)) Then
+       If (ISeed(LUX_base+1) < 0) Then
+          LUX_carry = LUX_lastbit
+       Else
+          LUX_carry = 0.0_SP
+       End If
+       LUX_ir = Mod(Abs(ISeed(LUX_base+1)), 100)
+       LUX_is = Mod(Int(Abs(ISeed(LUX_base+1))/100), 100)
+       LUX_RndLevel = Mod(Int(Abs(ISeed(LUX_base+1))/10000), 100)
+       LUX_Pos = Mod(Int(Abs(ISeed(LUX_base+1))/1000000), 100)
+       
+       LUX_Seed(1:LUX_base) = Real(ISeed(1:LUX_base),kind=SP) * LUX_lastbit
+    Else
+       ! Switch to default initialization. Try to make it equal 
+       ! as in the reference code by Allan miller.
+       CALL LUX_Init()
+       jseed = 314159265
+       it24 = 2**24
+       Do I = 1, LUX_base
+          k = Int(jseed/53668)
+          jseed = 40014 * (jseed-k*53668) - k * 12211
+          If (jseed < 0) jseed = jseed + 2147483563
+          LUX_Seed(I) = Real(Mod(jseed,it24),kind=SP) * LUX_lastbit
+       End Do
+    End If
+
+    Return
+  End Subroutine PutLuxSeed
+
+! ********************************************
+! *
+  Subroutine GetLuxSeed(ISeed)
+! *
+! ********************************************
+! * Output the seed, and the position on the 
+! * generator as a vector of 25 integers.
+! ********************************************
+
+    Integer, Intent (out) :: ISeed(LUX_base+1)
+     
+    If (LUX_firstcall) Then
+       CALL Perror('GetLuxSeed: ', 'Seed of the luxury Random Number generator not initialised.')
+       Return
+    End If
+
+    ISeed(1:LUX_base) = Int(Lux_Seed(1:LUX_base)*Scale(1.0_SP, 12)**2)
+    
+    ISeed(LUX_base+1) = LUX_ir + 100*LUX_is + 10000*LUX_RndLevel + &
+         & 1000000*LUX_Pos
+    If (LUX_carry > 0.0_SP) ISeed(LUX_base+1) = -ISeed(LUX_base+1) 
+
+    Return
+  End Subroutine GetLuxSeed
+
+! ********************************************
+! *
+  Subroutine RanLux_SP(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+    
+
+  Real (kind=SP), Intent (out) :: Rnd(:)
+
+  Real (kind=SP) :: Delta
+  Integer :: RndLen, I, J, Njump  
+
+  If (LUX_FirstCall) Then
+     LUX_FirstCall = .False.
+     CALL LUX_Init()
+     CALL PutLuxSeed()
+  End If
+  
+  Rndlen = Size(Rnd, 1)
+  If (LUX_RndLevel <= 6) Then
+     Njump = LUX_jump(LUX_RndLevel)
+  Else If (LUX_RndLevel < 24) Then
+     CALL Perror('RanLux_SP', 'This Random Level has no sense for LUXURY. Swithching to default Random Level')
+     Njump = LUX_jump(5)
+  Else
+     Njump = LUX_RndLevel - 24
+  End If
+
+  I = 0
+  Do While (.True.)
+     Do J = LUX_Pos, 24
+        Delta = LUX_Seed(LUX_is) - LUX_Seed(LUX_ir) - LUX_carry
+        If (Delta < 0.0_SP) Then
+           Delta = Delta + 1.0_SP
+           LUX_carry = LUX_lastbit
+        Else
+           LUX_carry = 0.0_SP
+        End If
+        LUX_Seed(LUX_ir) = Delta
+        LUX_ir = LUX_next(LUX_ir)
+        LUX_is = LUX_next(LUX_is)
+        I = I + 1
+        Rnd(I) = Delta
+        If (I == RndLen) Then
+           LUX_Pos = J + 1
+           Return
+        End If
+     End Do
+     LUX_Pos = 1
+
+     Do J = 1, Njump
+        Delta = LUX_Seed(LUX_is) - LUX_Seed(LUX_ir) - LUX_carry
+        If (Delta < 0.0_SP) Then
+           Delta = Delta + 1.0_SP
+           LUX_carry = LUX_lastbit
+        Else
+           LUX_carry = 0.0_SP
+        End If
+        LUX_Seed(LUX_ir) = Delta
+        LUX_ir = LUX_next(LUX_ir)
+        LUX_is = LUX_next(LUX_is)
+     End Do
+  End Do
+
+  Return
+End Subroutine RanLux_SP
+
+
+! ********************************************
+! *
+Subroutine RanLux_SP_S(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+    
+  Real (kind=SP), Intent (out) :: Rnd
+  
+  Real (kind=SP) :: R(1)
+
+  CALL RanLux_SP(R)
+  Rnd = R(1)
+
+  Return
+End Subroutine RanLux_SP_S
+
+! ***********************************
+! *
+Subroutine LUX_init()
+! *
+! ************************************
+
+  Integer :: I
+
+  Forall (I=2:LUX_base) LUX_next(I) = I-1
+  LUX_next(1) = LUX_base
+  LUX_ir = LUX_base
+  LUX_is = 10
+  
+  LUX_lastbit = Scale(1.0_SP, -LUX_base) ! = 2^{-24}
+  LUX_carry = 0.0_SP
+  LUX_Pos = 1
+
+  Return
+End Subroutine LUX_init
+
+! ********************************************
+! *
+  Subroutine RanLux_DP(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+    
+
+  Real (kind=DP), Intent (out) :: Rnd(:)
+
+  Real (kind=SP) :: Raux(2*Size(Rnd))
+  Integer :: I
+
+
+  CALL RanLux_SP(Raux)
+  Do I = 1, Size(Rnd)
+     Rnd(I) = Real(Raux(2*I-1),kind=DP) + Real(Raux(2*I))*LUX_lastbit
+  End Do
+
+  Return
+End Subroutine RanLux_DP
+
+! ********************************************
+! *
+  Subroutine RanLux_DP_S(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+    
+
+  Real (kind=DP), Intent (out) :: Rnd
+
+  Real (kind=SP) :: Raux(2)
+
+
+  CALL RanLux_SP(Raux)
+  Rnd = Real(Raux(1),kind=DP) + Real(Raux(2))*LUX_lastbit
+
+
+  Return
+End Subroutine RanLux_DP_S
+
+! ********************************************
+! *
+  Subroutine SetLuxLevel(Ilevel)
+! *
+! ********************************************
+! * 
+! ********************************************
+
+    Integer, Intent (in) :: Ilevel
+
+    LUX_RndLevel = Ilevel
+
+    Return
+  End Subroutine SetLuxLevel
+
+! ********************************************
+! *
+  Subroutine My_Random_Number_SP(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+
+    Real (kind=SP), Intent (out) :: Rnd(:)
+
+    If (LUX_RndLevel == 0) Then
+       CALL Random_Number(Rnd)
+    Else
+       CALL RanLux_SP(Rnd)
+    End If
+       
+    Return
+  End Subroutine My_Random_Number_SP
+
+
+! ********************************************
+! *
+  Subroutine My_Random_Number_DP(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+
+    Real (kind=DP), Intent (out) :: Rnd(:)
+
+    If (LUX_RndLevel == 0) Then
+       CALL Random_Number(Rnd)
+    Else
+       CALL RanLux_DP(Rnd)
+    End If
+       
+    Return
+  End Subroutine My_Random_Number_DP
+
+! ********************************************
+! *
+  Subroutine My_Random_Number_SP_S(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+
+    Real (kind=SP), Intent (out) :: Rnd
+
+    If (LUX_RndLevel == 0) Then
+       CALL Random_Number(Rnd)
+    Else
+       CALL RanLux_SP_S(Rnd)
+    End If
+       
+    Return
+  End Subroutine My_Random_Number_SP_S
+
+! ********************************************
+! *
+  Subroutine My_Random_Number_DP_S(Rnd)
+! *
+! ********************************************
+! * 
+! ********************************************
+
+    Real (kind=DP), Intent (out) :: Rnd
+
+    If (LUX_RndLevel == 0) Then
+       CALL Random_Number(Rnd)
+    Else
+       CALL RanLux_DP_S(Rnd)
+    End If
+       
+    Return
+  End Subroutine My_Random_Number_DP_S
 
 End MODULE Statistics
