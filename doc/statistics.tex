@@ -317,10 +317,13 @@ tells which point, and the second which variable.
 \item[\texttt{Y(:)}: ] Real single or double precision one dimensional
   array. The dependent
   variable.
-\item[\texttt{Yerr(:)}:] Real single or double precision one
-  dimensional array. The errors
-  of the points. If you don't have them, you should put all of hem to
-  some non-zero value.
+\item[\texttt{Yerr(:[,:])}:] Real single or double precision one or
+  two
+  dimensional array. If a one dimensional array is inserted, they are
+  the errors 
+  of the points (if you don't have them, you should put all of them to
+  some non-zero value). If a two dimensional array is given, it is
+  treated as the correlation matrix.
 \item[\texttt{Func}:] Optional. This routine define the functions to
   fit. An interface like this should be provided
 \begin{verbatim}
@@ -480,10 +483,13 @@ optimisation\footnote{\href{http://en.wikipedia.org/wiki/Levenberg-Marquardt_alg
 \item[\texttt{Y(:)}: ] Real single or double precision one dimensional
   array. The dependent
   variable.
-\item[\texttt{Yerr(:)}:] Real single or double precision one
-  dimensional array. The errors
-  of the points. If you don't have them, you should put all of them to
-  some non-zero value.
+\item[\texttt{Yerr(:[,:])}:] Real single or double precision one or
+  two
+  dimensional array. If a one dimensional array is inserted, they are
+  the errors 
+  of the points (if you don't have them, you should put all of them to
+  some non-zero value). If a two dimensional array is given, it is
+  treated as the correlation matrix.
 \item[\texttt{Func}:] This routine define the functions to
   fit. An interface like this should be provided
 \begin{verbatim}
