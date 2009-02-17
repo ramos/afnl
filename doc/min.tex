@@ -2,7 +2,353 @@
 This is the documentation of the MODULE \texttt{Optimization}, a set
 of routines to Optimise (maximise or minimise) functions of one or
 several variables. Lot of work is needed to improve this module
-(conjugate gradient, simplex, etc...).
+(simplex, quasi-Newton methods, etc...).
+
+\section{Subroutine \texttt{Bracket(X1, X2, X3, Func) }}
+\index{bracket@Subroutine \texttt{Bracket(X1, X2, X3, Func)}}
+
+\subsection{Description}
+
+The routine \texttt{Bracket(X1, X2, X3, FStep)} ``brackets'' a minimum
+of the function  \texttt{Func}. That is to say, after calling,
+`\texttt{X1, X2} and \texttt{X3} obey
+\begin{equation}
+  \mathtt{X1 < X2 < X3}
+\end{equation}
+and
+\begin{equation}
+  \mathtt{Func}(\mathtt{X1}) > \mathtt{Func}(\mathtt{X2})\quad \text{and}\quad \mathtt{Func}(\mathtt{X3})
+  > \mathtt{Func}(\mathtt{X2}) 
+\end{equation}
+This assures that \texttt{Func} has a minimum in the interval
+$(\mathtt{X1,X3})$. The bracketing of the minimum obey the golden
+rule, that is to say
+\begin{equation}
+  (\mathtt{X2-X1}) = \Phi (\mathtt{X3-X2})
+\end{equation}
+where $\Phi$ is the golden number
+\begin{equation}
+  \Phi = \frac{1+\sqrt{5}}{2}
+\end{equation}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X1,X2,X3}:] Real single or double precision. At output,
+  they bracket a minimum of \texttt{Func}. If you have a guess of the
+  minimum of \texttt{Func}, introduce it in \texttt{X2}.
+  of the minimum.
+\item[\texttt{Func}:]  The function whose minimum we want to
+  bracket. An interface like the following should be 
+  declared
+\begin{verbatim}
+  Interface
+     Function Func(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo
+       Real (kind=DP) :: Func
+     End Function Func
+  End Interface
+\end{verbatim}
+\end{description}
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=Bracket,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Bracketing a minimum.,
+                   label=Bracket]
+Program TestMin
+
+  USE NumTypes
+  USE Optimization
+
+  Real (kind=DP) :: X1, X2, X3
+  
+  Interface
+     Function FstepM(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo
+       Real (kind=DP) :: FstepM
+     End Function FstepM
+  End Interface
+  
+
+  ! Initial guess of the position of the minimum
+  X2 = 2.0_DP
+
+  CALL Bracket(X1,X2,X3, FstepM)
+  Write(*,*)
+  Write(*,*)'Minimum bracketed: '
+  
+  Write(*,'(1A,1ES33.25)')'X1: ', X1
+  Write(*,'(1A,1ES33.25)')'X2: ', X2
+  Write(*,'(1A,1ES33.25)')'X3: ', X3
+
+  Stop
+End Program TestMin
+
+! *******************************
+! *
+Function FstepM(Xo)
+! *
+! *******************************
+
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: Xo
+  Real (kind=DP) :: FstepM
+
+  
+  FstepM = Sin(Xo)
+
+
+  Return
+End Function FstepM
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{LineSrch(X, Func[, Tol]) }}
+\index{linesrch@Subroutine \texttt{LineSrch(X, Func[, Tol])}}
+
+\subsection{Description}
+
+The function \texttt{LineSrch(X, FStep, Tol)} returns the position of the
+minimum of the Function \texttt{Fstep} with an optional precision
+\texttt{Tol}. This routine does not need the values of the
+derivative(s) of the function to work.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X[(:)]}:] Real single or double precision. An initial guess
+  of the position of the minimum when input. At output, the position
+  of the minimum.
+\item[\texttt{Func}:]  The function that we want to minimise. It can
+  be a function of one or several variables. In the case of one
+  variable functions an interface like the following should be
+  declared
+\begin{verbatim}
+  Interface
+     Function Func(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo
+       Real (kind=DP) :: Func
+     End Function Func
+  End Interface
+\end{verbatim}
+  In the case of a function of several variables, the interface block
+  should be like the following
+\begin{verbatim}
+  Interface
+     Function Func(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo(:)
+       Real (kind=DP) :: Func
+     End Function Func
+  End Interface
+\end{verbatim}
+
+\item[\texttt{Tol}:] Real single or double precision. As estimation of
+  the precision of the result. The dafult value is $10^{-3}$.
+  
+\end{description}
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=LineSrch,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Minimising a function.,
+                   label=linesrch]
+Program TestMin
+
+  USE NumTypes
+  USE Optimization
+
+  Integer, Parameter :: Ndim = 4
+  Real (kind=DP) :: XoM(Ndim)
+  
+  Interface
+     Function FstepM(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo(:)
+       Real (kind=DP) :: FstepM
+     End Function FstepM
+  End Interface
+  
+
+  ! Initial guess of the position of the minimum
+  XoM(1) = 1.373_DP
+  XoM(2) = 1.373_DP
+  XoM(3) = 1.373_DP
+  XoM(4) = 1.373_DP
+  
+
+  Write(*,*)'Initial Position: '
+  Do I = 1, Ndim
+     Write(*,'(1A,1I4,1A,1ES33.25)')'Variable ', I, " : ", XoM(I)
+  End Do
+  
+  CALL LineSrch(XoM, FstepM, 1.0E-7_DP)
+  Write(*,*)
+  Write(*,*)'Position of the minimum: '
+  Do I = 1, Ndim
+     Write(*,'(1A,1I4,1A,1ES33.25)')'Variable ', I, " : ", XoM(I)
+  End Do
+
+  Stop
+End Program TestMin
+
+! *******************************
+! *
+Function FstepM(Xo)
+! *
+! *******************************
+
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: Xo(:)
+  Real (kind=DP) :: FstepM
+
+  
+  FstepM = (Xo(1)-1.0_DP)**2 + &
+       & (Xo(2)-2.0_DP)**2 + &
+       & (Xo(3)+3.0_DP)**4 + &
+       & (Xo(4)-4.0_DP)**8 
+
+
+  Return
+End Function FstepM
+\end{lstlisting}
+
+\section{Subroutine \texttt{ConjGrad(X, F, Fd[, Tol]) }}
+\index{ConjGrad@Subroutine \texttt{ConjGrad(X, F, Fd[, Tol]) }}
+
+\subsection{Description}
+
+The function \texttt{ConjGrad(X, F, Fd[, Tol])} returns the position of the
+minimum of the Function \texttt{F} with an optional precision
+\texttt{Tol}. This routine uses the conjugate gradient method, and
+should be much faster that \texttt{LineSrch}, but you must be able to
+compute the derivatives of \texttt{F}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real single or double precision. An initial guess
+  of the position of the minimum when input. At output, the position
+  of the minimum.
+\item[\texttt{F}:]  The function that we want to minimise. 
+  An interface block like the following should be defined.
+\begin{verbatim}
+  Interface
+     Function F(Xo)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: Xo(:)
+       Real (kind=DP) :: F
+     End Function F
+  End Interface
+\end{verbatim}
+
+\item[\texttt{Fd}:]  The gradient of the function that we want to minimise. 
+  An interface block like the following should be defined.
+\begin{verbatim}
+  Interface 
+     Subroutine Fd(X, D)
+       USE NumTypes
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP), Intent (out) :: D(Size(X))
+     End Subroutine Fd
+  End Interface
+\end{verbatim}
+where the vector $D$ returns the value of the derivatives.
+
+\item[\texttt{Tol}:] Real single or double precision. As estimation of
+  the precision of the result. The dafult value is $10^{-3}$.
+  
+\end{description}
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=ConjGrad,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Minimising a function.,
+                   label=ConjGrad]
+Program TestMin
+
+Program OOOO
+
+  USE NumTypes
+  USE Optimization
+  
+  Real (kind=DP) Xx(2)
+
+  Interface 
+     Function F(X)
+       USE NumTypes
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP) :: F
+     End Function F
+  End Interface
+
+  Interface 
+     Subroutine Fd(X, D)
+       USE NumTypes
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP), Intent (out) :: D(Size(X))
+     End Subroutine Fd
+  End Interface
+
+
+  Xx = 112.0_DP
+
+  CALL ConjGrad(Xx, F, Fd, 1.E-10_DP)
+  Write(*,*)'Minimo: ', Xx
+
+  Stop
+End Program Test
+
+
+Function F(X)
+
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: X(:)
+  Real (kind=DP) :: F
+
+
+  F = (X(1)-2.23_DP)**2 + (X(2)+1.23_DP)**2 + X(1)*X(2) + Sin(X(1)*X(2))
+
+
+  Return
+End Function F
+
+
+Subroutine Fd(X, D)
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: X(:)
+  Real (kind=DP), Intent (out) :: D(Size(X))
+
+  D(1) = (X(1)-2.23_DP)*2 + X(2) + Cos(X(1)*X(2))*X(2)
+  D(2) = (X(2)+1.23_DP)*2 + X(1) + Cos(X(1)*X(2))*X(1)
+
+  Return
+End Subroutine Fd
+
+
+\end{lstlisting}
+
+
 
 \section{Function \texttt{Step(X, FStep[, Tol]) }}
 \index{step@Function \texttt{Step(X, FStep[, Tol])}}
@@ -11,7 +357,8 @@ several variables. Lot of work is needed to improve this module
 
 The function \texttt{Step(X, FStep, Tol)} returns the position of the
 minimum of the Function \texttt{Fstep} with an optional precision
-\texttt{Tol}. 
+\texttt{Tol}. Unless you know very well what you are doing, you should
+use \texttt{LineSrch} or \texttt{ConjGrad} to minimize functions.
 
 \subsection{Arguments}
 
