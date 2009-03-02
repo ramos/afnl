@@ -63,9 +63,18 @@ MODULE SpecialFunc
      Module Procedure Factorial_DP
   End Interface
 
+  Interface erf
+     Module Procedure erf_DP, erf_SP
+  End Interface
+
+  Interface erfc
+     Module Procedure erfc_DP, erfc_SP
+  End Interface
+
   Private DEFTOL, Theta3, ThetaChar_DPC, Hermite_DP, &
        &Hermite_SP, HermiteFunc_SP, HermiteFunc_DP, Basis_DPC,&
-       & Basis_SPC, Factorial_DP
+       & Basis_SPC, Factorial_DP, erf_DP, erf_SP, &
+       & erfc_DP, erfc_SP
 
 CONTAINS
 
@@ -596,5 +605,366 @@ CONTAINS
           
     Return
   End Function Factorial_DP
+
+! *************************************
+! *
+  Real (kind=DP) Function erf_DP(X)
+! *
+! *************************************
+! * Compute the error function for real
+! * arguments. DP version.
+! * Based on implementation by W. J. Cody
+! * supossed to be exact up to double 
+! * precision.
+! *************************************
+
+    Real (kind=DP), Intent (in) :: X
+
+    Real (kind=DP) :: Xabs, Rnum, Rden, Xsqr
+    Real (kind=DP) :: Dt1 = 0.46875_DP, Dt2 = 4.0_DP, Xmax = 6.0_DP
+    Real (kind=DP) :: Cfa1(5), Cfb1(4), Cfa2(9), Cfb2(8), &
+         & Cfa3(6), Cfb3(5)
+
+    Integer :: I
+
+    ! Coeficients for first interval computation
+    Data Cfa1 /3.16112374387056560_DP, 1.13864154151050156E2_DP, &
+         & 3.77485237685302021E2_DP, 3.20937758913846947E3_DP, &
+         & 1.85777706184603153E-1_DP/
+    Data Cfb1 /2.36012909523441209E1_DP, 2.44024637934444173E2_DP, &
+         & 1.28261652607737228E3_DP, 2.84423683343917062E3_DP/
+
+    ! Coeficients for second interval computation
+    Data Cfa2 /5.64188496988670089E-1_DP,8.88314979438837594_DP, &
+         & 6.61191906371416295E1_DP,2.98635138197400131E2_DP, &
+         & 8.81952221241769090D02,1.71204761263407058E3_DP, &
+         & 2.05107837782607147E3_DP,1.23033935479799725E3_DP, &
+         & 2.15311535474403846E-8_DP/
+    Data Cfb2 / 1.57449261107098347E1_DP,1.17693950891312499E2_DP, &
+         & 5.37181101862009858E2_DP,1.62138957456669019E3_DP, &
+         & 3.29079923573345963E3_DP,4.36261909014324716E3_DP, &
+         & 3.43936767414372164E3_DP,1.23033935480374942E3_DP/
+
+    ! Coeficients for last interval computation
+    Data Cfa3 /3.05326634961232344E-1_DP,3.60344899949804439E-1_DP, &
+         & 1.25781726111229246E-1_DP,1.60837851487422766E-2_DP, &
+         & 6.58749161529837803E-4_DP,1.63153871373020978E-2_DP/  
+
+    Data Cfb3/2.56852019228982242_DP,1.87295284992346047_DP, &
+         & 5.27905102951428412E-1_DP,6.05183413124413191E-2_DP, &
+         & 2.33520497626869185E-3_DP/
+
+
+    Xabs = Abs(X)
+    Xsqr = X**2
+    If (Xabs < Dt1) Then
+       Rnum = Cfa1(5)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 3
+          Rnum = (Rnum + Cfa1(I)) * Xsqr
+          Rden = (Rden + Cfb1(I)) * Xsqr
+       End Do
+       erf_DP = Sign(X * (Rnum + Cfa1(4)) / (Rden + Cfb1(4)), X)
+       Return
+    Else If (Xabs < Dt2) Then
+       Rnum = Cfa2(9)*Xabs
+       Rden = Xabs
+       Do I = 1, 7
+          Rnum = (Rnum + Cfa2(I)) * Xabs
+          Rden = (Rden + Cfb2(I)) * Xabs
+       End Do
+       erf_DP = Sign( 1.0_DP - Exp(-X**2) * &
+            & (Rnum + Cfa2(8)) / (Rden + Cfb2(8)), X)
+       Return
+    Else If (Xabs < Xmax) Then
+       Xsqr = 1.0_DP / X**2
+       Rnum = Cfa3(6)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 4
+          Rnum = (Rnum + Cfa3(I)) * Xsqr
+          Rden = (Rden + Cfb3(I)) * Xsqr
+       End Do
+       erf_DP = Xsqr * (Rnum + Cfa3(5)) / (Rden + Cfb3(5))
+       erf_DP = ( 1.0_DP/Srpi_DP - erf_DP ) / Xabs
+       erf_DP = Sign( 1.0_DP - Exp(-X**2)*erf_DP, X)
+       Return
+    Else
+       erf_DP = 1.0_DP
+       Return
+    End If
+
+
+    Return
+  End Function erf_DP
+
+! *************************************
+! *
+  Real (kind=DP) Function erfc_DP(X)
+! *
+! *************************************
+! * Compute the complementary error function 
+! * for real arguments. DP version.
+! * Based on implementation by W. J. Cody
+! * supossed to be exact up to double 
+! * precision.
+! *************************************
+
+    Real (kind=DP), Intent (in) :: X
+
+    Real (kind=DP) :: Xabs, Rnum, Rden, Xsqr
+    Real (kind=DP) :: Dt1 = 0.46875_DP, Dt2 = 4.0_DP, Xmax = 30.0_DP
+    Real (kind=DP) :: Cfa1(5), Cfb1(4), Cfa2(9), Cfb2(8), &
+         & Cfa3(6), Cfb3(5)
+
+    Integer :: I
+
+    ! Coeficients for first interval computation
+    Data Cfa1 /3.16112374387056560_DP, 1.13864154151050156E2_DP, &
+         & 3.77485237685302021E2_DP, 3.20937758913846947E3_DP, &
+         & 1.85777706184603153E-1_DP/
+    Data Cfb1 /2.36012909523441209E1_DP, 2.44024637934444173E2_DP, &
+         & 1.28261652607737228E3_DP, 2.84423683343917062E3_DP/
+
+    ! Coeficients for second interval computation
+    Data Cfa2 /5.64188496988670089E-1_DP,8.88314979438837594_DP, &
+         & 6.61191906371416295E1_DP,2.98635138197400131E2_DP, &
+         & 8.81952221241769090D02,1.71204761263407058E3_DP, &
+         & 2.05107837782607147E3_DP,1.23033935479799725E3_DP, &
+         & 2.15311535474403846E-8_DP/
+    Data Cfb2 / 1.57449261107098347E1_DP,1.17693950891312499E2_DP, &
+         & 5.37181101862009858E2_DP,1.62138957456669019E3_DP, &
+         & 3.29079923573345963E3_DP,4.36261909014324716E3_DP, &
+         & 3.43936767414372164E3_DP,1.23033935480374942E3_DP/
+
+    ! Coeficients for last interval computation
+    Data Cfa3 /3.05326634961232344E-1_DP,3.60344899949804439E-1_DP, &
+         & 1.25781726111229246E-1_DP,1.60837851487422766E-2_DP, &
+         & 6.58749161529837803E-4_DP,1.63153871373020978E-2_DP/  
+
+    Data Cfb3/2.56852019228982242_DP,1.87295284992346047_DP, &
+         & 5.27905102951428412E-1_DP,6.05183413124413191E-2_DP, &
+         & 2.33520497626869185E-3_DP/
+
+
+    Xabs = Abs(X)
+    Xsqr = X**2
+    If (Xabs < Dt1) Then
+       Rnum = Cfa1(5)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 3
+          Rnum = (Rnum + Cfa1(I)) * Xsqr
+          Rden = (Rden + Cfb1(I)) * Xsqr
+       End Do
+       erfc_DP = 1.0_DP - Sign(X * (Rnum + Cfa1(4)) / (Rden + Cfb1(4)), X)
+       Return
+    Else If (Xabs < Dt2) Then
+       Rnum = Cfa2(9)*Xabs
+       Rden = Xabs
+       Do I = 1, 7
+          Rnum = (Rnum + Cfa2(I)) * Xabs
+          Rden = (Rden + Cfb2(I)) * Xabs
+       End Do
+       erfc_DP = Exp(-X**2) * (Rnum + Cfa2(8)) / (Rden + Cfb2(8))
+    Else If (Xabs < Xmax) Then
+       Xsqr = 1.0_DP / X**2
+       Rnum = Cfa3(6)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 4
+          Rnum = (Rnum + Cfa3(I)) * Xsqr
+          Rden = (Rden + Cfb3(I)) * Xsqr
+       End Do
+       erfc_DP = Xsqr * (Rnum + Cfa3(5)) / (Rden + Cfb3(5))
+       erfc_DP = ( 1.0_DP/Srpi_DP - erfc_DP ) / Xabs
+       erfc_DP = Exp(-X**2)*erfc_DP
+    Else
+       erfc_DP = 0.0_DP
+       Return
+    End If
+
+    If (X < 0.0_DP) erfc_DP = 2.0_DP - erfc_DP    
+
+    Return
+  End Function erfc_DP
+
+
+! *************************************
+! *
+  Real (kind=SP) Function erf_SP(X)
+! *
+! *************************************
+! * Compute the error function for real
+! * arguments. SP version.
+! * Based on implementation by W. J. Cody
+! * supossed to be exact up to double 
+! * precision.
+! *************************************
+
+    Real (kind=SP), Intent (in) :: X
+
+    Real (kind=SP) :: Xabs, Rnum, Rden, Xsqr
+    Real (kind=SP) :: Dt1 = 0.46875_SP, Dt2 = 4.0_SP, Xmax = 6.0_SP
+    Real (kind=SP) :: Cfa1(5), Cfb1(4), Cfa2(9), Cfb2(8), &
+         & Cfa3(6), Cfb3(5)
+
+    Integer :: I
+
+    ! Coeficients for first interval computation
+    Data Cfa1 /3.16112374387056560_SP, 1.13864154151050156E2_SP, &
+         & 3.77485237685302021E2_SP, 3.20937758913846947E3_SP, &
+         & 1.85777706184603153E-1_SP/
+    Data Cfb1 /2.36012909523441209E1_SP, 2.44024637934444173E2_SP, &
+         & 1.28261652607737228E3_SP, 2.84423683343917062E3_SP/
+
+    ! Coeficients for second interval computation
+    Data Cfa2 /5.64188496988670089E-1_SP,8.88314979438837594_SP, &
+         & 6.61191906371416295E1_SP,2.98635138197400131E2_SP, &
+         & 8.81952221241769090D02,1.71204761263407058E3_SP, &
+         & 2.05107837782607147E3_SP,1.23033935479799725E3_SP, &
+         & 2.15311535474403846E-8_SP/
+    Data Cfb2 / 1.57449261107098347E1_SP,1.17693950891312499E2_SP, &
+         & 5.37181101862009858E2_SP,1.62138957456669019E3_SP, &
+         & 3.29079923573345963E3_SP,4.36261909014324716E3_SP, &
+         & 3.43936767414372164E3_SP,1.23033935480374942E3_SP/
+
+    ! Coeficients for last interval computation
+    Data Cfa3 /3.05326634961232344E-1_SP,3.60344899949804439E-1_SP, &
+         & 1.25781726111229246E-1_SP,1.60837851487422766E-2_SP, &
+         & 6.58749161529837803E-4_SP,1.63153871373020978E-2_SP/  
+
+    Data Cfb3/2.56852019228982242_SP,1.87295284992346047_SP, &
+         & 5.27905102951428412E-1_SP,6.05183413124413191E-2_SP, &
+         & 2.33520497626869185E-3_SP/
+
+
+    Xabs = Abs(X)
+    Xsqr = X**2
+    If (Xabs < Dt1) Then
+       Rnum = Cfa1(5)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 3
+          Rnum = (Rnum + Cfa1(I)) * Xsqr
+          Rden = (Rden + Cfb1(I)) * Xsqr
+       End Do
+       erf_SP = Sign(X * (Rnum + Cfa1(4)) / (Rden + Cfb1(4)), X)
+       Return
+    Else If (Xabs < Dt2) Then
+       Rnum = Cfa2(9)*Xabs
+       Rden = Xabs
+       Do I = 1, 7
+          Rnum = (Rnum + Cfa2(I)) * Xabs
+          Rden = (Rden + Cfb2(I)) * Xabs
+       End Do
+       erf_SP = Sign( 1.0_SP - Exp(-X**2) * &
+            & (Rnum + Cfa2(8)) / (Rden + Cfb2(8)), X)
+       Return
+    Else If (Xabs < Xmax) Then
+       Xsqr = 1.0_SP / X**2
+       Rnum = Cfa3(6)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 4
+          Rnum = (Rnum + Cfa3(I)) * Xsqr
+          Rden = (Rden + Cfb3(I)) * Xsqr
+       End Do
+       erf_SP = Xsqr * (Rnum + Cfa3(5)) / (Rden + Cfb3(5))
+       erf_SP = ( 1.0_SP/Srpi_SP - erf_SP ) / Xabs
+       erf_SP = Sign( 1.0_SP - Exp(-X**2)*erf_SP, X)
+       Return
+    Else
+       erf_SP = 1.0_SP
+       Return
+    End If
+
+
+    Return
+  End Function erf_SP
+
+! *************************************
+! *
+  Real (kind=SP) Function erfc_SP(X)
+! *
+! *************************************
+! * Compute the complementary error function 
+! * for real arguments. SP version.
+! * Based on implementation by W. J. Cody
+! * supossed to be exact up to double 
+! * precision.
+! *************************************
+
+    Real (kind=SP), Intent (in) :: X
+
+    Real (kind=SP) :: Xabs, Rnum, Rden, Xsqr
+    Real (kind=SP) :: Dt1 = 0.46875_SP, Dt2 = 4.0_SP, Xmax = 30.0_SP
+    Real (kind=SP) :: Cfa1(5), Cfb1(4), Cfa2(9), Cfb2(8), &
+         & Cfa3(6), Cfb3(5)
+
+    Integer :: I
+
+    ! Coeficients for first interval computation
+    Data Cfa1 /3.16112374387056560_SP, 1.13864154151050156E2_SP, &
+         & 3.77485237685302021E2_SP, 3.20937758913846947E3_SP, &
+         & 1.85777706184603153E-1_SP/
+    Data Cfb1 /2.36012909523441209E1_SP, 2.44024637934444173E2_SP, &
+         & 1.28261652607737228E3_SP, 2.84423683343917062E3_SP/
+
+    ! Coeficients for second interval computation
+    Data Cfa2 /5.64188496988670089E-1_SP,8.88314979438837594_SP, &
+         & 6.61191906371416295E1_SP,2.98635138197400131E2_SP, &
+         & 8.81952221241769090D02,1.71204761263407058E3_SP, &
+         & 2.05107837782607147E3_SP,1.23033935479799725E3_SP, &
+         & 2.15311535474403846E-8_SP/
+    Data Cfb2 / 1.57449261107098347E1_SP,1.17693950891312499E2_SP, &
+         & 5.37181101862009858E2_SP,1.62138957456669019E3_SP, &
+         & 3.29079923573345963E3_SP,4.36261909014324716E3_SP, &
+         & 3.43936767414372164E3_SP,1.23033935480374942E3_SP/
+
+    ! Coeficients for last interval computation
+    Data Cfa3 /3.05326634961232344E-1_SP,3.60344899949804439E-1_SP, &
+         & 1.25781726111229246E-1_SP,1.60837851487422766E-2_SP, &
+         & 6.58749161529837803E-4_SP,1.63153871373020978E-2_SP/  
+
+    Data Cfb3/2.56852019228982242_SP,1.87295284992346047_SP, &
+         & 5.27905102951428412E-1_SP,6.05183413124413191E-2_SP, &
+         & 2.33520497626869185E-3_SP/
+
+
+    Xabs = Abs(X)
+    Xsqr = X**2
+    If (Xabs < Dt1) Then
+       Rnum = Cfa1(5)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 3
+          Rnum = (Rnum + Cfa1(I)) * Xsqr
+          Rden = (Rden + Cfb1(I)) * Xsqr
+       End Do
+       erfc_SP = 1.0_SP - Sign(X * (Rnum + Cfa1(4)) / (Rden + Cfb1(4)), X)
+       Return
+    Else If (Xabs < Dt2) Then
+       Rnum = Cfa2(9)*Xabs
+       Rden = Xabs
+       Do I = 1, 7
+          Rnum = (Rnum + Cfa2(I)) * Xabs
+          Rden = (Rden + Cfb2(I)) * Xabs
+       End Do
+       erfc_SP = Exp(-X**2) * (Rnum + Cfa2(8)) / (Rden + Cfb2(8))
+    Else If (Xabs < Xmax) Then
+       Xsqr = 1.0_SP / X**2
+       Rnum = Cfa3(6)*Xsqr
+       Rden = Xsqr
+       Do I = 1, 4
+          Rnum = (Rnum + Cfa3(I)) * Xsqr
+          Rden = (Rden + Cfb3(I)) * Xsqr
+       End Do
+       erfc_SP = Xsqr * (Rnum + Cfa3(5)) / (Rden + Cfb3(5))
+       erfc_SP = ( 1.0_SP/Srpi_SP - erfc_SP ) / Xabs
+       erfc_SP = Exp(-X**2)*erfc_SP
+    Else
+       erfc_SP = 0.0_SP
+       Return
+    End If
+
+    If (X < 0.0_SP) erfc_SP = 2.0_SP - erfc_SP
+
+    Return
+  End Function erfc_SP
 
 End MODULE SpecialFunc

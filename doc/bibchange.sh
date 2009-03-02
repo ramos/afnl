@@ -12,5 +12,5 @@
 # Alberto Ramos <alberto@martin.ft.uam.es> 2006
 #
 
-cat $1 | sed -e "s/\{\\\it/\\\textit\{/g" -e "s/\{\\\tt/\\\texttt\{/g" -e "s/\{\\\bf/\\\textbf\{/g" -e "s/\{\\\em/\\\emph\{/g" 
+cat $1 | sed "s/\{\\\it/\\\textit\{/g" | sed "s/\{\\\tt/\\\texttt\{/g" | sed "s/\{\\\bf/\\\textbf\{/g" | sed "s/\{\\\em/\\\emph\{/g" 
 

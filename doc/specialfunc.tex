@@ -49,6 +49,96 @@ Program TestSpecialFunc
 End Program TestSpecialFunc
 \end{lstlisting}
 
+\section{Function \texttt{erf(X)}}
+\index{erf@Function \texttt{erf(X)}}
+
+\subsection{Description}
+
+Compute values of the error function $\text{erf}(X)$. A high
+precision algorithm by W. J. Candy~\cite{cody:1969aa} is used.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X}:] Single (SP) or double (DP) precision. The point in
+  which we want to know the value of $\text{erf}(X)$.
+\end{description}
+
+\subsection{Output}
+
+Same type as input.
+
+\subsection{Examples}
+
+This program should compute the $\text{erf}(X)$ and its complementary
+in an given point.
+
+\begin{lstlisting}[emph=erf,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Error Function.,
+                   label=erf]
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Real (kind=DP) :: X
+
+  Write(*,*)'Enter a number: '
+  Read(*,*)X
+  Write(*,'(ES33.25)')erf(X)
+  Write(*,'(ES33.25)')erfc(X)
+
+  Stop
+End Program TestSpecialFunc
+\end{lstlisting}
+
+\section{Function \texttt{erfc(X)}}
+\index{erfc@Function \texttt{erfc(X)}}
+
+\subsection{Description}
+
+Compute values of the complementary error function $\text{erf}(X)$. A high
+precision algorithm by W. J. Candy~\cite{cody:1969aa} is used.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X}:] Single (SP) or double (DP) precision. The point in
+  which we want to know the value of $\text{erfc}(X)$.
+\end{description}
+
+\subsection{Output}
+
+Same type as input.
+
+\subsection{Examples}
+
+This program should compute the $\text{erf}(X)$ and its complementary
+in an given point.
+
+\begin{lstlisting}[emph=erfc,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the complementary Error Function.,
+                   label=erfc]
+Program TestSpecialFunc
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Real (kind=DP) :: X
+
+  Write(*,*)'Enter a number: '
+  Read(*,*)X
+  Write(*,'(ES33.25)')erf(X)
+  Write(*,'(ES33.25)')erfc(X)
+
+  Stop
+End Program TestSpecialFunc
+\end{lstlisting}
+
 \section{Function \texttt{Theta(i, z, tau[, Prec])}}
 \index{Theta@Function \texttt{Theta(i, z, tau[, Prec])}}
 
