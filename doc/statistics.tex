@@ -1350,6 +1350,112 @@ Function F(X)
 End Function F
 \end{lstlisting}
 
+\section{Subroutine \texttt{MCIntegration(X1, X2, Func, Val, Err[, Tol])}}
+\index{MCIntegration\texttt{MCIntegration(X1, X2, Func, Val, Err[, Tol])}}
+
+\subsection{Description}
+
+Uses the Monte Carlo method to stimate the value of the integral of
+the several variables function \texttt{Func} between the limits
+(\texttt{X1(1)}, \texttt{X1(2)}, \dots, \texttt{X1(Ndim)}) and 
+(\texttt{X2(1)}, \texttt{X2(2)}, \dots, \texttt{X2(Ndim)}). The value
+of the integral is returned in \texttt{Val}, and an estimation of the
+error in \texttt{Err}. The desired precision can be introduced via the
+optional argument \texttt{Tol}.
+
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X1(:)}:] Double or simple precision Real. A one dimensional
+  array with the lower limits of the integrals.
+\item[\texttt{X2(:)}:] Double or simple precision Real. A one dimensional
+  array with the upper limits of the integrals.
+\item[\texttt{Func}: ] A user suplied function that returns the value
+  of the function to integrate. An interface block of the following
+  type should be defined. 
+\begin{verbatim}
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+\end{verbatim}
+\item[\texttt{Val}: ] Double or simple precision real (same as
+  input). Output. An estimation of the value of the integral.
+\item[\texttt{Err}: ] Double or simple precision real (same as
+  input). Output. An estimation of the error.
+\item[\texttt{Tol}: ] Double or simple precision real. Optional. An
+  estimation of the desired precision.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=MCIntegration,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Integrating a two dimensional function.,
+                   label=BstrpConfInt]
+MODULE ExtData
+
+  USE NumTypes
+  
+  Real (kind=DP) :: Sig = 2.345763450_DP
+  Real (kind=DP) :: X1 = -0.324563562345643650_DP, X2 = 1.623473_DP, &
+       & Y1 = 1.34764574570_DP, Y2 = 5.3476347634_DP
+
+
+End MODULE ExtData
+
+Program MonteCarlo
+  
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  USE ExtData
+
+
+  IMPLICIT NONE
+
+  Real (kind=DP) :: Res, Err
+
+  Interface
+     Function F(X)
+       USE NumTypes
+              
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP) :: F
+     End Function F
+  End Interface
+
+  CALL MCintegration((/X1,Y1/), (/X2,Y2/), F, Res, Err, 1.0E-4_DP)
+  Write(*,'(1A,100ES33.25)')'# Value of the integral: ', Res, Err
+ 
+
+  Stop
+End Program Monte
+
+
+Function F(X)
+
+  USE NumTypes
+  USE ExtData
+
+  Real (kind=DP), Intent (in) :: X(:)
+  Real (kind=DP) :: F
+
+
+  F = exp(-1.0_DP/(2.0_DP*Sig**2) * (Sum(X(:)**2)))*Sin(X(1)*X(2))
+
+  Return
+End Function F
+\end{lstlisting}
+
 
 
 % Local Variables: 

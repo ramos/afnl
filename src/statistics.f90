@@ -82,6 +82,10 @@ MODULE Statistics
      Module Procedure EstBstrp_H, EstBstrp
   End Interface
 
+  Interface MCIntegration
+     Module Procedure MCIntegration_DP, MCIntegration_SP
+  End Interface
+
   Interface NonLinearReg
      Module Procedure NonLinearReg_DP, NonLinearReg_SP, &
           & MultiNonLinearReg_DP, MultiNonLinearReg_SP, &
@@ -128,6 +132,10 @@ MODULE Statistics
   Integer :: LUX_ir, LUX_is, LUX_next(LUX_base), LUX_Pos
   
 
+  ! Monte Carlo Integration
+  Real (kind=DP), Parameter :: DEF_MC_TOL_DP = 1.0E-2_DP
+  Real (kind=SP), Parameter :: DEF_MC_TOL_SP = 1.0E-2_SP
+  Integer :: MCMAXITER = 10000000
 
   Private NormalS, NormalV, NormalS2, NormalV2, &
        & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP, &
@@ -147,7 +155,8 @@ MODULE Statistics
        & LinearRegCorr_DP, LinearRegCorr_SP, MultiLinearRegCorr_DP, &
        & MultiLinearRegCorr_SP, NonLinearRegCorr_DP,&
        & NonLinearRegCorr_SP, MultiNonLinearRegCorr_DP, &
-       & MultiNonLinearRegCorr_SP
+       & MultiNonLinearRegCorr_SP, DEF_MC_TOL_DP, DEF_MC_TOL_SP, &
+       & MCIntegration_DP, MCIntegration_SP
 
 CONTAINS
 
@@ -3562,5 +3571,163 @@ End Subroutine RanLux_DP_S
        
     Return
   End Subroutine My_Random_Number_DP_S
+
+!  *********************************************
+!  *                                           *
+  Subroutine MCIntegration_DP(X1, X2, Func, Val, Err, Tolerance)
+!  *                                           *
+!  *********************************************
+!  * Given a many variable function Func, this routine 
+!  * returns in Val the value of the Integral of
+!  * Func in the interval (X1(J), X2(J)) for the variable
+!  * J. An estimation of the error is returned in 
+!  * Err. The Monte Carlo integration is done when  
+!  * the error is less than Tolerance (optional,default 
+!  * DEF_MC_TOL_DP), or MCMAXITER number of iterations 
+!  * is reached.
+!  *********************************************
+
+    Real (kind=DP), Intent (in)  :: X1(:), X2(:)
+    Real (kind=DP), Intent (out) :: Val, Err
+    Real (kind=DP), Intent (in), Optional :: Tolerance
+
+    Real (kind=DP) :: Tol, S, V, Vol, Fval, Ri, X(Size(X1))
+    Integer :: Ndim, Kont, I, MinIter = 10
+
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(Tolerance)) Then
+       Tol = Tolerance
+    Else
+       Tol = DEF_MC_TOL_DP
+    End If
+
+    S = 0.0_DP
+    V = 0.0_DP
+    Kont = 0
+    Ndim = Size(X1)
+    Vol = 1.0_DP
+    Do I = 1, Ndim
+       Vol = Vol*(X2(I)-X1(I))
+    End Do
+
+    Do Kont = 1, MinIter
+       CALL Random_Number(X)
+       Do I = 1, Ndim
+          X(I) = (X2(I)-X1(I))*X(I) + X1(I)
+       End Do
+       Fval = Func(X)
+       S = S + Fval
+       V = V + Fval**2
+       Ri = Real(Kont,kind=DP)
+       Err = Abs(Vol)*Sqrt( (V-S**2/Ri))/Ri
+    End Do
+    
+    Val = Vol * S/Ri
+    Do While (Err > Tol*Abs(Val))
+       kont = kont + 1
+       If (Kont > MCMAXITER) exit
+      
+       CALL Random_Number(X)
+       Do I = 1, Ndim
+          X(I) = (X2(I)-X1(I))*X(I) + X1(I)
+       End Do
+       Fval = Func(X)
+       S = S + Fval
+       V = V + Fval**2
+       Ri = Real(Kont,kind=DP)
+       Val = Vol * S/Ri
+       Err = Abs(Vol)*Sqrt( (V-S**2/Ri))/Ri
+    End Do
+    
+    Return
+  End Subroutine MCIntegration_DP
+
+
+!  *********************************************
+!  *                                           *
+  Subroutine MCIntegration_SP(X1, X2, Func, Val, Err, Tolerance)
+!  *                                           *
+!  *********************************************
+!  * Given a many variable function Func, this routine 
+!  * returns in Val the value of the Integral of
+!  * Func in the interval (X1(J), X2(J)) for the variable
+!  * J. An estimation of the error is returned in 
+!  * Err. The Monte Carlo integration is done when  
+!  * the error is less than Tolerance (optional,default 
+!  * DEF_MC_TOL_SP), or MCMAXITER number of iterations 
+!  * is reached.
+!  *********************************************
+
+    Real (kind=SP), Intent (in)  :: X1(:), X2(:)
+    Real (kind=SP), Intent (out) :: Val, Err
+    Real (kind=SP), Intent (in), Optional :: Tolerance
+
+    Real (kind=SP) :: Tol, S, V, Vol, Fval, Ri, X(Size(X1))
+    Integer :: Ndim, Kont, I, MinIter = 10
+
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=SP), Intent (in) :: X(:)
+         Real (kind=SP) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(Tolerance)) Then
+       Tol = Tolerance
+    Else
+       Tol = DEF_MC_TOL_SP
+    End If
+
+    S = 0.0_SP
+    V = 0.0_SP
+    Kont = 0
+    Ndim = Size(X1)
+    Vol = 1.0_SP
+    Do I = 1, Ndim
+       Vol = Vol*(X2(I)-X1(I))
+    End Do
+
+    Do Kont = 1, MinIter
+       CALL Random_Number(X)
+       Do I = 1, Ndim
+          X(I) = (X2(I)-X1(I))*X(I) + X1(I)
+       End Do
+       Fval = Func(X)
+       S = S + Fval
+       V = V + Fval**2
+       Ri = Real(Kont,kind=SP)
+       Err = Abs(Vol)*Sqrt( (V-S**2/Ri))/Ri
+    End Do
+    
+    Val = Vol * S/Ri
+    Do While (Err > Tol*Abs(Val))
+       kont = kont + 1
+       If (Kont > MCMAXITER) exit
+      
+       CALL Random_Number(X)
+       Do I = 1, Ndim
+          X(I) = (X2(I)-X1(I))*X(I) + X1(I)
+       End Do
+       Fval = Func(X)
+       S = S + Fval
+       V = V + Fval**2
+       Ri = Real(Kont,kind=SP)
+       Val = Vol * S/Ri
+       Err = Abs(Vol)*Sqrt( (V-S**2/Ri))/Ri
+    End Do
+    
+    Return
+  End Subroutine MCIntegration_SP
+
 
 End MODULE Statistics
