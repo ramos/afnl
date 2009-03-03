@@ -689,7 +689,7 @@ CONTAINS
        erf_DP = Sign( 1.0_DP - Exp(-X**2)*erf_DP, X)
        Return
     Else
-       erf_DP = 1.0_DP
+       erf_DP = Sign(1.0_DP, X)
        Return
     End If
 
@@ -778,7 +778,6 @@ CONTAINS
        erfc_DP = Exp(-X**2)*erfc_DP
     Else
        erfc_DP = 0.0_DP
-       Return
     End If
 
     If (X < 0.0_DP) erfc_DP = 2.0_DP - erfc_DP    
@@ -870,7 +869,7 @@ CONTAINS
        erf_SP = Sign( 1.0_SP - Exp(-X**2)*erf_SP, X)
        Return
     Else
-       erf_SP = 1.0_SP
+       erf_SP = Sign(1.0_SP, X)
        Return
     End If
 
@@ -959,7 +958,6 @@ CONTAINS
        erfc_SP = Exp(-X**2)*erfc_SP
     Else
        erfc_SP = 0.0_SP
-       Return
     End If
 
     If (X < 0.0_SP) erfc_SP = 2.0_SP - erfc_SP
