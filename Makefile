@@ -52,7 +52,7 @@ lib: numtypes.o error.o constants.o statistics.o nonnum.o linear.o \
 	int.o min.o time.o specialfunc.o root.o poly.o fourier.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
-	ar rcs libf90.a *.o
+	ar rcs libafnl.a *.o
 
 cleanall:
-	rm *.o *.mod src/*~ libf90.a
+	rm *.o *.mod src/*~ libafnl.a
