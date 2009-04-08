@@ -28,6 +28,7 @@ MODULE Integration
 
  
   USE NumTypes
+  USE Linear
 
   IMPLICIT NONE
 
@@ -110,6 +111,9 @@ MODULE Integration
      Module Procedure Rgnkta_DP, Rgnkta_SP
   End Interface
 
+  Interface IntQuadrilateral
+     Module Procedure IntQuadrilateral_DP, IntQuadrilateral_SP
+  End Interface
 
   ! Trap-like routines are "low level", that must
   ! be used only by functions of this module.
@@ -122,7 +126,8 @@ MODULE Integration
        & SimpsonAB_DP, SimpsonAB_SP, SimpsonInfUP_DP, SimpsonInfUP_SP,&
        & SimpsonInfDW_DP, SimpsonInfDW_SP, SimpsonSingUP_DP, &
        & SimpsonSingUP_SP, SimpsonSingDW_DP, SimpsonSingDW_SP, &
-       & Euler_DP, Euler_SP, Rgnkta_DP, Rgnkta_SP
+       & Euler_DP, Euler_SP, Rgnkta_DP, Rgnkta_SP, &
+       & IntQuadrilateral_DP, IntQuadrilateral_SP
 
   Private Maxiter, DEFTOL_DP, DEFTOL_SP, DEFINTSTEPS_DP, DEFINTSTEPS_SP
 
@@ -2055,6 +2060,129 @@ CONTAINS
     Return
   End Function Rgnkta_SP
 
+
+!  *********************************************
+!  *                                           *
+  Function IntQuadrilateral_DP(P1,P2,P3,P4,Fval) Result (ValI)
+!  *                                           *
+!  *********************************************
+!  * 
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: P1(2), P2(2), P3(2), &
+         & P4(2), Fval(4)
+    Real (kind=DP) :: ValI
+
+    Real (kind=DP), Parameter :: &
+         & s(4) = (/-1.0_DP, 1.0_DP, 1.0_DP, -1.0_DP/), &
+         & p(4) = (/-1.0_DP,-1.0_DP, 1.0_DP,  1.0_DP/)
+    Real (kind=DP) :: alp(0:2), M(4,4), a(4), ap(4,2), Aux
+    Integer :: I, J
+
+    alp(0) = ( (P4(1)-P2(1))*(P1(2)-P3(2)) + (P3(1)-P1(1))*(P4(2)-P2(2)) )/8.0_DP
+    alp(1) = ( (P4(1)-P3(1))*(P2(2)-P1(2)) + (P1(1)-P2(1))*(P4(2)-P3(2)) )/8.0_DP
+    alp(2) = ( (P4(1)-P1(1))*(P2(2)-P3(2)) + (P3(1)-P2(1))*(P4(2)-P1(2)) )/8.0_DP
+
+    ! First interpolate the function, to obtain the coef.
+    ap(1,:) = P1(:)
+    ap(2,:) = P2(:)
+    ap(3,:) = P3(:)
+    ap(4,:) = P4(:)
+
+    M(:,1) = 1.0_DP
+    M(:,2) = ap(:,1)
+    M(:,3) = ap(:,2)
+    M(:,4) = ap(:,1)*ap(:,2)
+
+    a(:) = Fval(:)
+
+   
+    CALL LUSolve(M, a)
+
+    ValI = 4.0_DP*a(1)*alp(0)
+    ValI = ValI + Sum( (a(2)*ap(:,1) + a(3)*ap(:,2)) * &
+            & (alp(0) + alp(1)*s(:)/3.0_DP + alp(2)*p(:)/3.0_DP) )
+
+    alp(0) = alp(0)/4.0_DP
+    alp(1) = alp(1)/6.0_DP
+    alp(2) = alp(2)/6.0_DP
+    Aux = 0.0_DP
+    Do I = 1, 4
+       Do J = 1, 4
+          Aux = Aux + ap(I,1)*ap(J,2)*&
+               & ( alp(0)*(1.0_DP+s(I)*s(J)/3.0_DP) * &
+               &          (1.0_DP+p(I)*p(J)/3.0_DP) + &
+               &   alp(1)*(1.0_DP+p(I)*p(J)/3.0_DP) * &
+               &          (s(I)+s(J))               + &
+               &   alp(2)*(1.0_DP+s(I)*s(J)/3.0_DP) * &
+               &          (p(I)+p(J))                 )
+       End Do
+    End Do
+    ValI = ValI + Aux*a(4)
+
+    Return
+  End Function IntQuadrilateral_DP
+
+!  *********************************************
+!  *                                           *
+  Function IntQuadrilateral_SP(P1,P2,P3,P4,Fval) Result (ValI)
+!  *                                           *
+!  *********************************************
+!  * 
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: P1(2), P2(2), P3(2), &
+         & P4(2), Fval(4)
+    Real (kind=SP) :: ValI
+
+    Real (kind=SP), Parameter :: &
+         & s(4) = (/-1.0_SP, 1.0_SP, 1.0_SP, -1.0_SP/), &
+         & p(4) = (/-1.0_SP,-1.0_SP, 1.0_SP,  1.0_SP/)
+    Real (kind=SP) :: alp(0:2), M(4,4), a(4), ap(4,2), Aux
+    Integer :: I, J
+
+    alp(0) = ( (P4(1)-P2(1))*(P1(2)-P3(2)) + (P3(1)-P1(1))*(P4(2)-P2(2)) )/8.0_SP
+    alp(1) = ( (P4(1)-P3(1))*(P2(2)-P1(2)) + (P1(1)-P2(1))*(P4(2)-P3(2)) )/8.0_SP
+    alp(2) = ( (P4(1)-P1(1))*(P2(2)-P3(2)) + (P3(1)-P2(1))*(P4(2)-P1(2)) )/8.0_SP
+
+    ap(1,:) = P1(:)
+    ap(2,:) = P2(:)
+    ap(3,:) = P3(:)
+    ap(4,:) = P4(:)
+
+    ! First interpolate the function, to obtain the coef.
+    M(:,1) = 1.0_SP
+    M(:,2) = ap(:,1)
+    M(:,3) = ap(:,2)
+    M(:,4) = ap(:,1)*ap(:,2)
+
+    a(:) = Fval(:)
+    CALL LUSolve(M, a)
+
+    ! Now compute the integral of the bilinear interpoled function
+    ValI = 4.0_SP*a(1)*alp(0)
+    ValI = ValI + Sum( (a(2)*ap(:,1) + a(3)*ap(:,2)) * &
+            & (alp(0) + alp(1)*s(:)/3.0_SP + alp(2)*p(:)/3.0_SP) )
+
+    alp(0) = alp(0)/4.0_SP
+    alp(1) = alp(1)/6.0_SP
+    alp(2) = alp(2)/6.0_SP
+    Aux = 0.0_SP
+    Do I = 1, 4
+       Do J = 1, 4
+          Aux = Aux + ap(I,1)*ap(J,2)*&
+               & ( alp(0)*(1.0_SP+s(I)*s(J)/3.0_SP) * &
+               &          (1.0_SP+p(I)*p(J)/3.0_SP) + &
+               &   alp(1)*(1.0_SP+p(I)*p(J)/3.0_SP) * &
+               &          (s(I)+s(J))               + &
+               &   alp(2)*(1.0_SP+s(I)*s(J)/3.0_SP) * &
+               &          (p(I)+p(J))                 )
+       End Do
+    End Do
+    ValI = ValI + Aux*a(4)
+
+    Return
+  End Function IntQuadrilateral_SP
 
 End MODULE Integration
 
