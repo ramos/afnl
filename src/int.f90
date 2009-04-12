@@ -2096,7 +2096,9 @@ CONTAINS
 
     a(:) = Fval(:)
 
-   
+!    Do I = 1, 4
+!       Write(*,'(4F12.3)')(M(I,J), J=1, 4)
+!    End Do
     CALL LUSolve(M, a)
 
     ValI = 4.0_DP*a(1)*alp(0)
