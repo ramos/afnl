@@ -1009,6 +1009,69 @@ End Program Test
   End Function FEuler
 \end{lstlisting}
 
+\section{Function \texttt{IntQuadrilateral(P1,P2,P3,P4,Fval) }}
+\index{IntQuadrilateral@Function \texttt{IntQuadrilateral(P1,P2,P3,P4,Fval) }}
+
+\subsection{Description}
+
+Given four 2D points (\texttt{P1(2), P2(2), P3(2), P4(2)}), and the values of a
+function in this points, this routine computes the bilineal
+interpolation polynomial, and returns the value of this polynomial in
+the quadrilateral. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{P1(:), P2(:), P3(:), P4(:)}:] Real single or double
+  precision two component vectors. Four points that delimitate a
+  quadrilateral. The corners of the quadrilateral must be given in
+  (counter-)clock wise order.
+\item[\texttt{Fval}:] Real singler or double precision one dimensional
+  array of four elements. The value of a functio in the four corners
+  of the quadrilateral.
+\end{description}
+
+\subsection{Output}
+
+Real single or double precision (same as input). An aproximation of
+the value of the integral of the function over the quadrilateral.
+
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=IntQuadrilateral,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the area of a quadrilateral.,
+                   label=intquadrilateral]
+Program TQ
+
+  USE NumTypes
+  USE Integration
+  USE SpaceGeometry
+
+  Real (kind=DP) :: P1(3), P2(3), P3(3), P4(3), F(4), Tp(3)
+
+  P1(:) = (/-2.0_DP, -1.4.0_DP, 0.0_DP/)
+  P2(:) = (/1.2_DP, 0.0_DP, 0.0_DP/)
+  P3(:) = (/2.0_DP, 3.0_DP, 0.0_DP/)
+  P4(:) = (/0.0_DP, 2.5_DP, 0.0_DP/)
+
+  F(:)  = (/1.0_DP, 1.0_DP, 1.0_DP, 1.0_DP/)
+
+
+  Write(*,*)IntQuadrilateral(P1(1:2),P2(1:2),P3(1:2),P4(1:2),F)
+  Tp(:) = Cross_Product(P1,P2)
+  Tp(:) = Tp + Cross_Product(P2,P3)
+  Tp(:) = Tp + Cross_Product(P3,P4)
+  Tp(:) = Tp + Cross_Product(P4,P1)
+  Write(*,*)Dot_Product((/0.0_DP,0.0_DP,0.5_DP/),Tp)
+
+
+  Stop
+End Program TQ
+\end{lstlisting}
+
 
 % Local Variables: 
 % mode: latex
