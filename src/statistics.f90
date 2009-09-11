@@ -187,8 +187,11 @@ CONTAINS
 
     Real (kind=DP), Intent (in) :: X(:)
 
-    Real (kind=DP) :: Xcp(Size(X))
-    Integer :: Ns, Nsd2
+    Real (kind=DP), Allocatable :: Xcp(:)
+    Integer :: Ns, Nsd2, Istat
+
+    Allocate(Xcp(Size(X)), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
 
     Xcp = X
     Ns = Size(X)
@@ -201,6 +204,7 @@ CONTAINS
        Median_DP = (Xcp(Nsd2) + Xcp(Nsd2+1))/2.0_DP
     End If
 
+    DeAllocate(Xcp)
 
     Return
   End Function Median_DP
@@ -290,13 +294,19 @@ CONTAINS
 !  *********************************************
 
     Real (kind=DP), Intent(out) :: X(:)
-    Real (kind=DP) :: U1(Size(X)), U2(Size(X))
+    Real (kind=DP), Allocatable :: U1(:), U2(:)
     
+    Integer ::  Istat
+
+    Allocate(U1(Size(X)), U2(Size(X)), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Init Field: ")
+
     CALL Random_Number(U1)
     CALL Random_Number(U2)
 
     X = Sqrt(-2.0_DP*Log(U1)) * Cos(TWOPI_DP*U2)
 
+    DeAllocate(U1, U2)
 
     Return
   End Subroutine  NormalV
@@ -336,12 +346,18 @@ CONTAINS
 
     Real (kind=DP), Intent(out) :: X(:)
     Real (kind=DP), Intent(in) :: Rmed, Rsig
-    Real (kind=DP) :: U1(Size(X)), U2(Size(X))
+    Real (kind=DP), Allocatable :: U1(:), U2(:)
+    Integer :: Istat
     
+    Allocate(U1(Size(X)), U2(Size(X)), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "NormalV2: ")
+
     CALL Random_Number(U1)
     CALL Random_Number(U2)
 
     X = Rsig * Sqrt(-2.0_DP*Log(U1)) * Cos(TWOPI_DP*U2) + Rmed
+
+    DeAllocate(U1, U2)
 
     Return
   End Subroutine  NormalV2
@@ -373,8 +389,11 @@ CONTAINS
 
     Real (kind=SP), Intent (in) :: X(:)
 
-    Real (kind=SP) :: Xcp(Size(X))
-    Integer :: Ns, Nsd2
+    Real (kind=SP), Allocatable :: Xcp(:)
+    Integer :: Ns, Nsd2, Istat
+
+    Allocate(Xcp(Size(X)), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
 
     Xcp = X
     Ns = Size(X)
@@ -387,6 +406,7 @@ CONTAINS
        Median_SP = (Xcp(Nsd2) + Xcp(Nsd2+1))/2.0_SP
     End If
 
+    DeAllocate(Xcp)
 
     Return
   End Function Median_SP
@@ -476,13 +496,18 @@ CONTAINS
 !  *********************************************
 
     Real (kind=SP), Intent(out) :: X(:)
-    Real (kind=SP) :: U1(Size(X)), U2(Size(X))
+    Real (kind=SP), Allocatable :: U1(:), U2(:)
+    Integer :: Istat
     
+    Allocate(U1(Size(X)), U2(Size(X)), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "NormalV2: ")
+
     CALL Random_Number(U1)
     CALL Random_Number(U2)
 
     X = Sqrt(-2.0_SP*Log(U1)) * Cos(TWOPI_SP*U2)
 
+    DeAllocate(U1, U2)
 
     Return
   End Subroutine  NormalV_SP
@@ -522,12 +547,19 @@ CONTAINS
 
     Real (kind=SP), Intent(out) :: X(:)
     Real (kind=SP), Intent(in) :: Rmed, Rsig
-    Real (kind=SP) :: U1(Size(X)), U2(Size(X))
+    Real (kind=SP), Allocatable :: U1(:), U2(:)
+
+    Integer :: Istat
     
+    Allocate(U1(Size(X)), U2(Size(X)), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "NormalV2: ")
+
     CALL Random_Number(U1)
     CALL Random_Number(U2)
 
     X = Rsig * Sqrt(-2.0_SP*Log(U1)) * Cos(TWOPI_SP*U2) + Rmed
+
+    DeAllocate(U1, U2)
 
     Return
   End Subroutine  NormalV2_SP
@@ -3358,6 +3390,7 @@ CONTAINS
      Njump = LUX_RndLevel - 24
   End If
 
+
   I = 0
   Do While (.True.)
      Do J = LUX_Pos, 24
@@ -3447,14 +3480,26 @@ End Subroutine LUX_init
 
   Real (kind=DP), Intent (out) :: Rnd(:)
 
-  Real (kind=SP) :: Raux(2*Size(Rnd))
-  Integer :: I
+  Real (kind=SP), Allocatable :: Raux(:)
+  Integer :: I, Istat
 
+
+  Allocate(Raux(2*Size(Rnd)), STAT=Istat)
+  If (Istat /= 0) CALL Abort("RanLux", "Not enouth memory!")
 
   CALL RanLux_SP(Raux)
   Do I = 1, Size(Rnd)
      Rnd(I) = Real(Raux(2*I-1),kind=DP) + Real(Raux(2*I))*LUX_lastbit
+!     Rnd(I) = Real(Raux(I),kind=DP)
   End Do
+
+  DeAllocate(Raux)
+
+!!$  CALL RanLux_SP(Raux)
+!!$  Do I = 1, Size(Rnd)
+!!$!     Rnd(I) = Real(Raux(2*I-1),kind=DP) 
+!!$     Rnd(I) = Rnd(I) + Real(Raux(I))*LUX_lastbit
+!!$  End Do
 
   Return
 End Subroutine RanLux_DP
