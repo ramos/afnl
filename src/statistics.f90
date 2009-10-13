@@ -105,6 +105,11 @@ MODULE Statistics
      Module Procedure My_Random_Number_SP, My_Random_Number_DP, &
           & My_Random_Number_SP_S, My_Random_Number_DP_S
   End Interface
+
+  Interface Prop_Error
+     Module Procedure Prop_Error_DP, Prop_Error_Multi_DP, &
+          & Prop_Error_SP, Prop_Error_Multi_SP
+  End Interface
   
   ! Parameters to tune the Nonlinear fitting routines:
   !
@@ -3774,5 +3779,188 @@ End Subroutine RanLux_DP_S
     Return
   End Subroutine MCIntegration_SP
 
+!  *********************************************
+!  *                                           *
+  Function Prop_Error_DP(X, Dx, F, N)
+!  *                                           *
+!  *********************************************
+!  * Given a function F, and a point X, with 
+!  * uncertainty Dx, this routine returns the
+!  * uncertainty in F(X).
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X, Dx
+    Integer, Intent (in), Optional :: N
+    Real (kind=DP) :: Prop_Error_DP
+
+    Real (kind=DP) :: Xnew
+    Real (kind=DP), Allocatable :: Fval(:)
+    Integer :: Ngen, I
+
+    Interface 
+       Function F(X)
+         USE NumTypes
+         Real (kind=DP), Intent (in) :: X
+         Real (kind=DP) :: F
+       End Function F
+    End Interface
+
+    If (.not.Present(N)) Then
+       Ngen = 1000
+    Else
+       Ngen = N
+    End If
+
+    Allocate(Fval(Ngen))
+    Do I = 1, Ngen
+       CALL Normal(Xnew, X, Dx)
+       Fval(I) = F(Xnew)
+    End Do
+
+    Prop_Error_DP = Stddev(Fval)
+    Deallocate(Fval)
+    
+    Return
+  End Function Prop_Error_DP
+
+
+!  *********************************************
+!  *                                           *
+  Function Prop_Error_Multi_DP(X, Dx, F, N)
+!  *                                           *
+!  *********************************************
+!  * Given a function F, and a point X, with 
+!  * uncertainty Dx, this routine returns the
+!  * uncertainty in F(X).
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X(:), Dx(:)
+    Integer, Intent (in), Optional :: N
+    Real (kind=DP) :: Prop_Error_Multi_DP
+
+    Real (kind=DP) :: Xnew(Size(X))
+    Real (kind=DP), Allocatable :: Fval(:)
+    Integer :: Ngen, I, Idim, J
+
+    Interface 
+       Function F(X)
+         USE NumTypes
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: F
+       End Function F
+    End Interface
+
+    If (.not.Present(N)) Then
+       Ngen = 1000
+    Else
+       Ngen = N
+    End If
+
+    Idim = Size(X)
+    Allocate(Fval(Ngen))
+    Do I = 1, Ngen
+       Do J = 1, Idim
+          CALL Normal(Xnew(J), X(J), Dx(J))
+       End Do
+       Fval(I) = F(Xnew)
+    End Do
+
+    Prop_Error_Multi_DP = Stddev(Fval)
+    Deallocate(Fval)
+    
+    Return
+  End Function Prop_Error_Multi_DP
+
+!  *********************************************
+!  *                                           *
+  Function Prop_Error_SP(X, Dx, F, N)
+!  *                                           *
+!  *********************************************
+!  * Given a function F, and a point X, with 
+!  * uncertainty Dx, this routine returns the
+!  * uncertainty in F(X).
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X, Dx
+    Integer, Intent (in), Optional :: N
+    Real (kind=SP) :: Prop_Error_SP
+
+    Real (kind=SP) :: Xnew
+    Real (kind=SP), Allocatable :: Fval(:)
+    Integer :: Ngen, I
+
+    Interface 
+       Function F(X)
+         USE NumTypes
+         Real (kind=SP), Intent (in) :: X
+         Real (kind=SP) :: F
+       End Function F
+    End Interface
+
+    If (.not.Present(N)) Then
+       Ngen = 1000
+    Else
+       Ngen = N
+    End If
+
+    Allocate(Fval(Ngen))
+    Do I = 1, Ngen
+       CALL Normal(Xnew, X, Dx)
+       Fval(I) = F(Xnew)
+    End Do
+
+    Prop_Error_SP = Stddev(Fval)
+    Deallocate(Fval)
+    
+    Return
+  End Function Prop_Error_SP
+
+
+!  *********************************************
+!  *                                           *
+  Function Prop_Error_Multi_SP(X, Dx, F, N)
+!  *                                           *
+!  *********************************************
+!  * Given a function F, and a point X, with 
+!  * uncertainty Dx, this routine returns the
+!  * uncertainty in F(X).
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X(:), Dx(:)
+    Integer, Intent (in), Optional :: N
+    Real (kind=SP) :: Prop_Error_Multi_SP
+
+    Real (kind=SP) :: Xnew(Size(X))
+    Real (kind=SP), Allocatable :: Fval(:)
+    Integer :: Ngen, I, Idim, J
+
+    Interface 
+       Function F(X)
+         USE NumTypes
+         Real (kind=SP), Intent (in) :: X(:)
+         Real (kind=SP) :: F
+       End Function F
+    End Interface
+
+    If (.not.Present(N)) Then
+       Ngen = 1000
+    Else
+       Ngen = N
+    End If
+
+    Idim = Size(X)
+    Allocate(Fval(Ngen))
+    Do I = 1, Ngen
+       Do J = 1, Idim
+          CALL Normal(Xnew(J), X(J), Dx(J))
+       End Do
+       Fval(I) = F(Xnew)
+    End Do
+
+    Prop_Error_Multi_SP = Stddev(Fval)
+    Deallocate(Fval)
+    
+    Return
+  End Function Prop_Error_Multi_SP
 
 End MODULE Statistics

@@ -1350,6 +1350,99 @@ Function F(X)
 End Function F
 \end{lstlisting}
 
+\section{Function \texttt{Prop\_Error(X, Dx, Func[, N])}}
+\index{Prop@Function \texttt{Prop\_Error(X, Dx, F[, N])}}
+
+\subsection{Description}
+
+Being \texttt{Func} a function of one or several variables, and \texttt{X} a point
+known 
+with accuracy given by \texttt{Dx}, this routine propagate the errors
+in the position of the point, to obtain the accuracy of \texttt{F(X)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X[(:)]}:] Double (DP) or simple (SP) precision one
+  dimensional array or number. The value(s) of the variables.
+\item[\texttt{Dx[(:)]}:] Double (DP) or simple (SP) precision one
+  dimensional array or number. The value(s) of the error in the
+  variables.
+\item[\texttt{Func}:] A user supplied function. The function of the
+  variables whose errors you want to propagate. An interface block of
+  the following type should be defined. 
+\begin{verbatim}
+    Interface 
+       Function Func(X)
+         USE NumTypes
+         
+         Real (kind=DP), Intent (in) :: X(:)
+         Real (kind=DP) :: Func
+
+       End Function Func
+    End Interface
+\end{verbatim}
+\item[\texttt{N}:] Integer, Optional. The number of samples used to
+  propagate the error. The default value is 1000.
+\end{description}
+
+\subsection{Output}
+
+A real double or simple precision (same type as the input). An stimate
+of the accuracy of the value \texttt{F(X)}.
+
+\subsection{Examples}
+
+Here we compare our method of propagating errors, with the traditional
+propagation of errors formula for the case of the function
+$f(x,y)=x^2+y^2$. 
+
+\begin{lstlisting}[emph=Prop_Error,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Propagating errors in a function.,
+                   label=properror]
+Program Tests
+
+  USE NumTypes
+  USE Statistics
+
+  Real (kind=DP) :: Xm(2), Em(2)
+
+  Interface 
+     Function F2(X)
+       USE NumTypes
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP) :: F2
+     End Function F2
+  End Interface
+
+
+  Xm(1) = 1.23_DP
+  Xm(2) = 1.62_DP
+  Em(1) = 0.02_DP
+  Em(2) = 0.03_DP
+  Write(*,*)'Value of the function at Xm: ', F2(Xm)
+  Write(*,*)'  Error estimate:            ', Prop_Error(Xm, Em, F2)
+  Write(*,*)'  Error estimate by hand:    ', &
+       & Sqrt((Em(1)/Xm(1))**2 + (Em(2)/Xm(2))**2)*F2(Xm)
+
+  Stop
+End Program Tests
+
+
+Function F2(X)
+  USE NumTypes
+  
+  Real (kind=DP), Intent (in) :: X(:)
+  Real (kind=DP) :: F2
+
+  F2 = X(1)**2 + X(2)**2 
+       
+  Return
+End Function F2
+\end{lstlisting}
+
 \section{Subroutine \texttt{MCIntegration(X1, X2, Func, Val, Err[, Tol])}}
 \index{MCIntegration\texttt{MCIntegration(X1, X2, Func, Val, Err[, Tol])}}
 
