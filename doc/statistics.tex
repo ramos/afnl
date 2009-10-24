@@ -89,6 +89,156 @@ Program Tests
 End Program Tests
 \end{lstlisting}
 
+\section{Function \texttt{WMedian(X, w)}}
+\index{WMedian@Function \texttt{WMedian(X, w)}}
+
+\subsection{Description}
+
+Compute the weighted median of the numbers stored in \texttt{X(:)}
+with weights \texttt{w(:)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose median we want to compute.
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The weights.
+\end{description}
+
+\subsection{Output}
+
+A real double or simple precision (same type as the input). The
+weighted median
+of the values.
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=WMedian,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Weighted Median of a vector of numbers.,
+                   label=wmean]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 5
+  Real (kind=SP) :: X(Nmax) = (/1.0, 1.0, 2.0, 4.0, 1.5/)  
+  Real (kind=SP) :: w(Nmax) = (/10.0, 2.0, 3.0, 4.0, 1.5/)  
+
+  Write(*,'(ES33.25)')WMedian(X, w)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Function \texttt{WPercentile(X, w, p)}}
+\index{WPercentile@Function \texttt{WPercentile(X, w, p)}}
+
+\subsection{Description}
+
+Compute the weighted percentile \texttt{p} of the numbers stored in
+\texttt{X(:)} 
+with weights \texttt{w(:)}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose median we want to compute.
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The weights.
+\item[\texttt{p}:] Double (DP) or simple (SP) precision number. The
+  percentile (should be between 0 and 100).
+\end{description}
+
+\subsection{Output}
+
+A real double or simple precision (same type as the input). The
+weighted percentile \texttt{p}
+of the values.
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=WPercentile,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the Weighted Median in two ways.,
+                   label=wpercentile]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 5
+  Real (kind=SP) :: X(Nmax) = (/1.0, 1.0, 2.0, 4.0, 1.5/)  
+  Real (kind=SP) :: w(Nmax) = (/10.0, 2.0, 3.0, 4.0, 1.5/)  
+
+  Write(*,'(ES33.25)')WMedian(X, w)
+  Write(*,'(ES33.25)')WPercentile(X, w, 50.0_DP)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+\section{Subroutine \texttt{WConfInt(X, w, Xmin, Xmax)}}
+\index{WConfInt@Subroutine \texttt{WConfInt(X, w, Xmin, Xmax)}}
+
+\subsection{Description}
+
+Compute the weighted 16$^{th}$ and 84$^{th}$ percentiles f the numbers stored in
+\texttt{X(:)} 
+with weights \texttt{w(:)}, and return the values in \texttt{Xmin} and
+\texttt{Xmax}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The values  whose median we want to compute.
+\item[\texttt{X(:)}:] Double (DP) or simple (SP) precision one
+  dimensional array. The weights.
+\item[\texttt{Xmin}:] Double (DP) or simple (SP) precision
+  number. Output. The
+  16$^{th}$ percentile.
+\item[\texttt{Xmax}:] Double (DP) or simple (SP) precision
+  number. Output. The
+  84$^{th}$ percentile.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=WConfInt,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the 1 sigma confidence interval in two ways., 
+                   label=wconfint]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 500
+  Real (kind=SP) :: X(Nmax), w(Nmax), X1, X2
+
+  CALL Normal(X)
+  CALL Random_Number(w)
+
+  Write(*,'(ES33.25)')WPercentile(X, w, 16.0_DP)
+  Write(*,'(ES33.25)')WPercentile(X, w, 84.0_DP)
+  CALL WConfInt(X, W, X1, X2)
+  Write(*,'(ES33.25)')X1, X2
+  
+  Stop
+End Program Tests
+\end{lstlisting}
 
 \section{Function \texttt{Var(X)}}
 \index{Var@Function \texttt{Var(X)}}
