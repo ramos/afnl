@@ -37,8 +37,24 @@ MODULE Statistics
      Module Procedure Mean_DP, Mean_SP
   End Interface
 
+  Interface WMean
+     Module Procedure WMean_DP, WMean_SP
+  End Interface
+
   Interface Median
      Module Procedure Median_DP, Median_SP
+  End Interface
+
+  Interface WMedian
+     Module Procedure WMedian_DP, WMedian_SP
+  End Interface
+
+  Interface WConfInt
+     Module Procedure WConfInt_DP, WConfInt_SP
+  End Interface
+
+  Interface WPercentile
+     Module Procedure WPercentile_DP, WPercentile_SP
   End Interface
 
   Interface Var
@@ -161,7 +177,9 @@ MODULE Statistics
        & MultiLinearRegCorr_SP, NonLinearRegCorr_DP,&
        & NonLinearRegCorr_SP, MultiNonLinearRegCorr_DP, &
        & MultiNonLinearRegCorr_SP, DEF_MC_TOL_DP, DEF_MC_TOL_SP, &
-       & MCIntegration_DP, MCIntegration_SP
+       & MCIntegration_DP, MCIntegration_SP, WMedian_DP, WMedian_SP, &
+       & Wmean_DP, Wmean_SP, WPercentile_DP, WPercentile_SP, &
+       & WConfInt_DP, WConfInt_SP
 
 CONTAINS
 
@@ -180,6 +198,39 @@ CONTAINS
 
     Return
   End Function Mean_DP
+
+
+!  *********************************************
+!  *                                           *
+  Real (kind=DP) Function WMean_DP(X, w)
+!  *                                           *
+!  *********************************************
+!  * Returns the weighted mean value of the 
+!  * elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X(:), w(:)
+
+    WMean_DP = Sum(w(:)*X(:)) / Sum(w(:))
+
+    Return
+  End Function WMean_DP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=SP) Function WMean_SP(X, w)
+!  *                                           *
+!  *********************************************
+!  * Returns the weighted mean value of the 
+!  * elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X(:), w(:)
+
+    WMean_SP = Sum(w(:)*X(:)) / Sum(w(:))
+
+    Return
+  End Function WMean_SP
 
 !  *********************************************
 !  *                                           *
@@ -213,6 +264,340 @@ CONTAINS
 
     Return
   End Function Median_DP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=DP) Function WMedian_DP(X, w)
+!  *                                           *
+!  *********************************************
+!  * Returns the weighted median value of the 
+!  * elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X(:), w(:)
+
+    Real (kind=DP), Allocatable :: Xcp(:)
+    Integer, Allocatable :: Idx(:)
+    Real (kind=DP) :: Acum, Pov2, Plow, Phigh 
+    Integer :: Ns, Istat, I
+    
+
+    Ns = Size(X)
+    Allocate(Xcp(Ns), Idx(Ns), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
+
+    Xcp = X
+    CALL Qsort(Xcp, Idx)
+    Acum = 0.0_DP
+    Pov2 = Sum(w(:))/2.0_DP
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Acum - w(I)
+    Phigh = 2.0_DP*Pov2 - Plow
+
+    If (Phigh > Pov2) Then
+       WMedian_DP = X(Idx(I))
+    Else
+       WMedian_DP = &
+            & (Plow*X(Idx(I-1)) + Phigh*X(Idx(I)))/(Plow+Phigh)
+    End If
+    DeAllocate(Xcp, Idx)
+
+    Return
+  End Function WMedian_DP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=SP) Function WMedian_SP(X, w)
+!  *                                           *
+!  *********************************************
+!  * Returns the weighted median value of the 
+!  * elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X(:), w(:)
+
+    Real (kind=SP), Allocatable :: Xcp(:)
+    Integer, Allocatable :: Idx(:)
+    Real (kind=SP) :: Acum, Pov2, Plow, Phigh 
+    Integer :: Ns, Istat, I
+    
+
+    Ns = Size(X)
+    Allocate(Xcp(Ns), Idx(Ns), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
+
+    Xcp = X
+    CALL Qsort(Xcp, Idx)
+    Acum = 0.0_SP
+    Pov2 = Sum(w(:))/2.0_SP
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Acum - w(I)
+    Phigh = 2.0_SP*Pov2 - Plow
+
+    If (Phigh > Pov2) Then
+       WMedian_SP = X(Idx(I))
+    Else
+       WMedian_SP = &
+            & (Plow*X(Idx(I-1)) + Phigh*X(Idx(I)))/(Plow+Phigh)
+    End If
+    DeAllocate(Xcp, Idx)
+
+    Return
+  End Function WMedian_SP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=DP) Function WPercentile_DP(X, w, p)
+!  *                                           *
+!  *********************************************
+!  * Returns the weighted percentile p value of the 
+!  * elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X(:), w(:), p
+
+    Real (kind=DP), Allocatable :: Xcp(:)
+    Integer, Allocatable :: Idx(:)
+    Real (kind=DP) :: Acum, Pov2, Plow, Phigh, Norm
+    Integer :: Ns, Istat, I
+    
+
+    Ns = Size(X)
+    Allocate(Xcp(Ns), Idx(Ns), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
+
+    Xcp = X
+    CALL Qsort(Xcp, Idx)
+    Acum = 0.0_DP
+    Pov2 = Sum(w(:))/(100.0_DP) * p
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Sum(w(1:I-1)) 
+    Phigh = (100.0_DP*Pov2/p) - Plow 
+!    Write(*,*)Plow, Phigh, Pov2, I
+
+    If (Phigh > (100.0_DP/p-1.0_DP)*Pov2) Then
+       WPercentile_DP = X(Idx(I))
+    Else
+       Norm = 100.0_DP * (Plow/p + Phigh/(100.0_DP-p))
+       WPercentile_DP = (Plow*100.0_DP/p) * X(Idx(I-1)) + &
+            & (Phigh/(1.0_DP-p/100.0_DP)) * X(Idx(I))
+       WPercentile_DP = WPercentile_DP / Norm
+    End If
+    DeAllocate(Xcp, Idx)
+
+    Return
+  End Function WPercentile_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine WConfInt_DP(X, w, xm, xp)
+!  *                                           *
+!  *********************************************
+!  * Returns the 1 sigma confidence interval for
+!  * the weighted elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=DP), Intent (in) :: X(:), w(:)
+    Real (kind=DP), Intent (out) :: xm, xp
+
+    Real (kind=DP), Allocatable :: Xcp(:)
+    Integer, Allocatable :: Idx(:)
+    Real (kind=DP) :: Acum, Pov2, Plow, Phigh, Norm, p
+    Integer :: Ns, Istat, I
+    
+
+    Ns = Size(X)
+    Allocate(Xcp(Ns), Idx(Ns), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
+
+    Xcp = X
+    CALL Qsort(Xcp, Idx)
+
+    p = 15.72992070502852168801_DP
+    Acum = 0.0_DP
+    Pov2 = Sum(w(:))/(100.0_DP) * p
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Sum(w(1:I-1)) 
+    Phigh = (100.0_DP*Pov2/p) - Plow 
+!    Write(*,*)Plow, Phigh, Pov2, I
+
+    If (Phigh > (100.0_DP/p-1.0_DP)*Pov2) Then
+       Xm = X(Idx(I))
+    Else
+       Norm = 100.0_DP * (Plow/p + Phigh/(100.0_DP-p))
+       Xm = (Plow*100.0_DP/p) * X(Idx(I-1)) + &
+            & (Phigh/(1.0_DP-p/100.0_DP)) * X(Idx(I))
+       Xm = Xm / Norm
+    End If
+
+    p = 84.27007929497147831199_DP
+    Acum = 0.0_DP
+    Pov2 = Sum(w(:))/(100.0_DP) * p
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Sum(w(1:I-1)) 
+    Phigh = (100.0_DP*Pov2/p) - Plow 
+!    Write(*,*)Plow, Phigh, Pov2, I
+
+    If (Phigh > (100.0_DP/p-1.0_DP)*Pov2) Then
+       Xp = X(Idx(I))
+    Else
+       Norm = 100.0_DP * (Plow/p + Phigh/(100.0_DP-p))
+       Xp = (Plow*100.0_DP/p) * X(Idx(I-1)) + &
+            & (Phigh/(1.0_DP-p/100.0_DP)) * X(Idx(I))
+       Xp = Xp / Norm
+    End If
+
+    DeAllocate(Xcp, Idx)
+
+    Return
+  End Subroutine WConfInt_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine WConfInt_SP(X, w, xm, xp)
+!  *                                           *
+!  *********************************************
+!  * Returns the 1 sigma confidence interval for
+!  * the weighted elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X(:), w(:)
+    Real (kind=SP), Intent (out) :: xm, xp
+
+    Real (kind=SP), Allocatable :: Xcp(:)
+    Integer, Allocatable :: Idx(:)
+    Real (kind=SP) :: Acum, Pov2, Plow, Phigh, Norm, p
+    Integer :: Ns, Istat, I
+    
+
+    Ns = Size(X)
+    Allocate(Xcp(Ns), Idx(Ns), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
+
+    Xcp = X
+    CALL Qsort(Xcp, Idx)
+
+    p = 15.72992070502852168801_SP
+    Acum = 0.0_SP
+    Pov2 = Sum(w(:))/(100.0_SP) * p
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Sum(w(1:I-1)) 
+    Phigh = (100.0_SP*Pov2/p) - Plow 
+!    Write(*,*)Plow, Phigh, Pov2, I
+
+    If (Phigh > (100.0_SP/p-1.0_SP)*Pov2) Then
+       Xm = X(Idx(I))
+    Else
+       Norm = 100.0_SP * (Plow/p + Phigh/(100.0_SP-p))
+       Xm = (Plow*100.0_SP/p) * X(Idx(I-1)) + &
+            & (Phigh/(1.0_SP-p/100.0_SP)) * X(Idx(I))
+       Xm = Xm / Norm
+    End If
+
+    p = 84.27007929497147831199_SP
+    Acum = 0.0_SP
+    Pov2 = Sum(w(:))/(100.0_SP) * p
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Sum(w(1:I-1)) 
+    Phigh = (100.0_SP*Pov2/p) - Plow 
+!    Write(*,*)Plow, Phigh, Pov2, I
+
+    If (Phigh > (100.0_SP/p-1.0_SP)*Pov2) Then
+       Xp = X(Idx(I))
+    Else
+       Norm = 100.0_SP * (Plow/p + Phigh/(100.0_SP-p))
+       Xp = (Plow*100.0_SP/p) * X(Idx(I-1)) + &
+            & (Phigh/(1.0_SP-p/100.0_SP)) * X(Idx(I))
+       Xp = Xp / Norm
+    End If
+
+    DeAllocate(Xcp, Idx)
+
+    Return
+  End Subroutine WConfInt_SP
+
+!  *********************************************
+!  *                                           *
+  Real (kind=SP) Function WPercentile_SP(X, w, p)
+!  *                                           *
+!  *********************************************
+!  * Returns the weighted percentile p value of the 
+!  * elements in the vector X(:)
+!  *********************************************
+
+    Real (kind=SP), Intent (in) :: X(:), w(:), p
+
+    Real (kind=SP), Allocatable :: Xcp(:)
+    Integer, Allocatable :: Idx(:)
+    Real (kind=SP) :: Acum, Pov2, Plow, Phigh, Norm
+    Integer :: Ns, Istat, I
+    
+
+    Ns = Size(X)
+    Allocate(Xcp(Ns), Idx(Ns), STAT=Istat)
+    If (Istat /= 0) CALL Abort("Memory fail", "Median: ")
+
+    Xcp = X
+    CALL Qsort(Xcp, Idx)
+    Acum = 0.0_SP
+    Pov2 = Sum(w(:))/(100.0_SP) * p
+    Do I = 1, Ns
+       Acum = Acum + w(Idx(I))
+       If (Acum > Pov2) Then
+          Exit
+       End If
+    End Do
+    Plow = Sum(w(1:I-1)) 
+    Phigh = (100.0_SP*Pov2/p) - Plow 
+!    Write(*,*)Plow, Phigh, Pov2, I
+
+    If (Phigh > (100.0_SP/p-1.0_SP)*Pov2) Then
+       WPercentile_SP = X(Idx(I))
+    Else
+       Norm = 100.0_SP * (Plow/p + Phigh/(100.0_SP-p))
+       WPercentile_SP = (Plow*100.0_SP/p) * X(Idx(I-1)) + &
+            & (Phigh/(1.0_SP-p/100.0_SP)) * X(Idx(I))
+       WPercentile_SP = WPercentile_SP / Norm
+    End If
+    DeAllocate(Xcp, Idx)
+
+    Return
+  End Function WPercentile_SP
 
 !  *********************************************
 !  *                                           *
