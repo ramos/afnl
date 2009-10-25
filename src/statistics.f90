@@ -296,7 +296,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Acum - w(I)
+    Plow = Acum - w(Idx(I))
     Phigh = 2.0_DP*Pov2 - Plow
 
     If (Phigh > Pov2) Then
@@ -341,7 +341,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Acum - w(I)
+    Plow = Acum - w(Idx(I))
     Phigh = 2.0_SP*Pov2 - Plow
 
     If (Phigh > Pov2) Then
@@ -386,7 +386,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Sum(w(1:I-1)) 
+    Plow = Acum - w(Idx(I))
     Phigh = (100.0_DP*Pov2/p) - Plow 
 !    Write(*,*)Plow, Phigh, Pov2, I
 
@@ -437,7 +437,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Sum(w(1:I-1)) 
+    Plow = Acum - w(Idx(I))
     Phigh = (100.0_DP*Pov2/p) - Plow 
 !    Write(*,*)Plow, Phigh, Pov2, I
 
@@ -459,7 +459,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Sum(w(1:I-1)) 
+    Plow = Acum - w(Idx(I))
     Phigh = (100.0_DP*Pov2/p) - Plow 
 !    Write(*,*)Plow, Phigh, Pov2, I
 
@@ -511,7 +511,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Sum(w(1:I-1)) 
+    Plow = Acum - W(Idx(I))
     Phigh = (100.0_SP*Pov2/p) - Plow 
 !    Write(*,*)Plow, Phigh, Pov2, I
 
@@ -533,7 +533,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Sum(w(1:I-1)) 
+    Plow = Acum - W(Idx(I))
     Phigh = (100.0_SP*Pov2/p) - Plow 
 !    Write(*,*)Plow, Phigh, Pov2, I
 
@@ -582,7 +582,7 @@ CONTAINS
           Exit
        End If
     End Do
-    Plow = Sum(w(1:I-1)) 
+    Plow = Acum - W(Idx(I))
     Phigh = (100.0_SP*Pov2/p) - Plow 
 !    Write(*,*)Plow, Phigh, Pov2, I
 
