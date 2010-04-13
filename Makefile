@@ -1,5 +1,5 @@
 
-F90=ifort -warn all
+F90=ifort -warn all -std03
 #F90=gfortran-4.2
 F90OPT=
 
@@ -48,8 +48,12 @@ poly.o: numtypes.o error.o constants.o poly.f90
 fourier.o: numtypes.o error.o constants.o fourier.f90
 	$(F90) -c $^ -o $@
 
-lib: numtypes.o error.o constants.o statistics.o nonnum.o linear.o \
-	int.o min.o time.o specialfunc.o root.o poly.o fourier.o
+minuitAPI.o: numtypes.o minuitAPI.f90
+	$(F90) -c $^ -o $@
+
+lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
+	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o \
+	minuitAPI.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o

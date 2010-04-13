@@ -30,6 +30,7 @@ MODULE Statistics
   USE Error  
   USE NonNumeric
   USE Linear
+  USE SpecialFunc
 
   IMPLICIT NONE
 
@@ -4347,5 +4348,131 @@ End Subroutine RanLux_DP_S
     
     Return
   End Function Prop_Error_Multi_SP
+
+! ******************************************
+! *
+  REAL (DP) FUNCTION FitQuality(chisq,ndf)
+! *
+! ******************************************
+! * Directly taken from Christian's Code
+! ******************************************
+
+    REAL(DP), INTENT(IN) :: chisq
+    INTEGER, INTENT(IN) :: ndf
+    
+    REAL(DP) :: a,b
+
+    a=REAL(ndf,DP)/2.0_DP
+    b=chisq/2.0_DP
+
+    FitQuality=GammQ(a,b)
+
+    Return
+  END FUNCTION FitQuality
+
+! ******************************************
+! *
+  REAL(DP) FUNCTION GammQ(a,x)
+! *
+! ******************************************
+! * Directly taken from Christian's Code
+! ******************************************
+    REAL(DP), INTENT(IN) :: a,x
+    
+    REAL(DP) :: Gln,GamSer,Gammcf
+
+    IF ((x<0.0_DP).OR.(a<=0.0_DP)) THEN
+       GammQ=-1000000.0_DP
+       RETURN
+    END IF
+
+    IF (x<a+1.0_DP)  THEN
+       CALL Gser(GamSer,a,x,Gln)
+       GammQ=1.0_DP-GamSer
+    ELSE
+       Call Gcf(Gammcf,a,x,Gln)
+       GammQ=Gammcf
+    END IF
+  END FUNCTION GammQ
+
+! ******************************************
+! *
+  SUBROUTINE Gser(GamSer,a,x,Gln)
+! *
+! ******************************************
+! * Directly taken from Christian's Code
+! ******************************************
+    REAL(DP), INTENT(OUT) :: GamSer,Gln
+    REAL(DP), INTENT(IN) :: a,x
+
+    INTEGER, PARAMETER :: ITmax=100
+    REAL(DP), PARAMETER :: eps=0.0000003_DP
+
+    REAL(DP) :: ap,sum,del
+    INTEGER :: n
+
+    Gln=GammaLn(a)
+    IF (x<=0.0_DP)  THEN
+       IF (x<0.0_DP) THEN
+          Gamser=-1000000.0_DP
+       ELSE
+          Gamser=0.0_DP
+       END IF
+       RETURN
+    END IF
+
+    ap=a
+    sum=1.0_DP/a
+    del=sum
+    itlp:DO n=1,ITmax
+       ap=ap+1.0_DP
+       del=del*x/ap
+       sum=sum+del
+       IF (ABS(del)<ABS(sum)*eps) EXIT itlp
+    END DO itlp
+    IF (ABS(del)>=ABS(sum)*eps) GamSer=-1000000.0_DP
+    GamSer=sum*exp(-x+a*LOG(x)-Gln)
+  END SUBROUTINE Gser
+
+! ******************************************
+! *
+  SUBROUTINE Gcf(Gammcf,a,x,Gln)
+! *
+! ******************************************
+! * Directly taken from Christian's Code
+! ******************************************
+    REAL(DP), INTENT(OUT) :: Gammcf,Gln
+    REAL(DP), INTENT(IN) :: a,x
+    
+    INTEGER, PARAMETER :: ITmax=100
+    REAL(DP), PARAMETER :: eps=0.0000003_DP
+
+    REAL(DP) :: G,Gold,a0,a1,an,ana,b0,b1,fac,anf
+    INTEGER :: n
+
+    Gln=GammaLn(a)
+    Gold=0.0_DP
+    a0=1.0_DP
+    a1=x
+    b0=0.0_DP
+    b1=1.0_DP
+    fac=1.0_DP
+    jtl: DO n=1,ITmax
+       an=REAL(n,DP)
+       ana=an-a
+       a0=(a1+a0*ana)*fac
+       b0=(b1+b0*ana)*fac
+       anf=an*fac
+       a1=x*a0+anf*a1
+       b1=x*b0+anf*b1
+       IF (a1/=0.0_DP)  THEN
+          fac=1.0_DP/a1 
+          G=b1*fac
+          IF (abs((G-Gold)/G).lt.eps)  EXIT jtl
+          Gold=G
+       END IF
+    END DO jtl
+    Gammcf=EXP(-x+a*LOG(x)-Gln)*G
+  END SUBROUTINE Gcf
 
 End MODULE Statistics
