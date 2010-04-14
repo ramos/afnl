@@ -17,6 +17,7 @@ MODULE MinuitAPI
   Real (kind=8), Allocatable :: ShX1d(:), ShY(:), ShXMd(:,:),&
        & ShYerr(:), ShInvC(:,:)
 
+  Integer :: NcP
 
   Private Fit1D, FitMD, Fit1DCorr, FitMDCorr, MinimizeMD, Chisqr1d,&
        & ChisqrMd, Chisqr1dCorr, ChisqrMdCorr, Fm
@@ -424,7 +425,7 @@ CONTAINS
 !!$          If (Empty) Then
 !!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
 !!$          Else
-             CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
 !!$          End If
           CALL Mnfix(I)
        Else
@@ -435,9 +436,13 @@ CONTAINS
 
     If (Present(Fparms)) Then
        Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
           Do J = 1, Fparms(0,I)
              CALL MNfree(Fparms(I,J))
           End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
           If (I == 1) Then
              CALL Mncomd(Fm,"mini",Ierr,Func)
              CALL Mncomd(Fm,"seek",Ierr,Func)
@@ -446,6 +451,9 @@ CONTAINS
           CALL Mncomd(Fm,"migrad",Ierr,Func)
        End Do
     Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
        CALL Mncomd(Fm,"mini",Ierr,Func)
        CALL Mncomd(Fm,"seek",Ierr,Func)
        CALL Mncomd(Fm,"migrad",Ierr,Func)
@@ -472,7 +480,7 @@ CONTAINS
     Real (kind=8), Intent (in) :: Xval(*), Grad(*)
     
     Integer :: I
-    Real (kind=8) :: C(Npar)
+    Real (kind=8), Allocatable :: C(:)
     
     Interface 
        Function Func(X)
@@ -481,12 +489,14 @@ CONTAINS
        End Function Func
     End Interface
 
-    Do I = 1, Npar
+    Allocate(C(1:NcP))
+    Do I = 1, NcP
        C(I) = Xval(I)
     End Do
 
     Fval = Func(C(:))
-    
+    Deallocate(C)
+
     Return
   End Subroutine Fm
 
