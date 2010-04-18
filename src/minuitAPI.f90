@@ -520,11 +520,11 @@ CONTAINS
 !!$          If (Empty) Then
 !!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
 !!$          Else
-          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(I), Bounds(Ndim+I), Ierr)
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
 !!$          End If
           CALL Mnfix(I)
        Else
-          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(I), Bounds(Ndim+I), Ierr)
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
        End If
     End Do
     
