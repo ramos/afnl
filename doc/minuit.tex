@@ -1,0 +1,129 @@
+
+This is the documentation of the MODULE \texttt{MinuitAPI}, a set
+of routines to Optimise (maximise or minimise) functions of one or
+several variables. This module is a simple API to the CERN minuit
+library\footnote{\href{http://lcgapp.cern.ch/project/cls/work-packages/mathlibs/minuit/home.html}{http://lcgapp.cern.ch/project/cls/work-packages/mathlibs/minuit/home.html}}. 
+
+\section{Subroutine \texttt{Minimize(Func, X, Fval, [Bound], [Release], [logfile]) }}
+\index{minimize@Subroutine \texttt{Minimize(Func, X, Fval, [Bound],[Release], [logfile])}}
+
+\subsection{Description}
+
+The routine \texttt{Minimize}, minimises the function of several
+variables Func. As an output you get the position of the minima in the
+vector \texttt{X(:)}, and the value of the function in the minima in
+the variable \texttt{Fval}. 
+
+Several optional parameters can be used to put boundaries in the
+values of the parameters, or to specify a release order for the
+parameters. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{Func}:]  The function we want to minimise. An interface
+  like the following should be declared
+\begin{verbatim}
+  Interface
+     Function Func(X)
+       USE NumTypes
+       
+       Real (kind=DP), Intent (in) :: X(:)
+       Real (kind=DP) :: Func
+     End Function Func
+  End Interface
+\end{verbatim}
+\item[\texttt{X(:): }] Real double precision one dimensional array. As
+  input an estimate of 
+  the position of the minima. As output the position of the minima.
+\item[\texttt{Fval:}] Real double precision. Output. The value of the
+  function at the minima.
+\item[\texttt{Bound(:): }] Real double precision one dimensional
+  array. Optional. Parameter limits. The minimum value for parameter
+  $n$ is given by \texttt{Bound(2n-1)}, and the maximum value is given
+  by \texttt{Bound(2n)}. If both limits are \texttt{0.0D0} the
+  parameter has no limits.
+\item[\texttt{Release(0:,:):}] Integer two dimensional
+  array. Optional. The integer two dimensional array can be used to
+  specify a release order of parameters. The first dimension of
+  \texttt{Release(0:,:)} contains the steps in which you want to
+  release the parameters. The vector \texttt{Release(0,:)} contains
+  the number of parameters released in each
+  step. \texttt{Release(1,:)} contains the parameters released in the
+  first step. \texttt{Release(2,:)} contains the parameters released in the
+  second step, etc\dots
+
+  For example, the array (an $*$ means that the value of this element
+  of the array is irrelevant).
+  \begin{equation}
+    R_{ij} = \left(
+      \begin{array}{cccc}
+        2 & 2 & 3 & * \\
+        1 & 2 & * & * \\
+        3 & 4 & * & * \\
+        5 & 6 & 7 & * \\
+      \end{array}
+      \right)
+  \end{equation}
+  Means that parameters $1,2$ are free in the first step of the
+  fit. Parameters $(1,2,3,4)$ are free in the second step, and finally
+  parameters $(1,2,3,4,5,6,7)$ are released in the last step of the
+  fit.
+\item[\texttt{logfile}: ] Character (len=*). Optional. A file name
+  where MINUIT will write some information about the minimisation
+  process. 
+\end{description}
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=Minimize,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using minuit library to minimize a function.,
+                   label=minimize]
+Program TestAPI
+
+  USE MinuitAPI
+  USE Statistics
+  USE Constants
+
+  Integer, Parameter :: N = 2
+  Real (kind=8) :: X(N), Y(N), Ye(N), C(2), Ch
+
+  Interface 
+     Function Func(X)
+       Real (kind=8), Intent (in) :: X(:)
+       Real (kind=8) :: Func
+     End Function Func
+  End Interface
+  
+
+  X(:) = -23.0D0
+  CALL Minimize(Func, X, Ch)
+  Write(*,*)Ch
+  Write(*,*)X
+  Write(*,*)Tan(X(1)), Cos(X(2))
+
+  Stop
+End Program TestAPI
+
+Function Func(X)
+
+  Real (kind=8), Intent (in) :: X(:)
+  Real (kind=8) :: Func
+
+  Func = (X(1)-tan(X(1)))**2 + (X(2) - Cos(X(2)))**2
+
+  Return
+End Function Func
+\end{lstlisting}
+
+
+
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
+
