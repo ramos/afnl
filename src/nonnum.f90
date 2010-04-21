@@ -89,6 +89,10 @@ CONTAINS
 
     ISize = Size(X)
 
+    If (Present(Iin)) Then
+       Locate_IN = IIn
+    End If
+
     If (Xo < X(1)) Then
        Locate_IN = 0
        Return
@@ -135,6 +139,10 @@ CONTAINS
 
     ISize = Size(X)
 
+    If (Present(Iin)) Then
+       Locate_SP = IIn
+    End If
+
     If (Xo < X(1)) Then
        Locate_SP = 0
        Return
@@ -180,6 +188,10 @@ CONTAINS
 
 
     ISize = Size(X)
+
+    If (Present(Iin)) Then
+       Locate_DP = IIn
+    End If
 
     If (Xo < X(1)) Then
        Locate_DP = 0
@@ -551,7 +563,7 @@ CONTAINS
       Integer, Intent (in) :: IIl, IIr
       
       Real (kind=SP) :: RRtmp
-      Integer :: II, JJ, IItmp
+      Integer :: II, JJ
       
 
       Do II = IIl+1, IIr
@@ -710,7 +722,7 @@ CONTAINS
       Integer, Intent (in) :: IIl, IIr
       
       Real (kind=DP) :: RRtmp
-      Integer :: II, JJ, IItmp
+      Integer :: II, JJ
       
 
       Do II = IIl+1, IIr
@@ -869,7 +881,7 @@ CONTAINS
       Integer, Intent (in) :: IIl, IIr
       
       Integer :: RRtmp
-      Integer :: II, JJ, IItmp
+      Integer :: II, JJ
       
 
       Do II = IIl+1, IIr

@@ -1,6 +1,6 @@
 
 F90=ifort -warn all -std03
-#F90=gfortran-4.2
+#F90=gfortran-4.3 -std=f2003 -Wall -pedantic
 F90OPT=
 
 VPATH=src

@@ -53,19 +53,19 @@ MODULE Optimization
   End Interface
 
   Interface LineSrch
-     Module Procedure LineSrch_DP, LineSrch_SP, LineSrchMulti_DP, &
-          & LineSrchMulti_SP
+     Module Procedure LineSrch_DP, LineSrch_SP!, LineSrchMulti_DP, &
+          !& LineSrchMulti_SP
   End Interface
 
-  Interface ConjGrad
-     Module Procedure ConjGrad_DP, ConjGrad_SP
-  End Interface
+!!$  Interface ConjGrad
+!!$     Module Procedure ConjGrad_DP, ConjGrad_SP
+!!$  End Interface
 
 
   Private Step_DP, MultiStep_DP, Step_SP, MultiStep_SP, &
        & MaxPosition_2D_DP, Bracket_DP, Bracket_SP, LineSrch_DP, &
-       & LineSrch_SP, ConjGrad_DP, ConjGrad_SP, LineSrchMulti_DP, &
-       & LineSrchMulti_SP
+       & LineSrch_SP!, ConjGrad_DP, ConjGrad_SP, LineSrchMulti_DP, &
+       !& LineSrchMulti_SP
        !, MaxPosition_2D_SP, InterpolMinMax_2D_DP
 
 CONTAINS
@@ -495,170 +495,174 @@ CONTAINS
     Return
   End Subroutine Bracket_DP
 
-! **********************************************
-! *                                            *
-  Subroutine ConjGrad_DP(X, Func, FuncD, Tolerance) 
-! *                                            *
-! **********************************************
-! * Minimises a function of several variables  *
-! * using the conjugate gradient.              *
-! **********************************************
+  ! Conjugate gradient and Linesrch for multidimensions
+  ! are "old" functions. MinuitAPI should be used instead
 
-    Real (kind=DP), Intent (inout) :: X(:)
-    Real (kind=DP), Intent (in), Optional :: Tolerance
-
-    Real (kind=DP) :: B(Size(X), Size(X)), beta(Size(X)), &
-         & Fd(Size(X)), Tol, P(Size(X)), D(Size(X)), &
-         & G(Size(X), Size(X)), X2, Fold, Fnew
-    Integer :: I
-
-
-    Interface
-       Function Func(X)
-         USE NumTypes
-         Real (kind=DP), Intent (in)  :: X(:)
-         Real (kind=DP) :: Func
-       End Function Func
-    End Interface
-
-    Interface
-       Subroutine FuncD(X, Fd)
-         USE NumTypes
-         Real (kind=DP), Intent (in)  :: X(:)
-         Real (kind=DP), Intent (out) :: Fd(Size(X))
-       End Subroutine FuncD
-    End Interface
-
-    If (Present(Tolerance)) Then
-       Tol = Tolerance
-    Else
-       Tol = DEFTOL_DP
-    End If
-
-
-    Fold = 235623763.0_DP
-    Do While (.True.)
-       CALL FuncD(X, Fd)
-       G(1,:) = - Fd(:)
-       If (Sum(G(1,:)**2) < Tol) Return
-       B(1,:) = G(1,:)
-       
-       X2 = 0.0_DP
-       P(:) = X(:)
-       D(:) = B(1,:)
-       CALL LineSrch(X2,Fdir, Tol)
-       X(:) = P(:) + X2 * D(:)
-       
-       Do I = 2, Size(X)
-          CALL FuncD(X, Fd)
-          G(I,:) = - Fd(:)
-          If (Sum(G(I,:)**2) < Tol) Return
-          beta(I) = Sum(G(I,:)*(G(I,:)-G(I-1,:)) ) / Sum(G(I-1,:)*G(I-1,:))
-          beta(I) = Max(Beta(I), 0.0_DP)
-          B(I,:) = G(I,:) + beta(I)*B(I-1,:)
-          
-          X2 = 0.0_DP
-          P(:) = X(:)
-          D(:) = B(I,:)
-          CALL LineSrch(X2,Fdir, Tol)
-          X(:) = P(:) + X2 * D(:)
-       End Do
-       Fnew = Func(X)
-       If (2.0_DP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_DP))&
-          & Return
-       Fold = Fnew
-    End Do
-
-
-    Return
-
-    CONTAINS
-
-      ! *************************************
-      Real (kind=DP) Function Fdir(h)
-      ! *************************************
-      ! * Computes the value of Func in the
-      ! * direction Dir(:)
-      ! *************************************
-
-
-        Real (kind=DP), Intent (in) :: h
-        
-        Fdir = Func(P(:) + h*D(:))
-        
-        Return
-      End Function Fdir
-
-  End Subroutine ConjGrad_DP
-
-! **********************************************
-! *                                            *
-  Subroutine LineSrchMulti_DP(X, Func, Tolerance) 
-! *                                            *
-! **********************************************
-! * Minimize funcion Func with precision Tol   *
-! * (if present), using golden rule line       *
-! * minimisation. The minimum should be        *
-! * bracketed by [X1,X2,X3]                    * 
-! **********************************************
-
-    Real (kind=DP), Intent (inout) :: X(:)
-    Real (kind=DP), Intent (in), Optional :: Tolerance
-    
-    Real (kind=DP) :: Tol, X2, Fold, Fnew
-    
-    Integer :: Idir
-
-    Interface 
-       Function Func(X)
-         USE NumTypes
-         Real (kind=DP), Intent (in) :: X(:)
-         Real (kind=DP) :: Func
-       End Function Func
-    End Interface
-
-    If (Present(Tolerance)) Then
-       Tol = Tolerance
-    Else
-       Tol = DEFTOL_DP
-    End If
-
-    Fnew = 0.0_DP
-    Do While (.True.)
-       Fold = Fnew
-       Do Idir = 1, Size(X)
-          CALL LineSrch(X2, Fdir, Tol)
-          X(Idir) = X2
-       End Do
-       Fnew = Func(X)
-       If (2.0_SP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_SP))&
-          & Return
-    End Do
-
-
-    Return
-    CONTAINS
-
-      ! *************************************
-      Real (kind=DP) Function Fdir(h)
-      ! *************************************
-      ! * Computes the value of Func in the
-      ! * direction Dir(:)
-      ! *************************************
-
-
-        Real (kind=DP), Intent (in) :: h
-        Real (kind=DP) :: XX(Size(X))
-
-        XX = X
-        Xx(Idir) = h
-        Fdir = Func(Xx)
-        
-        Return
-      End Function Fdir
-
-
-  End Subroutine LineSrchMulti_DP
+!!$! **********************************************
+!!$! *                                            *
+!!$  Subroutine ConjGrad_DP(X, Func, FuncD, Tolerance) 
+!!$! *                                            *
+!!$! **********************************************
+!!$! * Minimises a function of several variables  *
+!!$! * using the conjugate gradient.              *
+!!$! **********************************************
+!!$
+!!$    Real (kind=DP), Intent (inout) :: X(:)
+!!$    Real (kind=DP), Intent (in), Optional :: Tolerance
+!!$
+!!$    Real (kind=DP) :: B(Size(X), Size(X)), beta(Size(X)), &
+!!$         & Fd(Size(X)), Tol, P(Size(X)), D(Size(X)), &
+!!$         & G(Size(X), Size(X)), X2, Fold, Fnew
+!!$    Integer :: I
+!!$
+!!$
+!!$    Interface
+!!$       Function Func(X)
+!!$         USE NumTypes
+!!$         Real (kind=DP), Intent (in)  :: X(:)
+!!$         Real (kind=DP) :: Func
+!!$       End Function Func
+!!$    End Interface
+!!$
+!!$    Interface
+!!$       Subroutine FuncD(X, Fd)
+!!$         USE NumTypes
+!!$         Real (kind=DP), Intent (in)  :: X(:)
+!!$         Real (kind=DP), Intent (out) :: Fd(Size(X))
+!!$       End Subroutine FuncD
+!!$    End Interface
+!!$
+!!$    If (Present(Tolerance)) Then
+!!$       Tol = Tolerance
+!!$    Else
+!!$       Tol = DEFTOL_DP
+!!$    End If
+!!$
+!!$
+!!$    Fold = 235623763.0_DP
+!!$    Do While (.True.)
+!!$       CALL FuncD(X, Fd)
+!!$       G(1,:) = - Fd(:)
+!!$       If (Sum(G(1,:)**2) < Tol) Return
+!!$       B(1,:) = G(1,:)
+!!$       
+!!$       X2 = 0.0_DP
+!!$       P(:) = X(:)
+!!$       D(:) = B(1,:)
+!!$       CALL LineSrch(X2,Fdir, Tol)
+!!$       X(:) = P(:) + X2 * D(:)
+!!$       
+!!$       Do I = 2, Size(X)
+!!$          CALL FuncD(X, Fd)
+!!$          G(I,:) = - Fd(:)
+!!$          If (Sum(G(I,:)**2) < Tol) Return
+!!$          beta(I) = Sum(G(I,:)*(G(I,:)-G(I-1,:)) ) / Sum(G(I-1,:)*G(I-1,:))
+!!$          beta(I) = Max(Beta(I), 0.0_DP)
+!!$          B(I,:) = G(I,:) + beta(I)*B(I-1,:)
+!!$          
+!!$          X2 = 0.0_DP
+!!$          P(:) = X(:)
+!!$          D(:) = B(I,:)
+!!$          CALL LineSrch(X2,Fdir, Tol)
+!!$          X(:) = P(:) + X2 * D(:)
+!!$       End Do
+!!$       Fnew = Func(X)
+!!$       If (2.0_DP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_DP))&
+!!$          & Return
+!!$       Fold = Fnew
+!!$    End Do
+!!$
+!!$
+!!$    Return
+!!$    
+!!$  CONTAINS
+!!$    
+!!$    ! *************************************
+!!$    Real (kind=DP) Function Fdir_DP(h)
+!!$    ! *************************************
+!!$    ! * Computes the value of Func in the
+!!$    ! * direction Dir(:)
+!!$    ! *************************************
+!!$      
+!!$      Real (kind=DP), Intent (in) :: h
+!!$      
+!!$      Fdir = Func(P(:) + h*D(:))
+!!$      
+!!$      Return
+!!$    End Function Fdir_DP
+!!$
+!!$
+!!$  End Subroutine ConjGrad_DP
+!!$
+!!$  
+!!$! **********************************************
+!!$! *                                            *
+!!$  Subroutine LineSrchMulti_DP(X, Func, Tolerance) 
+!!$! *                                            *
+!!$! **********************************************
+!!$! * Minimize funcion Func with precision Tol   *
+!!$! * (if present), using golden rule line       *
+!!$! * minimisation. The minimum should be        *
+!!$! * bracketed by [X1,X2,X3]                    * 
+!!$! **********************************************
+!!$
+!!$    Real (kind=DP), Intent (inout) :: X(:)
+!!$    Real (kind=DP), Intent (in), Optional :: Tolerance
+!!$    
+!!$    Real (kind=DP) :: Tol, X2, Fold, Fnew
+!!$    
+!!$    Integer :: Idir
+!!$
+!!$    Interface 
+!!$       Function Func(X)
+!!$         USE NumTypes
+!!$         Real (kind=DP), Intent (in) :: X(:)
+!!$         Real (kind=DP) :: Func
+!!$       End Function Func
+!!$    End Interface
+!!$
+!!$    If (Present(Tolerance)) Then
+!!$       Tol = Tolerance
+!!$    Else
+!!$       Tol = DEFTOL_DP
+!!$    End If
+!!$
+!!$    Fnew = 0.0_DP
+!!$    Do While (.True.)
+!!$       Fold = Fnew
+!!$       Do Idir = 1, Size(X)
+!!$          CALL LineSrch(X2, Fdir, Tol)
+!!$          X(Idir) = X2
+!!$       End Do
+!!$       Fnew = Func(X)
+!!$       If (2.0_SP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_SP))&
+!!$          & Return
+!!$    End Do
+!!$
+!!$
+!!$    Return
+!!$    CONTAINS
+!!$
+!!$      ! *************************************
+!!$      Real (kind=DP) Function Fdir(h)
+!!$      ! *************************************
+!!$      ! * Computes the value of Func in the
+!!$      ! * direction Dir(:)
+!!$      ! *************************************
+!!$
+!!$
+!!$        Real (kind=DP), Intent (in) :: h
+!!$        Real (kind=DP) :: XX(Size(X))
+!!$
+!!$        XX = X
+!!$        Xx(Idir) = h
+!!$        Fdir = Func(Xx)
+!!$        
+!!$        Return
+!!$      End Function Fdir
+!!$
+!!$
+!!$  End Subroutine LineSrchMulti_DP
 
 ! **********************************************
 ! *                                            *
@@ -775,170 +779,173 @@ CONTAINS
     Return
   End Subroutine Bracket_SP
 
-! **********************************************
-! *                                            *
-  Subroutine ConjGrad_SP(X, Func, FuncD, Tolerance) 
-! *                                            *
-! **********************************************
-! * Minimises a function of several variables  *
-! * using the conjugate gradient.              *
-! **********************************************
+  ! Conjugate gradient and Linesrch for multidimensions
+  ! are "old" functions. MinuitAPI should be used instead
 
-    Real (kind=SP), Intent (inout) :: X(:)
-    Real (kind=SP), Intent (in), Optional :: Tolerance
-
-    Real (kind=SP) :: B(Size(X), Size(X)), beta(Size(X)), &
-         & Fd(Size(X)), Tol, P(Size(X)), D(Size(X)), &
-         & G(Size(X), Size(X)), X2, Fold, Fnew
-    Integer :: I
-
-
-    Interface
-       Function Func(X)
-         USE NumTypes
-         Real (kind=SP), Intent (in)  :: X(:)
-         Real (kind=SP) :: Func
-       End Function Func
-    End Interface
-
-    Interface
-       Subroutine FuncD(X, Fd)
-         USE NumTypes
-         Real (kind=SP), Intent (in)  :: X(:)
-         Real (kind=SP), Intent (out) :: Fd(Size(X))
-       End Subroutine FuncD
-    End Interface
-
-    If (Present(Tolerance)) Then
-       Tol = Tolerance
-    Else
-       Tol = DEFTOL_SP
-    End If
-
-
-    Fold = 235623763.0_SP
-    Do While (.True.)
-       CALL FuncD(X, Fd)
-       G(1,:) = - Fd(:)
-       If (Sum(G(1,:)**2) < Tol) Return
-       B(1,:) = G(1,:)
-       
-       X2 = 0.0_SP
-       P(:) = X(:)
-       D(:) = B(1,:)
-       CALL LineSrch(X2,Fdir, Tol)
-       X(:) = P(:) + X2 * D(:)
-       
-       Do I = 2, Size(X)
-          CALL FuncD(X, Fd)
-          G(I,:) = - Fd(:)
-          If (Sum(G(I,:)**2) < Tol) Return
-          beta(I) = Sum(G(I,:)*(G(I,:)-G(I-1,:)) ) / Sum(G(I-1,:)*G(I-1,:))
-          beta(I) = Max(Beta(I), 0.0_SP)
-          B(I,:) = G(I,:) + beta(I)*B(I-1,:)
-          
-          X2 = 0.0_SP
-          P(:) = X(:)
-          D(:) = B(I,:)
-          CALL LineSrch(X2,Fdir, Tol)
-          X(:) = P(:) + X2 * D(:)
-       End Do
-       Fnew = Func(X)
-       If (2.0_SP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_SP))&
-          & Return
-       Fold = Fnew
-    End Do
-
-
-    Return
-
-    CONTAINS
-
-      ! *************************************
-      Real (kind=SP) Function Fdir(h)
-      ! *************************************
-      ! * Computes the value of Func in the
-      ! * direction Dir(:)
-      ! *************************************
-
-
-        Real (kind=SP), Intent (in) :: h
-        
-        Fdir = Func(P(:) + h*D(:))
-        
-        Return
-      End Function Fdir
-
-  End Subroutine ConjGrad_SP
-
-! **********************************************
-! *                                            *
-  Subroutine LineSrchMulti_SP(X, Func, Tolerance) 
-! *                                            *
-! **********************************************
-! * Minimize funcion Func with precision Tol   *
-! * (if present), using golden rule line       *
-! * minimisation. The minimum should be        *
-! * bracketed by [X1,X2,X3]                    * 
-! **********************************************
-
-    Real (kind=SP), Intent (inout) :: X(:)
-    Real (kind=SP), Intent (in), Optional :: Tolerance
-    
-    Real (kind=SP) :: Tol, X2, Fold, Fnew
-    
-    Integer :: Idir
-
-    Interface 
-       Function Func(X)
-         USE NumTypes
-         Real (kind=SP), Intent (in) :: X(:)
-         Real (kind=SP) :: Func
-       End Function Func
-    End Interface
-
-    If (Present(Tolerance)) Then
-       Tol = Tolerance
-    Else
-       Tol = DEFTOL_SP
-    End If
-
-    Fnew = 0.0_SP
-    Do While (.True.)
-       Fold = Fnew
-       Do Idir = 1, Size(X)
-          CALL LineSrch(X2, Fdir, Tol)
-          X(Idir) = X2
-       End Do
-       Fnew = Func(X)
-       If (2.0_SP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_SP))&
-          & Return
-    End Do
-
-
-    Return
-    CONTAINS
-
-      ! *************************************
-      Real (kind=SP) Function Fdir(h)
-      ! *************************************
-      ! * Computes the value of Func in the
-      ! * direction Dir(:)
-      ! *************************************
-
-
-        Real (kind=SP), Intent (in) :: h
-        Real (kind=SP) :: XX(Size(X))
-
-        XX = X
-        Xx(Idir) = h
-        Fdir = Func(Xx)
-        
-        Return
-      End Function Fdir
-
-
-  End Subroutine LineSrchMulti_SP
+!!$! **********************************************
+!!$! *                                            *
+!!$  Subroutine ConjGrad_SP(X, Func, FuncD, Tolerance) 
+!!$! *                                            *
+!!$! **********************************************
+!!$! * Minimises a function of several variables  *
+!!$! * using the conjugate gradient.              *
+!!$! **********************************************
+!!$
+!!$    Real (kind=SP), Intent (inout) :: X(:)
+!!$    Real (kind=SP), Intent (in), Optional :: Tolerance
+!!$
+!!$    Real (kind=SP) :: B(Size(X), Size(X)), beta(Size(X)), &
+!!$         & Fd(Size(X)), Tol, P(Size(X)), D(Size(X)), &
+!!$         & G(Size(X), Size(X)), X2, Fold, Fnew
+!!$    Integer :: I
+!!$
+!!$
+!!$    Interface
+!!$       Function Func(X)
+!!$         USE NumTypes
+!!$         Real (kind=SP), Intent (in)  :: X(:)
+!!$         Real (kind=SP) :: Func
+!!$       End Function Func
+!!$    End Interface
+!!$
+!!$    Interface
+!!$       Subroutine FuncD(X, Fd)
+!!$         USE NumTypes
+!!$         Real (kind=SP), Intent (in)  :: X(:)
+!!$         Real (kind=SP), Intent (out) :: Fd(Size(X))
+!!$       End Subroutine FuncD
+!!$    End Interface
+!!$
+!!$    If (Present(Tolerance)) Then
+!!$       Tol = Tolerance
+!!$    Else
+!!$       Tol = DEFTOL_SP
+!!$    End If
+!!$
+!!$
+!!$    Fold = 235623763.0_SP
+!!$    Do While (.True.)
+!!$       CALL FuncD(X, Fd)
+!!$       G(1,:) = - Fd(:)
+!!$       If (Sum(G(1,:)**2) < Tol) Return
+!!$       B(1,:) = G(1,:)
+!!$       
+!!$       X2 = 0.0_SP
+!!$       P(:) = X(:)
+!!$       D(:) = B(1,:)
+!!$       CALL LineSrch(X2,Fdir, Tol)
+!!$       X(:) = P(:) + X2 * D(:)
+!!$       
+!!$       Do I = 2, Size(X)
+!!$          CALL FuncD(X, Fd)
+!!$          G(I,:) = - Fd(:)
+!!$          If (Sum(G(I,:)**2) < Tol) Return
+!!$          beta(I) = Sum(G(I,:)*(G(I,:)-G(I-1,:)) ) / Sum(G(I-1,:)*G(I-1,:))
+!!$          beta(I) = Max(Beta(I), 0.0_SP)
+!!$          B(I,:) = G(I,:) + beta(I)*B(I-1,:)
+!!$          
+!!$          X2 = 0.0_SP
+!!$          P(:) = X(:)
+!!$          D(:) = B(I,:)
+!!$          CALL LineSrch(X2,Fdir, Tol)
+!!$          X(:) = P(:) + X2 * D(:)
+!!$       End Do
+!!$       Fnew = Func(X)
+!!$       If (2.0_SP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_SP))&
+!!$          & Return
+!!$       Fold = Fnew
+!!$    End Do
+!!$
+!!$
+!!$    Return
+!!$
+!!$    CONTAINS
+!!$
+!!$      ! *************************************
+!!$      Real (kind=SP) Function Fdir(h)
+!!$      ! *************************************
+!!$      ! * Computes the value of Func in the
+!!$      ! * direction Dir(:)
+!!$      ! *************************************
+!!$
+!!$
+!!$        Real (kind=SP), Intent (in) :: h
+!!$        
+!!$        Fdir = Func(P(:) + h*D(:))
+!!$        
+!!$        Return
+!!$      End Function Fdir
+!!$
+!!$  End Subroutine ConjGrad_SP
+!!$
+!!$! **********************************************
+!!$! *                                            *
+!!$  Subroutine LineSrchMulti_SP(X, Func, Tolerance) 
+!!$! *                                            *
+!!$! **********************************************
+!!$! * Minimize funcion Func with precision Tol   *
+!!$! * (if present), using golden rule line       *
+!!$! * minimisation. The minimum should be        *
+!!$! * bracketed by [X1,X2,X3]                    * 
+!!$! **********************************************
+!!$
+!!$    Real (kind=SP), Intent (inout) :: X(:)
+!!$    Real (kind=SP), Intent (in), Optional :: Tolerance
+!!$    
+!!$    Real (kind=SP) :: Tol, X2, Fold, Fnew
+!!$    
+!!$    Integer :: Idir
+!!$
+!!$    Interface 
+!!$       Function Func(X)
+!!$         USE NumTypes
+!!$         Real (kind=SP), Intent (in) :: X(:)
+!!$         Real (kind=SP) :: Func
+!!$       End Function Func
+!!$    End Interface
+!!$
+!!$    If (Present(Tolerance)) Then
+!!$       Tol = Tolerance
+!!$    Else
+!!$       Tol = DEFTOL_SP
+!!$    End If
+!!$
+!!$    Fnew = 0.0_SP
+!!$    Do While (.True.)
+!!$       Fold = Fnew
+!!$       Do Idir = 1, Size(X)
+!!$          CALL LineSrch(X2, Fdir, Tol)
+!!$          X(Idir) = X2
+!!$       End Do
+!!$       Fnew = Func(X)
+!!$       If (2.0_SP*Abs(Fnew-Fold) < Tol*(Abs(Fnew)+Abs(Fold)+Epsilon_SP))&
+!!$          & Return
+!!$    End Do
+!!$
+!!$
+!!$    Return
+!!$    CONTAINS
+!!$
+!!$      ! *************************************
+!!$      Real (kind=SP) Function Fdir(h)
+!!$      ! *************************************
+!!$      ! * Computes the value of Func in the
+!!$      ! * direction Dir(:)
+!!$      ! *************************************
+!!$
+!!$
+!!$        Real (kind=SP), Intent (in) :: h
+!!$        Real (kind=SP) :: XX(Size(X))
+!!$
+!!$        XX = X
+!!$        Xx(Idir) = h
+!!$        Fdir = Func(Xx)
+!!$        
+!!$        Return
+!!$      End Function Fdir
+!!$
+!!$
+!!$  End Subroutine LineSrchMulti_SP
 
  
 End MODULE Optimization

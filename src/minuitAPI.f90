@@ -35,7 +35,7 @@ CONTAINS
     Real (kind=8), Intent (out) :: Chisqr
     Character (len=*), Optional :: logfile
     
-    Integer :: Idummy, I, Ierr, Ifoo
+    Integer :: I, Ierr, Ifoo
     Real (kind=8) :: foo
     Character (len=1) :: cfoo
 
@@ -123,7 +123,7 @@ CONTAINS
     Real (kind=8), Intent (out) :: Chisqr
     Character (len=*), Optional :: logfile
     
-    Integer :: Idummy, I, Ierr, Ifoo
+    Integer :: I, Ierr, Ifoo
     Real (kind=8) :: foo
     Character (len=1) :: cfoo
 
@@ -210,7 +210,7 @@ CONTAINS
     Real (kind=8), Intent (out) :: Chisqr
     Character (len=*), Optional :: logfile
     
-    Integer :: Idummy, I, Ierr, Ifoo
+    Integer :: I, Ierr, Ifoo
     Real (kind=8) :: foo
     Character (len=1) :: cfoo
 
@@ -301,7 +301,7 @@ CONTAINS
     Real (kind=8), Intent (out) :: Chisqr
     Character (len=*), Optional :: logfile
     
-    Integer :: Idummy, I, Ierr, Ifoo
+    Integer :: I, Ierr, Ifoo
     Real (kind=8) :: foo
     Character (len=1) :: cfoo
 
@@ -392,10 +392,10 @@ CONTAINS
     Integer, Intent (in), Optional :: Fparms(0:,1:)
     Character (len=*), Intent (in), Optional :: logfile
 
-    Integer :: Idummy, I, Ierr, Ifoo, J
+    Integer :: I, Ierr, Ifoo, J
     Real (kind=8) :: foo
     Character (len=1) :: cfoo
-    Logical :: Empty
+!    Logical :: Empty
 
     Interface 
        Function Func(X)
@@ -485,10 +485,10 @@ CONTAINS
     Integer, Intent (in), Optional :: Fparms(0:,1:)
     Character (len=*), Intent (in), Optional :: logfile
 
-    Integer :: Idummy, I, Ierr, Ifoo, J, Ndim
+    Integer :: I, Ierr, Ifoo, J, Ndim
     Real (kind=8) :: foo
     Character (len=1) :: cfoo
-    Logical :: Empty
+!    Logical :: Empty
 
     Interface 
        Function Func(X)
