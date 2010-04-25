@@ -1,5 +1,5 @@
 
-This is the documentation of a total of thirteen \texttt{FORTRAN 90}
+This is the documentation of a total of fourteen \texttt{FORTRAN 2003}
 modules with different utilities. This code is well documented, and
 can be useful for several people, although the idea is \emph{not} to
 produce fast, high performance code, but to have nice data structures
@@ -17,11 +17,11 @@ code is distributed in the hope that it will be useful, but
   merchantability or fitness for a particular purpose}.  See the GNU
 General Public License for more details. 
 
-The code has been written using standard \texttt{FORTRAN 90}, this
-means that it should run on any machine and with any compiler. In
+The code has been written using standard \texttt{FORTRAN 2003}, this
+means that it should run on any machine and with any compiler that
+conforms the standard. In
 particular the code of all these modules has been compiled using
-\texttt{GNU gfortran}, \texttt{INTEL ifort} and \texttt{DIGITAL f90}
-for PC.
+\texttt{GNU gfortran}, \texttt{INTEL ifort}.
 
 This manual is distributed under the GNU Free Documentation
 License. This means that you can copy, distribute and/or modify this
@@ -31,19 +31,30 @@ Foundation; with no Invariant Sections, no Front-Cover Texts, and no
 Back-Cover Texts.  A copy of the license is included in the section
 entitled ``GNU Free Documentation License''.
 
-The source code of all the modules as well as the last version of this
-document should always be available (in it's last version) at:
-\begin{displaymath}
-  \texttt{\href{http://lattice.ft.uam.es/perpag/alberto/codigo\_en.php}{\texttt{http://lattice.ft.uam.es/perpag/alberto/codigo\_en.php}}}
-\end{displaymath}
-there is also a \texttt{sourceforge.net} project, where the last
-version of both the source code and the documentation should be
-available:
-\begin{displaymath}
-  \texttt{\href{http://sourceforge.net/projects/afnl}{\texttt{http://sourceforge.net/projects/afnl}}}
-\end{displaymath}
+Traditionally the source of the code hass been hosted in
+\href{sourceforge}{\texttt{http://www.sourceforge.net}}. Due to the access
+blocking of some countries the code has been moved to
+\href{http://github.com}{\texttt{http://github.com}}. 
 
-Enjoy programming.
+To obtain a copy of the source code and documentation, follow one of
+the following two options
+\begin{itemize}
+\item If you have \texttt{git} installed in your system, simply type
+  \begin{displaymath}
+    \texttt{user@pc~ \$ git clone git://github.com/ramos/afnl.git}
+  \end{displaymath}
+\item In any other case, go to
+  \href{http://github.com/ramos/afnl/downloads}{\texttt{http://github.com/ramos/afnl/downloads}}
+  and get the latest version of the library. 
+\end{itemize}
+
+\section*{Minuit minimisation routines}
+
+The library includes an API to minuit minimisation routines. If you
+want to use this routines, you should have the fortran version of
+minuit available in your system. There is the option of building the
+\texttt{afnl} library without minuit support (see next section).
+
 
 \section*{Installation}
 \addcontentsline{toc}{section}{Installing}
@@ -52,18 +63,37 @@ To install this library in a Unix/Linux environment, simply edit the
 \texttt{Makefile} file, and set the \texttt{F90} and \texttt{F90OPT}
 variables to whatever your compiler and your favourite optimisation
 flags are. After running \texttt{make} you should obtain a file called
-\texttt{libf90.a}, and probably (that depends on the particular
-compiler) some \texttt{.mod} files. Copy the \texttt{libf90.a} library
+\texttt{libafnl.a}, and probably (that depends on the particular
+compiler) some \texttt{.mod} files. Copy the \texttt{libafnl.a} library
 and the \texttt{.mod} files to any place you like, and compile and
 link your program to that files. With \texttt{GNU gfortran} this is
 done using the flags \texttt{-I<path> -L<path> -lf90}, where
 \texttt{<path>} has to be substituted by the path you have chosen.
+
+In case that you do not have a version of the fortran minuit library
+in your system, use \texttt{make lib-no-minuit} to build a version of
+\texttt{afnl} without the minuit API.
 
 In other environments, you should ask the local guru/administrator
 about how to generate a library. In particular in a Windows environment
 the best option is to repartition you hard drive, eliminate Windows
 and install any Unix like free operating system, like Linux or
 FreeBSD. 
+\begin{verbatim}
+ _   _   _____   ______   ______
+( ) ( ) ( ___ ) (      ) (      ) ( )    ( )
+( ) ( ) ( ) ( ) (     )  (     )   ( )  ( )
+( === ) ( === ) ( ====   ( ====     ( )( )
+( ) ( ) ( ) ( ) ( )      ( )         (  )
+(_) (_) (_) (_) (_)      (_)         (__)
+         _   _   _____   _____   _       _   _    _   _____
+        ( ) ( ) ( ___ ) (  ___) ( )  () ( ) ( )  ( ) ( ____)
+        ( ) ( ) ( ) ( ) ( )     ( )()   ( ) ( () ( ) ( )
+        ( === ) ( === ) ( )     (  )    ( ) ( )()( ) ( )===
+        ( ) ( ) ( ) ( ) ( )___  ( )()   ( ) ( ) () ) ( )_( )
+        (_) (_) (_) (_) (_____) (_)  () (_) (_)  (_) (_____)
+\end{verbatim}
+
 
 
 

@@ -58,5 +58,11 @@ lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o
 
+lib-no-minuit: numtypes.o error.o constants.o specialfunc.o statistics.o \
+	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o 
+#	mv $(SRCDIR)/*.o .
+#	mv $(SRCDIR)/*.mod .
+	ar rcs libafnl.a *.o
+
 cleanall:
 	rm *.o *.mod src/*~ libafnl.a
