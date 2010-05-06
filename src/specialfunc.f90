@@ -71,10 +71,19 @@ MODULE SpecialFunc
      Module Procedure erfc_DP, erfc_SP
   End Interface
 
+  Interface Legendre
+     Module Procedure Legendre_DP, Legendre_SP
+  End Interface
+
+  Interface SphericalHarmonic
+     Module Procedure SphericalHarmonic_DP, SphericalHarmonic_SP
+  End Interface
+
   Private DEFTOL, Theta3, ThetaChar_DPC, Hermite_DP, &
        &Hermite_SP, HermiteFunc_SP, HermiteFunc_DP, Basis_DPC,&
        & Basis_SPC, Factorial_DP, erf_DP, erf_SP, &
-       & erfc_DP, erfc_SP
+       & erfc_DP, erfc_SP, Legendre_DP, Legendre_SP, &
+       & SphericalHarmonic_DP, SphericalHarmonic_SP
 
 CONTAINS
 
@@ -964,5 +973,196 @@ CONTAINS
 
     Return
   End Function erfc_SP
+
+! *************************************
+! *
+  Real (kind=DP) Function Legendre_DP(l, m, X) Result (Leg)
+! *
+! *************************************
+! * Compute the value of the associated Legendre 
+! * polinomial (l,m) at X.
+! *************************************
+
+    Real (kind=DP), Intent (in) :: X
+    Integer, Intent (in) :: l, m
+
+    Integer :: I, mabs
+    Real (kind=DP) :: Val(0:1), NegFac, Aux
+
+    Leg = 0.0_DP
+    mabs = Abs(m)
+    If (m < 0) Then
+       If (l == mabs) Then
+          NegFac = (-1)**mabs / &
+               & Factorial(l-m)
+       Else
+          NegFac = (-1)**mabs * &
+               & Exp(GammaLn(Real(l-mabs,kind=DP)) - & 
+               & GammaLn(Real(l+mabs,kind=DP)) )
+       End If
+    Else
+       NegFac = 1.0_DP
+    End If
+
+    ! Compute Pm,m
+    Val(0) = 1.0_DP
+    Do I = 3, 2*mabs-1, 2
+       Val(0) = Val(0)*Real(I,kind=DP)
+    End Do
+    Val(0) = Val(0)*(-Sqrt(1.0_DP-X**2))**mabs
+
+    If (l==mabs) Then
+       Leg = NegFac * Val(0)
+       Return
+    End If
+
+    ! Compute Pm,m+1
+    Val(1) = X*(2.0_DP*mabs+1.0_DP)*Val(0)
+    If (l == mabs+1) Then
+       Leg = NegFac * Val(1)
+       Return
+    End If
+
+    ! For higher l, use the recursion relation
+    Do I = mabs+2, l
+       Aux = (2.0_DP*(I-1)+1.0_DP) * X * Val(1) - &
+            & (I-1+mabs) * Val(0)
+       Aux = Aux / Real(I-mabs,kind=DP)
+       Val(0) = Val(1)
+       Val(1) = Aux
+    End Do
+    Leg = NegFac * Val(1)
+
+    Return
+  End Function Legendre_DP
+
+! *************************************
+! *
+  Real (kind=SP) Function Legendre_SP(l, m, X) Result (Leg)
+! *
+! *************************************
+! * Compute the value of the associated Legendre 
+! * polinomial (l,m) at X.
+! *************************************
+
+    Real (kind=SP), Intent (in) :: X
+    Integer, Intent (in) :: l, m
+
+    Integer :: I, mabs
+    Real (kind=SP) :: Val(0:1), NegFac, Aux
+
+    Leg = 0.0_SP
+    mabs = Abs(m)
+    If (m < 0) Then
+       If (l == mabs) Then
+          NegFac = (-1)**mabs / &
+               & Factorial(l-m)
+       Else
+          NegFac = (-1)**mabs * &
+               & Real(Exp(GammaLn(Real(l-mabs,kind=DP)) - & 
+               & GammaLn(Real(l+mabs,kind=DP)) ),kind=SP)
+       End If
+    Else
+       NegFac = 1.0_SP
+    End If
+
+    ! Compute Pm,m
+    Val(0) = 1.0_SP
+    Do I = 3, 2*mabs-1, 2
+       Val(0) = Val(0)*Real(I,kind=SP)
+    End Do
+    Val(0) = Val(0)*(-Sqrt(1.0_SP-X**2))**mabs
+
+    If (l==mabs) Then
+       Leg = NegFac * Val(0)
+       Return
+    End If
+
+    ! Compute Pm,m+1
+    Val(1) = X*(2.0_SP*mabs+1.0_SP)*Val(0)
+    If (l == mabs+1) Then
+       Leg = NegFac * Val(1)
+       Return
+    End If
+
+    ! For higher l, use the recursion relation
+    Do I = mabs+2, l
+       Aux = (2.0_SP*(I-1)+1.0_SP) * X * Val(1) - &
+            & (I-1+mabs) * Val(0)
+       Aux = Aux / Real(I-mabs,kind=SP)
+       Val(0) = Val(1)
+       Val(1) = Aux
+    End Do
+    Leg = NegFac * Val(1)
+
+    Return
+  End Function Legendre_SP
+
+! *************************************
+! *
+  Complex (kind=DPC) Function SphericalHarmonic_DP(l, m, th, ph) Result (sph)
+! *
+! *************************************
+! * Compute the value of the associated Legendre 
+! * polinomial (l,m) at X.
+! *************************************
+    
+    Real (kind=DP), Intent (in) :: th, ph
+    Integer, Intent (in) :: l, m
+
+    Real (kind=DP) :: Fac
+
+    If (l == m) Then
+       Fac = (2.0_DP*l + 1.0_DP)/(4.0_DP*PI_DP) / &
+            & Factorial(l+m)
+    Else If (l == -m) Then
+       Fac = (2.0_DP*l + 1.0_DP)/(4.0_DP*PI_DP) * &
+            & Factorial(l-m)
+    Else
+       Fac = (2.0_DP*l + 1.0_DP)/(4.0_DP*PI_DP) * &
+            & Exp(GammaLn(Real(l-m,kind=DP)) - & 
+            & GammaLn(Real(l+m,kind=DP)) )
+    End If
+
+    Sph = Cmplx(Sqrt(Fac) * Legendre(l,m,Cos(th)),kind=DPC) * &
+         & Exp(UnitImag_DPC*m*ph)
+
+
+    Return
+  End Function SphericalHarmonic_DP
+
+
+! *************************************
+! *
+  Complex (kind=SPC) Function SphericalHarmonic_SP(l, m, th, ph) Result (sph)
+! *
+! *************************************
+! * Compute the value of the associated Legendre 
+! * polinomial (l,m) at X.
+! *************************************
+    
+    Real (kind=SP), Intent (in) :: th, ph
+    Integer, Intent (in) :: l, m
+
+    Real (kind=SP) :: Fac
+
+    If (l == m) Then
+       Fac = (2.0_SP*l + 1.0_SP)/(4.0_SP*PI_SP) / &
+            & Real(Factorial(l+m), kind=SP)
+    Else If (l == -m) Then
+       Fac = (2.0_SP*l + 1.0_SP)/(4.0_SP*PI_SP) * &
+            & Real(Factorial(l-m), kind=SP)
+    Else
+       Fac = (2.0_SP*l + 1.0_SP)/(4.0_SP*PI_SP) * &
+            & Real(Exp(GammaLn(Real(l-m,kind=DP)) - & 
+            & GammaLn(Real(l+m,kind=DP)) ), kind=SP)
+    End If
+
+    Sph = Cmplx(Sqrt(Fac) * Legendre(l,m,Cos(th)),kind=SPC) * &
+         & Exp(UnitImag_SPC*m*ph)
+
+
+    Return
+  End Function SphericalHarmonic_SP
 
 End MODULE SpecialFunc

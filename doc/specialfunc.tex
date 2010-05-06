@@ -502,6 +502,109 @@ Program TestSpecialFunc
 End Program TestSpecialFunc
 \end{lstlisting}
 
+\section{Function \texttt{Legendre(l, m, X)}}
+\index{Legendre@Function \texttt{Legendre(l, m, X)}}
+
+\subsection{Description}
+
+Computes the value at $X$ of the $(l,m)$ Legendre polynomial $P_l^m(X)$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{l,m}:] Integer. Specifies which Legendre polynomial we
+  want to compute.
+\item[\texttt{X}:] Real sinple or double precision. The point at which
+  we want to compute the polinomial.
+\end{description}
+
+\subsection{Output}
+
+A real simple or double precision (same as \texttt{X}).
+
+\subsection{Examples}
+
+This program writes the values of the Legendre polynomials
+$P_l^m(0.5)$ for $0\le m \le l$.
+
+\begin{lstlisting}[emph=Legendre,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing some legendre polynomials.,
+                   label=legendre]
+Program TestLeg
+
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Real (kind=DP) :: Y
+
+  Read(*,*)L
+
+  Do I = 0, L
+     Y = Legendre(L, I, 0.50_DP)
+     Write(*,*)I, Y, Legendre(L, I, 0.5_SP)
+  End Do
+
+  Stop
+End Program TestLeg
+\end{lstlisting}
+
+\section{Function \texttt{SphericalHarmonics(l, m, th,ph)}}
+\index{Spherical@Function \texttt{SphericalHarmonics(l, m, th, ph)}}
+
+\subsection{Description}
+
+Computes the value at $(\theta,\phi)$ of the $(l,m)$ spherical
+harmonic $Y_l^m(\theta,\phi)$. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{l,m}:] Integer. Specifies which spherical harmonic we
+  want to compute.
+\item[\texttt{th,ph}:] Real single or double
+  precision. $(\theta,\phi)$ coordinates of the point at which we
+  we want to compute the vlue of the spherical harmonic.
+\end{description}
+
+\subsection{Output}
+
+A complex simple or double precision (same as \texttt{th}).
+
+\subsection{Examples}
+
+This program checks the relation $Y_l^m(\theta,phi) =
+(-)^mY_l^{*-m}(\theta,\phi)$ for $\theta=0.5, \phi=0.35$.
+
+\begin{lstlisting}[emph=SphericalHarmonic,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing some spherical harmonics.,
+                   label=sph]
+Program TestSph
+
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Complex (kind=DPC) :: Y
+
+  Read(*,*)L
+
+  Do I = 0, L
+     Y = SphericalHarmonic(L, I, 0.50_DP, 0.35_DP)
+     Write(*,'(1A,1I4,1A,1I4)')'Spherical Harmonic l=', L, ' m=+-', I
+     Write(*,*)'  +m ', Y
+     Write(*,*)'  -m ', SphericalHarmonic(L, -I, 0.5_DP, 0.35_DP)
+  End Do
+
+  Stop
+End Program TestSph
+\end{lstlisting}
+
+
 % Local Variables: 
 % mode: latex
 % TeX-master: "lib"
