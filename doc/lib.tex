@@ -83,6 +83,10 @@
 \newcommand{\thetachar}[2]{\vartheta\left[ \begin{array}{c}
           #1 \\ #2
                     \end{array}\right]}
+
+\newcommand*{\OriginalQuotation}{}
+\let\OriginalQuotation\quotation
+\renewcommand*{\quotation}{\OriginalQuotation\small\sffamily}
 % ***************************************
 %  BEGIN of my personal file general_en.tex
 % ***************************************

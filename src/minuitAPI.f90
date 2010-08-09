@@ -14,13 +14,32 @@ MODULE MinuitAPI
      Module Procedure MinimizeMD, MinimizeMD_Bounds
   End Interface
 
+  Interface Migrad
+     Module Procedure MigradMD, MigradMD_Bounds
+  End Interface
+
+  Interface Miseek
+     Module Procedure MiseekMD, MiseekMD_Bounds
+  End Interface
+
+  Interface Misimplex
+     Module Procedure MisimplexMD, MisimplexMD_Bounds
+  End Interface
+
+  Interface Miscan
+     Module Procedure MiscanMD, MiscanMD_Bounds
+  End Interface
+
   Real (kind=8), Allocatable :: ShX1d(:), ShY(:), ShXMd(:,:),&
        & ShYerr(:), ShInvC(:,:)
 
   Integer :: NcP
 
   Private Fit1D, FitMD, Fit1DCorr, FitMDCorr, MinimizeMD, Chisqr1d,&
-       & ChisqrMd, Chisqr1dCorr, ChisqrMdCorr, Fm, MinimizeMD_Bounds
+       & ChisqrMd, Chisqr1dCorr, ChisqrMdCorr, Fm, &
+       & MinimizeMD_Bounds, MigradMD, MigradMD_Bounds, &
+       & MiseekMD, MiseekMD_Bounds, MisimplexMD, MisimplexMD_Bounds, &
+       & MiscanMD, MiscanMD_Bounds
 
 CONTAINS
 
@@ -475,6 +494,90 @@ CONTAINS
 
 ! ***********************************************
 ! *
+  Subroutine MigradMD(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"migrad",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"migrad",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MigradMD
+
+! ***********************************************
+! *
   Subroutine MinimizeMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
 ! *
 ! ***********************************************
@@ -568,6 +671,608 @@ CONTAINS
     Return
   End Subroutine MinimizeMD_Bounds
 
+! ***********************************************
+! *
+  Subroutine MigradMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Real (kind=8), Intent (in) :: Bounds(:)
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J, Ndim
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+
+    Ndim = Size(X)
+    Do I = 1, Ndim
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"migrad",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"migrad",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MigradMD_Bounds
+  
+
+! ***********************************************
+! *
+  Subroutine MiseekMD(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"seek",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"seek",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MiseekMD
+
+! ***********************************************
+! *
+  Subroutine MiseekMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Real (kind=8), Intent (in) :: Bounds(:)
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J, Ndim
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+
+    Ndim = Size(X)
+    Do I = 1, Ndim
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"seek",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"seek",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MiseekMD_Bounds
+  
+
+! ***********************************************
+! *
+  Subroutine MisimplexMD(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"simplex",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"simplex",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MisimplexMD
+
+! ***********************************************
+! *
+  Subroutine MisimplexMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Real (kind=8), Intent (in) :: Bounds(:)
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J, Ndim
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+
+    Ndim = Size(X)
+    Do I = 1, Ndim
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"simplex",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"simplex",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MisimplexMD_Bounds
+  
+! ***********************************************
+! *
+  Subroutine MiscanMD(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"scan",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"scan",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MiscanMD
+
+! ***********************************************
+! *
+  Subroutine MiscanMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Real (kind=8), Intent (in) :: Bounds(:)
+    Integer, Intent (in), Optional :: Fparms(0:,1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J, Ndim
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+
+    Ndim = Size(X)
+    Do I = 1, Ndim
+       If (Present(Fparms)) Then
+!!$          Empty = .True.
+!!$          Do J = 1, Fparms(0,1)
+!!$             If (Fparms(1,J) == I) Then
+!!$                empty = .False.
+!!$             End If
+!!$          End Do
+!!$          If (Empty) Then
+!!$             CALL MnParm(I, 'X', 0.0D0, 1.0D-4, 0.0D0, 0.0D0, Ierr)
+!!$          Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+!!$          End If
+          CALL Mnfix(I)
+       Else
+          CALL MnParm(I, 'X', X(I), 10.0D-3, Bounds(2*I-1), Bounds(2*I), Ierr)
+       End If
+    End Do
+    
+
+    If (Present(Fparms)) Then
+       Do I = 1, Size(Fparms,1)-1
+          CALL MNstat(Fval, foo, foo, Ifoo, Ierr, Ierr)
+          Do J = 1, Fparms(0,I)
+             CALL MNfree(Fparms(I,J))
+          End Do
+          ! Determine current number of variable parameters
+          CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+          ! Minimize
+          CALL Mncomd(Fm,"scan",Ierr,Func)
+       End Do
+    Else
+       ! Determine current number of variable parameters
+       CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+       ! Minimize
+       CALL Mncomd(Fm,"scan",Ierr,Func)
+    End If
+    
+
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MiscanMD_Bounds
+  
   Subroutine Fm(Npar,Grad,Fval,Xval,Iflag,Func)
     
     Integer, Intent (in) :: Npar, Iflag
