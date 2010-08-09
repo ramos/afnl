@@ -1,0 +1,12 @@
+
+Program TestLeg
+
+
+  USE NumTypes
+  USE SpecialFunc
+
+  Write(*,*)Leg(9,9,0.5_DP)
+
+
+  Stop
+End Program TestLeg

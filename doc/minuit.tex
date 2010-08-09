@@ -13,8 +13,9 @@ The routine \texttt{Minimize}, minimises the function of several
 variables Func. As an output you get the position of the minima in the
 vector \texttt{X(:)}, and the value of the function in the minima in
 the variable \texttt{Fval}. It uses a series of minimization calls to
-different minuit strategies: \texttt{MINIMIZE} -> \texttt{SEEK} ->
-\texttt{MIGRAD}.  
+different minuit strategies: \texttt{MINIMIZE} $\rightarrow$
+\texttt{SEEK} $\rightarrow$ \texttt{MIGRAD}. This is a safe and robust
+minimizer for almost everything.
 
 Several optional parameters can be used to put boundaries in the
 values of the parameters, or to specify a release order for the
