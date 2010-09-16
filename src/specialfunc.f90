@@ -79,11 +79,16 @@ MODULE SpecialFunc
      Module Procedure SphericalHarmonic_DP, SphericalHarmonic_SP
   End Interface
 
+  Interface inverf
+     Module Procedure inverf_DP, inverf_SP
+  End Interface
+
   Private DEFTOL, Theta3, ThetaChar_DPC, Hermite_DP, &
        &Hermite_SP, HermiteFunc_SP, HermiteFunc_DP, Basis_DPC,&
        & Basis_SPC, Factorial_DP, erf_DP, erf_SP, &
        & erfc_DP, erfc_SP, Legendre_DP, Legendre_SP, &
-       & SphericalHarmonic_DP, SphericalHarmonic_SP
+       & SphericalHarmonic_DP, SphericalHarmonic_SP, &
+       & inverf_DP, inverf_SP
 
 CONTAINS
 
@@ -1164,5 +1169,149 @@ CONTAINS
 
     Return
   End Function SphericalHarmonic_SP
+
+! *************************************
+! *
+  Real (kind=DP) Function inverf_DP(X)
+! *
+! *************************************
+! * Compute the inverse error function for real
+! * arguments. DP version.
+! * Based on implementation by Peter John Acklam 
+! * <pjacklam@online.no> supossed to be exact up 
+! * to double precision.
+! *************************************
+
+    Real (kind=DP), Intent (in) :: X
+
+    Real (kind=DP) :: Cfa(6), Cfb(5), Cfc(6), Cfd(4)
+
+    Real (kind=DP) :: pl = 0.02425_DP, ph = 0.97575_DP, q, r, Xx
+
+    ! Coeficients for first interval computation
+    Data Cfa / -3.969683028665376e+01_DP, 2.209460984245205e+02_DP, &
+         & -2.759285104469687e+02_DP, 1.383577518672690e+02_DP, &
+         & -3.066479806614716e+01_DP, 2.506628277459239e+00_DP /
+    Data Cfb / -5.447609879822406e+01_DP, 1.615858368580409e+02_DP, &
+         & -1.556989798598866e+02_DP, 6.680131188771972e+01_DP, &
+         & -1.328068155288572e+01_DP /
+
+    ! Coeficients for second interval computation
+    Data Cfc / -7.784894002430293e-03_DP, -3.223964580411365e-01_DP, &
+         & -2.400758277161838e+00_DP, -2.549732539343734e+00_DP, &
+         & 4.374664141464968e+00_DP, 2.938163982698783e+00_DP /
+    Data Cfd / 7.784695709041462e-03_DP, 3.224671290700398e-01_DP, &
+         & 2.445134137142996e+00_DP, 3.754408661907416e+00_DP/
+
+    Xx = (X+1.0_DP)/2.0_DP
+
+    If ((Xx > 0.0_DP).and.(Xx < pl)) Then
+       q = Sqrt(-2.0_DP*Log(Xx))
+       inverf_DP = &
+            & (((((Cfc(1)*q + Cfc(2))*q + Cfc(3))*q + Cfc(4))*q + Cfc(5))*q + Cfc(6)) /&
+            & ((((Cfd(1)*q + Cfd(2))*q + Cfd(3))*q + Cfd(4))*q + 1.0_DP)
+    Else If ((Xx >= pl).and.(Xx <= ph)) Then
+       q = Xx - 0.5_DP
+       r = q*q
+       inverf_DP = &
+            & (((((Cfa(1)*r + Cfa(2))*r + Cfa(3))*r + Cfa(4))*r +&
+            & Cfa(5))*r + Cfa(6))*q /&
+            & (((((Cfb(1)*r + Cfb(2))*r + Cfb(3))*r + &
+            & Cfb(4))*r + Cfb(5))*r + 1.0_DP)       
+    Else If ((Xx > ph).and.(Xx < 1.0_DP)) Then
+       q = Sqrt(-2.0_DP*Log(1.0_DP - Xx))
+       inverf_DP = - &
+            & (((((Cfc(1)*q + Cfc(2))*q + Cfc(3))*q + Cfc(4))*q + Cfc(5))*q + Cfc(6)) /&
+            & ((((Cfd(1)*q + Cfd(2))*q + Cfd(3))*q + Cfd(4))*q + 1.0_DP)
+    Else
+       CALL Perror("inverf", "Argument out of domain")
+       
+    End If
+
+
+    ! Refinement using Haley's rational method
+    If ((Xx > 0.0_DP).and.(Xx < 1.0_DP) ) Then
+       q = 0.5_DP * erfc_DP(-inverf_DP/SR2_DP) - Xx
+       r = q * Sqrt(TWOPI_DP) * exp(inverf_DP**2/2.0_DP)
+       inverf_DP = inverf_DP - r/(1.0_DP + r*inverf_DP/2.0_DP)
+    End If
+ 
+
+    inverf_DP = inverf_DP / SR2_DP
+    
+    Return
+  End Function inverf_DP
+
+! *************************************
+! *
+  Real (kind=SP) Function inverf_SP(X)
+! *
+! *************************************
+! * Compute the inverse error function for real
+! * arguments. SP version.
+! * Based on implementation by Peter John Acklam 
+! * <pjacklam@online.no> supossed to be exact up 
+! * to double precision.
+! *************************************
+
+    Real (kind=SP), Intent (in) :: X
+
+    Real (kind=SP) :: Cfa(6), Cfb(5), Cfc(6), Cfd(4)
+
+    Real (kind=SP) :: pl = 0.02425_SP, ph = 0.97575_SP, q, r, Xx
+
+    ! Coeficients for first interval computation
+    Data Cfa / -3.969683028665376e+01_SP, 2.209460984245205e+02_SP, &
+         & -2.759285104469687e+02_SP, 1.383577518672690e+02_SP, &
+         & -3.066479806614716e+01_SP, 2.506628277459239e+00_SP /
+    Data Cfb / -5.447609879822406e+01_SP, 1.615858368580409e+02_SP, &
+         & -1.556989798598866e+02_SP, 6.680131188771972e+01_SP, &
+         & -1.328068155288572e+01_SP /
+
+    ! Coeficients for second interval computation
+    Data Cfc / -7.784894002430293e-03_SP, -3.223964580411365e-01_SP, &
+         & -2.400758277161838e+00_SP, -2.549732539343734e+00_SP, &
+         & 4.374664141464968e+00_SP, 2.938163982698783e+00_SP /
+    Data Cfd / 7.784695709041462e-03_SP, 3.224671290700398e-01_SP, &
+         & 2.445134137142996e+00_SP, 3.754408661907416e+00_SP/
+
+    Xx = (X+1.0_SP)/2.0_SP
+
+    If ((Xx > 0.0_SP).and.(Xx < pl)) Then
+       q = Sqrt(-2.0_SP*Log(Xx))
+       inverf_SP = &
+            & (((((Cfc(1)*q + Cfc(2))*q + Cfc(3))*q + Cfc(4))*q + Cfc(5))*q + Cfc(6)) /&
+            & ((((Cfd(1)*q + Cfd(2))*q + Cfd(3))*q + Cfd(4))*q + 1.0_SP)
+    Else If ((Xx >= pl).and.(Xx <= ph)) Then
+       q = Xx - 0.5_SP
+       r = q*q
+       inverf_SP = &
+            & (((((Cfa(1)*r + Cfa(2))*r + Cfa(3))*r + Cfa(4))*r +&
+            & Cfa(5))*r + Cfa(6))*q /&
+            & (((((Cfb(1)*r + Cfb(2))*r + Cfb(3))*r + &
+            & Cfb(4))*r + Cfb(5))*r + 1.0_SP)       
+    Else If ((Xx > ph).and.(Xx < 1.0_SP)) Then
+       q = Sqrt(-2.0_SP*Log(1.0_SP - Xx))
+       inverf_SP = - &
+            & (((((Cfc(1)*q + Cfc(2))*q + Cfc(3))*q + Cfc(4))*q + Cfc(5))*q + Cfc(6)) /&
+            & ((((Cfd(1)*q + Cfd(2))*q + Cfd(3))*q + Cfd(4))*q + 1.0_SP)
+    Else
+       CALL Perror("inverf", "Argument out of domain")
+       
+    End If
+
+
+    ! Refinement using Haley's rational method
+    If ((Xx > 0.0_SP).and.(Xx < 1.0_SP) ) Then
+       q = 0.5_SP * erfc_SP(-inverf_SP/SR2_SP) - Xx
+       r = q * Sqrt(TWOPI_SP) * exp(inverf_SP**2/2.0_SP)
+       inverf_SP = inverf_SP - r/(1.0_SP + r*inverf_SP/2.0_SP)
+    End If
+ 
+
+    inverf_SP = inverf_SP / SR2_SP
+    
+    Return
+  End Function inverf_SP
 
 End MODULE SpecialFunc
