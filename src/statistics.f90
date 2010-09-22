@@ -83,6 +83,10 @@ MODULE Statistics
      Module Procedure Laplace_DP, Laplace_SP,Laplace2_DP, Laplace2_SP
   End Interface
 
+  Interface Levy
+     Module Procedure Levy_DP, Levy_SP, LevyV_DP, LevyV_SP
+  End Interface
+
   Interface FishTipp
      Module Procedure FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP
   End Interface
@@ -180,7 +184,7 @@ MODULE Statistics
        & MultiNonLinearRegCorr_SP, DEF_MC_TOL_DP, DEF_MC_TOL_SP, &
        & MCIntegration_DP, MCIntegration_SP, WMedian_DP, WMedian_SP, &
        & Wmean_DP, Wmean_SP, WPercentile_DP, WPercentile_SP, &
-       & WConfInt_DP, WConfInt_SP
+       & WConfInt_DP, WConfInt_SP, Levy_DP, Levy_SP, LevyV_DP, LevyV_SP
 
 CONTAINS
 
@@ -4475,4 +4479,218 @@ End Subroutine RanLux_DP_S
     Gammcf=EXP(-x+a*LOG(x)-Gln)*G
   END SUBROUTINE Gcf
 
+!  *********************************************
+!  *                                           *
+  Subroutine Levy_DP(X, a, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real DP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X
+    Real (kind=DP), Intent(in)  :: a
+    Real (kind=DP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=DP) :: b, sig, mu, w, phi, ainv, z
+    Real (kind=DP) :: U1, U2
+    
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_DP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_DP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_DP
+    End If
+   
+    CALL Random_Number(U1)
+    CALL Random_Number(U2)
+    
+    w = -Log(U1)
+    phi = PI_DP * (U2 - 0.5_DP)
+    z = b*Tan(a*HALFPI_DP)
+    ainv = 1.0_DP/a
+
+    X = (Sin(a*phi) + z*Cos(a*phi))/Cos(phi) * &
+         & ( (Cos((1.0_DP-a)*phi) + z*Sin((1.0_DP-a)*phi))/(w*Cos(phi)) )**(ainv-1.0_DP)
+    X = sig*X + mu
+
+    Return
+  End Subroutine  Levy_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine LevyV_DP(X, a, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real DP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent(in)  :: a
+    Real (kind=DP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=DP) :: b, sig, mu, w, phi, ainv, z
+    Real (kind=DP) :: U1, U2
+    Integer :: I
+  
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_DP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_DP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_DP
+    End If
+   
+    z = b*Tan(a*HALFPI_DP)
+    ainv = 1.0_DP/a
+
+    Do I = 1, Size(X)
+       CALL Random_Number(U1)
+       CALL Random_Number(U2)
+       
+       w = -Log(U1)
+       phi = PI_DP * (U2 - 0.5_DP)
+       
+       X(I) = (Sin(a*phi) + z*Cos(a*phi))/Cos(phi) * &
+            & ( (Cos((1.0_DP-a)*phi) + &
+            &    z*Sin((1.0_DP-a)*phi))/(w*Cos(phi)) )**(ainv-1.0_DP)
+
+    End Do
+
+    X = sig*X + mu
+
+    Return
+  End Subroutine  LevyV_DP
+  
+!  *********************************************
+!  *                                           *
+  Subroutine Levy_SP(X, a, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real SP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X
+    Real (kind=SP), Intent(in)  :: a
+    Real (kind=SP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=SP) :: b, sig, mu, w, phi, ainv, z
+    Real (kind=SP) :: U1, U2
+    
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_SP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_SP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_SP
+    End If
+   
+    CALL Random_Number(U1)
+    CALL Random_Number(U2)
+    
+    w = -Log(U1)
+    phi = PI_SP * (U2 - 0.5_SP)
+    z = b*Tan(a*HALFPI_SP)
+    ainv = 1.0_SP/a
+
+    X = (Sin(a*phi) + z*Cos(a*phi))/Cos(phi) * &
+         & ( (Cos((1.0_SP-a)*phi) + z*Sin((1.0_SP-a)*phi))/(w*Cos(phi)) )**(ainv-1.0_SP)
+    X = sig*X + mu
+
+    Return
+  End Subroutine  Levy_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine LevyV_SP(X, a, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real SP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent(in)  :: a
+    Real (kind=SP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=SP) :: b, sig, mu, w, phi, ainv, z
+    Real (kind=SP) :: U1, U2
+    Integer :: I
+  
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_SP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_SP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_SP
+    End If
+   
+    z = b*Tan(a*HALFPI_SP)
+    ainv = 1.0_SP/a
+
+    Do I = 1, Size(X)
+       CALL Random_Number(U1)
+       CALL Random_Number(U2)
+       
+       w = -Log(U1)
+       phi = PI_SP * (U2 - 0.5_SP)
+       
+       X(I) = (Sin(a*phi) + z*Cos(a*phi))/Cos(phi) * &
+            & ( (Cos((1.0_SP-a)*phi) + &
+            &    z*Sin((1.0_SP-a)*phi))/(w*Cos(phi)) )**(ainv-1.0_SP)
+
+    End Do
+
+    X = sig*X + mu
+
+    Return
+  End Subroutine  LevyV_SP
+  
 End MODULE Statistics

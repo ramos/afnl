@@ -987,6 +987,69 @@ End Program Tests
 \end{lstlisting}
 
 
+
+\section{Subroutine \texttt{Levy(X, $\alpha$, [c], [$\beta$], [$\mu$])}}
+\index{Levy@Subroutine \texttt{Levy(X, $\alpha$, [c], [$\beta$], [$\mu$])}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a Levy stable distribution with
+mean $\mu$, scale c and exponent $\alpha$. The probability
+distribution is defined via
+\begin{equation}
+  \rho(x) = \frac{1}{\pi} \Re\int_{-\infty}^{+\infty} dt 
+  \exp\left\{ -\imath t (x-\mu) - c|t|^\alpha\left[1+\imath\frac{t\beta}{|t|}\tan\left(\frac{\pi\alpha}{2}\right)\right] \right\}
+\end{equation}
+For $\alpha = 1$ the
+distribution reduces to the Cauchy distribution. For $\alpha = 2$ it is
+a Gaussian distribution with $\sigma = \sqrt{2} c$ and mean $\mu$. 
+
+The algorithm only works for $0 < \alpha \le 2$. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[$\alpha$:] Real (Single or Double precision). The
+  characteristic exponent (or Levy index).
+\item[\texttt{c}:] Real (Single or Double precision), Optional. The
+  scale factor.
+\item[$\beta$:] Real (Single or Double precision), Optional. The 
+  skewness parameter.
+\item[$\mu$:] Real (Single or Double precision), Optional. The 
+  translation factor.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Levy,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a Levy skew stable distribution.,
+                   label=normal]
+Program Tests
+
+  USE NumTypes
+  USE Error
+  USE Statistics
+
+  Integer, Parameter :: Nmax = 100
+  Real (kind=DP) :: X(Nmax)
+
+
+  CALL Levy(X, 1.23_DP)
+  ! Now compute the mean and standard deviation of the data
+  Write(*,*)'We should obtain 0.0 and something without sense!: '
+  Write(*,'(ES33.25)')Mean(X), Stddev(X)
+
+
+  Stop
+End Program Tests
+\end{lstlisting}
+
+
 \section{Subroutine \texttt{FishTipp(X, Rm, Rb)}}
 \index{FishTipp@Subroutine \texttt{FishTipp(X, Rm, Rb)}}
 
