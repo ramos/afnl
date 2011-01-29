@@ -1,0 +1,166 @@
+
+This is the documentation of the MODULE \texttt{LapackAPI}, a set
+of routines to perform calls to the Linear Algebra PACKage. 
+
+
+
+\section{Subroutine \texttt{SVD(A, L [, U, VT])}}
+\index{SVD@Subroutine \texttt{SVD(A [, U, VT]) }}
+
+\subsection{Description}
+
+The routine \texttt{SVD}, performs the singular value decomposition of
+the matrix $A(:,:)$, optionally returning the right and left
+eigenvectors. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{A}:]  Real double precision two dimensional array. The
+  matrix whose singular value decomposition we want to know.
+
+\item[\texttt{L(:): }] Real double precision one dimensional array. A
+  vector containing the singular values of $A$.
+
+\item[\texttt{U(:,:):}] Real double precision two dimensional
+  array. Output. Optional. The left eigenvectors as columns.
+
+\item[\texttt{VT(:,:):}] Real double precision two dimensional
+  array. Output. Optional. The right eigenvectors as columns.
+\end{description}
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=SVD,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using lapack library to perform a SVD decomposition.,
+                   label=svd]
+Program SVDtest
+
+  USE NumTypes
+  USE LapackAPI
+
+  Real (kind=DP), Allocatable :: A(:,:), U(:,:), VT(:,:), Sv(:),&
+       & SA(:,:)
+
+  Real (kind=DP), Allocatable :: Work(:)
+  Integer :: NWork
+  Character (len=100) :: foo
+
+  Write(*,*)'Enter matrix size: '
+  Read(*,*)N
+  M = N
+
+  ALLOCATE(A(N,N), SA(N,N), U(N,N), VT(N,N), Sv(N))
+  CALL Random_Number(A)
+  A(:,N) = A(:,1)
+  Write(*,*)'A = ['
+  Do K1 = 1, N
+     Write(foo,*)'(1X, ', N,'ES13.5,1A1)'
+     Write(*,foo)(A(K1,K2), K2=1, N), ';'
+  End Do
+  Write(*,*)']'
+
+  CALL SVD(A, Sv, U, VT)
+  Write(*,*)Sv
+
+  Write(*,*)'U = ['
+  Do K1 = 1, N
+     Write(foo,*)'(1X, ', N,'ES13.5,1A1)'
+     Write(*,foo)(U(K1,K2), K2=1, N), ';'
+  End Do
+  Write(*,*)']'
+
+  Write(*,*)'VT = ['
+  Do K1 = 1, N
+     Write(foo,*)'(1X, ', N,'ES13.5,1A1)'
+     Write(*,foo)(VT(K1,K2), K2=1, N), ';'
+  End Do
+  Write(*,*)']'
+
+  Stop
+End Program SVDtest
+\end{lstlisting}
+
+\section{Function \texttt{PseudoInverse(A [, Ikeep])}}
+\index{PseudoInverse@Function \texttt{PseudoInverse(A [, Ikeep])}}
+
+\subsection{Description}
+
+This function returns the pseudo-inverse of the matrix $A$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{A}:]  Real double precision two dimensional array. The
+  matrix whose pseudo-inverse we want to know.
+
+\item[\texttt{Ikeep: }] Integer. Optional. Number of singular values
+  that we want to keep to perform the pseudo inversion. If not present
+  the inverse matrix is computed. 
+
+\end{description}
+
+\subsection{Output}
+
+A two dimensional array. Contains the pseudo-inverse of $A(:,:)$.
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=PseudoInverse,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using lapack library to compute the inverse.,
+                   label=pseudoinverse]
+Program SVDtest
+
+  USE NumTypes
+  USE LapackAPI
+
+  Real (kind=DP), Allocatable :: A(:,:), B(:,:)
+  Character (len=100) :: foo
+  
+
+  Write(*,*)'Enter matrix size: '
+  Read(*,*)N
+
+  ALLOCATE(A(N,N), B(N,N))
+  CALL Random_Number(A)
+  Write(*,*)'A = ['
+  Do K1 = 1, N
+     Write(foo,*)'(1X, ', N,'ES13.5,1A1)'
+     Write(*,foo)(A(K1,K2), K2=1, N), ';'
+  End Do
+  Write(*,*)']'
+
+  B = PseudoInverse(A)
+
+  Write(*,*)'B = ['
+  Do K1 = 1, N
+     Write(foo,*)'(1X, ', N,'ES13.5,1A1)'
+     Write(*,foo)(B(K1,K2), K2=1, N), ';'
+  End Do
+  Write(*,*)']'
+
+  A = MatMul(A,B)
+  Write(*,*)'A = ['
+  Do K1 = 1, N
+     Write(foo,*)'(1X, ', N,'ES13.5,1A1)'
+     Write(*,foo)(A(K1,K2), K2=1, N), ';'
+  End Do
+  Write(*,*)']'
+
+  Stop
+End Program SVDtest
+\end{lstlisting}
+
+
+
+
+
+% Local Variables: 
+% mode: latex
+% TeX-master: "lib"
+% End: 
+
