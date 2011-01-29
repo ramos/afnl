@@ -51,14 +51,17 @@ fourier.o: numtypes.o error.o constants.o fourier.f90
 minuitAPI.o: numtypes.o minuitAPI.f90
 	$(F90) -c $^ -o $@
 
+lapackAPI.o: numtypes.o lapackAPI.f90
+	$(F90) -c $^ -o $@
+
 lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
 	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o \
-	minuitAPI.o
+	minuitAPI.o lapackAPI.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o
 
-lib-no-minuit: numtypes.o error.o constants.o specialfunc.o statistics.o \
+lib-no-API: numtypes.o error.o constants.o specialfunc.o statistics.o \
 	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o 
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
