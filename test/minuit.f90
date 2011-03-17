@@ -4,7 +4,7 @@ Program TestAPI
   USE Statistics
   USE Constants
 
-  Integer, Parameter :: N = 2
+  Integer, Parameter :: N = 3
   Real (kind=8) :: X(N), Y(N), Ye(N), C(2), Ch
 
   Interface 
@@ -15,50 +15,45 @@ Program TestAPI
   End Interface
   
 
-  X(:) = -10.0D0
+  X(:) = 20.0D0
   CALL Minimize(Func, X, Ch)
   Write(*,*)'= MINIMIZE ='
   Write(*,*)'Function value:  ', Ch
   Write(*,*)'Point of minima: ', X
-  Write(*,*)'Check:           ', Tan(X(1)), Cos(X(2)) 
+  Write(*,*)
 
   X(:) = -20.0D0
-  CALL Migrad(Func, X, Ch)
-  Write(*,*)'= MIGRAD ='
+  CALL Minimize(Func, X, Ch, (/1/))
+  Write(*,*)'= MINIMIZE ONLY VAR 1 ='
   Write(*,*)'Function value:  ', Ch
   Write(*,*)'Point of minima: ', X
-  Write(*,*)'Check:           ', Tan(X(1)), Cos(X(2)) 
+  Write(*,*)
 
   X(:) = -20.0D0
-  CALL Misimplex(Func, X, Ch)
-  Write(*,*)'= SIMPLEX ='
+  CALL Minimize(Func, X, Ch, (/2/))
+  Write(*,*)'= MINIMIZE ONLY VAR 2 ='
   Write(*,*)'Function value:  ', Ch
   Write(*,*)'Point of minima: ', X
-  Write(*,*)'Check:           ', Tan(X(1)), Cos(X(2)) 
+  Write(*,*)
 
   X(:) = -20.0D0
-  CALL Miseek(Func, X, Ch)
-  Write(*,*)'= SEEK ='
+  CALL Minimize(Func, X, Ch, (/1:3/))
+  Write(*,*)'= MINIMIZE ONLY VAR 1,3 ='
   Write(*,*)'Function value:  ', Ch
   Write(*,*)'Point of minima: ', X
-  Write(*,*)'Check:           ', Tan(X(1)), Cos(X(2)) 
-
-  X(:) = -20.0D0
-  CALL Miseek(Func, X, Ch)
-  Write(*,*)'= SCAN ='
-  Write(*,*)'Function value:  ', Ch
-  Write(*,*)'Point of minima: ', X
-  Write(*,*)'Check:           ', Tan(X(1)), Cos(X(2)) 
+  Write(*,*)
 
   Stop
 End Program TestAPI
 
 Function Func(X)
 
+  USE NumTypes
+
   Real (kind=8), Intent (in) :: X(:)
   Real (kind=8) :: Func
 
-  Func = (X(1)-tan(X(1)))**2 + (X(2) - Cos(X(2)))**2
+  Func = (X(1)-1.0_DP)**2 + (X(2) - 2.0_DP)**8 + (X(3) - 3.0_DP)**4
 
   Return
 End Function Func

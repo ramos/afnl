@@ -11,23 +11,23 @@ MODULE MinuitAPI
   End Interface
 
   Interface Minimize
-     Module Procedure MinimizeMD, MinimizeMD_Bounds
+     Module Procedure MinimizeMD, MinimizeMD_Bounds, MinimizeMD_Parms
   End Interface
 
   Interface Migrad
-     Module Procedure MigradMD, MigradMD_Bounds
+     Module Procedure MigradMD, MigradMD_Bounds, MigradMD_Parms
   End Interface
 
   Interface Miseek
-     Module Procedure MiseekMD, MiseekMD_Bounds
+     Module Procedure MiseekMD, MiseekMD_Bounds, MiseekMD_Parms
   End Interface
 
   Interface Misimplex
-     Module Procedure MisimplexMD, MisimplexMD_Bounds
+     Module Procedure MisimplexMD, MisimplexMD_Bounds, MisimplexMD_Parms
   End Interface
 
   Interface Miscan
-     Module Procedure MiscanMD, MiscanMD_Bounds
+     Module Procedure MiscanMD, MiscanMD_Bounds, MiscanMD_Parms
   End Interface
 
   Real (kind=8), Allocatable :: ShX1d(:), ShY(:), ShXMd(:,:),&
@@ -39,7 +39,8 @@ MODULE MinuitAPI
        & ChisqrMd, Chisqr1dCorr, ChisqrMdCorr, Fm, &
        & MinimizeMD_Bounds, MigradMD, MigradMD_Bounds, &
        & MiseekMD, MiseekMD_Bounds, MisimplexMD, MisimplexMD_Bounds, &
-       & MiscanMD, MiscanMD_Bounds
+       & MiscanMD, MiscanMD_Bounds, MinimizeMD_Parms, MigradMD_Parms,&
+       & MiseekMD_Parms, MisimplexMD_Parms, MiscanMD_Parms
 
 CONTAINS
 
@@ -492,6 +493,67 @@ CONTAINS
     Return
   End Subroutine MinimizeMD
 
+
+! ***********************************************
+! *
+  Subroutine MinimizeMD_Parms(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in) :: Fparms(1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       CALL Mnfix(I)
+    End Do
+
+    ! Now release only the parameters present in Fparms
+    Do I = 1, Size(Fparms)
+       CALL MNfree(Fparms(I))
+    End Do
+
+    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+    CALL Mncomd(Fm,"mini",Ierr,Func)
+    CALL Mncomd(Fm,"seek",Ierr,Func)
+    CALL Mncomd(Fm,"migrad",Ierr,Func)
+    CALL Mncomd(Fm,"migrad",Ierr,Func)
+    
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MinimizeMD_Parms
+
 ! ***********************************************
 ! *
   Subroutine MigradMD(Func, X, Fval, Fparms, logfile)
@@ -576,6 +638,62 @@ CONTAINS
     Return
   End Subroutine MigradMD
 
+! ***********************************************
+! *
+  Subroutine MigradMD_Parms(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in) :: Fparms(1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       CALL Mnfix(I)
+    End Do
+    
+    ! Now release only the parameters present in Fparms
+    Do I = 1, Size(Fparms)
+       CALL MNfree(Fparms(I))
+    End Do
+
+    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+    CALL Mncomd(Fm,"migrad",Ierr,Func)
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MigradMD_Parms
+  
 ! ***********************************************
 ! *
   Subroutine MinimizeMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
@@ -845,6 +963,63 @@ CONTAINS
 
 ! ***********************************************
 ! *
+  Subroutine MiseekMD_Parms(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in) :: Fparms(1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       CALL Mnfix(I)
+    End Do
+
+    ! Now release only the parameters present in Fparms
+    Do I = 1, Size(Fparms)
+       CALL MNfree(Fparms(I))
+    End Do
+
+    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+    CALL Mncomd(Fm,"seek",Ierr,Func)
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MiseekMD_Parms
+
+! ***********************************************
+! *
   Subroutine MiseekMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
 ! *
 ! ***********************************************
@@ -1017,6 +1192,63 @@ CONTAINS
 
 ! ***********************************************
 ! *
+  Subroutine MisimplexMD_Parms(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in) :: Fparms(1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       CALL Mnfix(I)
+    End Do
+    
+    ! Now release only the parameters present in Fparms
+    Do I = 1, Size(Fparms)
+       CALL MNfree(Fparms(I))
+    End Do
+
+    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+    CALL Mncomd(Fm,"simplex",Ierr,Func)
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MisimplexMD_Parms
+
+! ***********************************************
+! *
   Subroutine MisimplexMD_Bounds(Func, X, Fval, Bounds, Fparms, logfile)
 ! *
 ! ***********************************************
@@ -1185,6 +1417,65 @@ CONTAINS
 
     Return
   End Subroutine MiscanMD
+
+! ***********************************************
+! *
+  Subroutine MiscanMD_Parms(Func, X, Fval, Fparms, logfile)
+! *
+! ***********************************************
+
+    Real (kind=8), Intent (inout) :: X(:)
+    Real (kind=8), Intent (out) :: Fval
+    Integer, Intent (in) :: Fparms(1:)
+    Character (len=*), Intent (in), Optional :: logfile
+
+    Integer :: I, Ierr, Ifoo, J
+    Real (kind=8) :: foo
+    Character (len=1) :: cfoo
+!    Logical :: Empty
+
+    Interface 
+       Function Func(X)
+         Real (kind=8), Intent (in) :: X(:)
+         Real (kind=8) :: Func
+       End Function Func
+    End Interface
+
+    If (Present(logfile)) Then
+       Open (unit=69, File=Trim(logfile))
+    Else
+       Open (unit=69, File='minuit.log')
+    End If
+    CALL MnInit(5,69,69)
+    CALL Mncomd(Fm,"set pri -1",Ierr, Func)
+    CALL Mncomd(Fm,"set now",Ierr, Func)
+    CALL Mncomd(Fm,"set str 2",Ierr, Func)
+    
+    Do I = 1, Size(X)
+       CALL MnParm(I, 'X', X(I), 10.0D-3, 0.0D0, 0.0D0, Ierr)
+       CALL Mnfix(I)
+    End Do
+
+    ! Now release only the parameters present in Fparms
+    Do I = 1, Size(Fparms)
+       CALL MNfree(Fparms(I))
+    End Do
+
+    ! Determine current number of variable parameters
+    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+    ! Minimize
+    CALL Mncomd(Fm,"scan",Ierr,Func)
+
+!    Output function value, and position of the minima
+    CALL MNstat(Fval, foo, foo, Ifoo, Ifoo, Ierr)
+    Do I = 1, Size(X)
+       CALL MnPout(I, cfoo, X(I), foo, foo, foo, Ierr)
+    End Do
+
+    Close(69)    
+
+    Return
+  End Subroutine MiscanMD_Parms
 
 ! ***********************************************
 ! *
