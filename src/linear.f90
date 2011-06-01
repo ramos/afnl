@@ -41,6 +41,10 @@ MODULE Linear
      Module Procedure lu_SP, lu_DP, lu_SPC, lu_DPC
   End Interface
 
+  Interface Cholesky
+     Module Procedure Cholesky_DP, Cholesky_SP, Cholesky_DPC, Cholesky_SPC
+  End Interface
+
   Interface lusolve
      Module Procedure lusolve_SP, lusolve_DP, lusolve_SPC, &
           & lusolve_DPC
@@ -54,7 +58,8 @@ MODULE Linear
   Private Pivoting_SP, lu_SP, lusolve_SP, Det_SP, &
        & Pivoting_DP, lu_DP, lusolve_DP, Det_DP, &
        & Pivoting_SPC, lu_SPC, lusolve_SPC, Det_SPC, &
-       & Pivoting_DPC, lu_DPC, lusolve_DPC, Det_DPC
+       & Pivoting_DPC, lu_DPC, lusolve_DPC, Det_DPC, &
+       & Cholesky_DP, Cholesky_SP, Cholesky_DPC, Cholesky_SPC
 
 CONTAINS
 
@@ -741,5 +746,126 @@ CONTAINS
 
     Return
   End Function Det_DPC
+
+!  *********************************************
+!  *                                           *
+  Function Cholesky_DP(M) Result (L)
+!  *                                           *
+!  *********************************************
+!  * Makes Cholesky decomposition of Matrix M
+!  *********************************************
+
+    Real (kind=DP), Intent (inout) :: M(:,:)
+
+    Real (kind=DP) :: L(Size(M,1),Size(M,2)), R
+    Integer :: I, J
+
+    L = 0.0_DP
+    Do J = 1, Size(M,2)
+       R = M(J,J) - Sum(L(J,1:J-1)**2)
+       If (R > 0.0_DP) Then
+          L(J,J) = Sqrt(R)
+       Else
+          CALL abort("Cholesky", "Matrix not positive definite")
+       End If
+       Do I = J+1, Size(M,1)
+        L(I,J) = 1.0_DP/L(J,J) * ( M(I,J) - Sum(L(I,1:J-1)*L(J,1:J-1)) )  
+       End Do
+    End Do
+
+    Return
+  End Function Cholesky_DP
+
+!  *********************************************
+!  *                                           *
+  Function Cholesky_SP(M) Result (L)
+!  *                                           *
+!  *********************************************
+!  * Makes Cholesky decomposition of Matrix M
+!  *********************************************
+
+    Real (kind=SP), Intent (inout) :: M(:,:)
+
+    Real (kind=SP) :: L(Size(M,1),Size(M,2)), R
+    Integer :: I, J
+
+    L = 0.0_SP
+    Do J = 1, Size(M,2)
+       R = M(J,J) - Sum(L(J,1:J-1)**2)
+       If (R > 0.0_SP) Then
+          L(J,J) = Sqrt(R)
+       Else
+          CALL abort("Cholesky", "Matrix not positive definite")
+       End If
+       Do I = J+1, Size(M,1)
+        L(I,J) = 1.0_SP/L(J,J) * ( M(I,J) - Sum(L(I,1:J-1)*L(J,1:J-1)) )  
+       End Do
+    End Do
+
+    Return
+  End Function Cholesky_SP
+
+!  *********************************************
+!  *                                           *
+  Function Cholesky_DPC(M) Result (L)
+!  *                                           *
+!  *********************************************
+!  * Makes Cholesky decomposition of Matrix M
+!  *********************************************
+
+    Complex (kind=DPC), Intent (inout) :: M(:,:)
+
+    Complex (kind=DPC) :: L(Size(M,1),Size(M,2))
+    Real (kind=DP) :: R
+    Integer :: I, J
+
+    L = 0.0_DPC
+    Do J = 1, Size(M,2)
+       R = M(J,J) - Sum(Abs(L(J,1:J-1))**2)
+       If (R > 0.0_DPC) Then
+          L(J,J) = Sqrt(R)
+       Else
+          CALL abort("Cholesky", "Matrix not positive definite")
+       End If
+       Do I = J+1, Size(M,1)
+        L(I,J) = 1.0_DPC/L(J,J) * ( M(I,J) - Sum(L(I,1:J-1)*Conjg(L(J,1:J-1))) )  
+       End Do
+    End Do
+
+    Return
+  End Function Cholesky_DPC
+
+
+!  *********************************************
+!  *                                           *
+  Function Cholesky_SPC(M) Result (L)
+!  *                                           *
+!  *********************************************
+!  * Makes Cholesky decomposition of Matrix M
+!  *********************************************
+
+    Complex (kind=SPC), Intent (inout) :: M(:,:)
+
+    Complex (kind=SPC) :: L(Size(M,1),Size(M,2))
+    Real (kind=SP) :: R
+    Integer :: I, J
+
+    L = 0.0_SPC
+    Do J = 1, Size(M,2)
+       R = M(J,J) - Sum(Abs(L(J,1:J-1))**2)
+       If (R > 0.0_SPC) Then
+          L(J,J) = Sqrt(R)
+       Else
+          CALL abort("Cholesky", "Matrix not positive definite")
+       End If
+       Do I = J+1, Size(M,1)
+        L(I,J) = 1.0_SPC/L(J,J) * ( M(I,J) - Sum(L(I,1:J-1)*Conjg(L(J,1:J-1))) )  
+       End Do
+    End Do
+
+    Return
+  End Function Cholesky_SPC
+
+
 
 End MODULE Linear

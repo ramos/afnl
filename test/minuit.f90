@@ -43,6 +43,19 @@ Program TestAPI
   Write(*,*)'Point of minima: ', X
   Write(*,*)
 
+
+  X(:) = -20.0D0
+  Do I = 1, 10
+     Do J = 1, N
+        CALL Minimize(Func, X, Ch, (/J/))
+        Write(*,*)'= MINIMIZE ONLY VAR: ', J
+        Write(*,*)'Function value:  ', Ch
+        Write(*,*)'Point of minima: ', X
+        Write(*,*)
+     End Do
+     Read(*,*)
+  End Do
+
   Stop
 End Program TestAPI
 
@@ -53,7 +66,8 @@ Function Func(X)
   Real (kind=8), Intent (in) :: X(:)
   Real (kind=8) :: Func
 
-  Func = (X(1)-1.0_DP)**2 + (X(2) - 2.0_DP)**8 + (X(3) - 3.0_DP)**4
+  Func = (X(1)-1.0_DP)**2 + (X(2) - 2.0_DP)**2 + (X(3) - 3.0_DP)**2 &
+       & + 0.3_DP*X(1)*X(3)
 
   Return
 End Function Func

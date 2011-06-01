@@ -537,7 +537,7 @@ CONTAINS
        CALL MNfree(Fparms(I))
     End Do
 
-    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+!    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
     CALL Mncomd(Fm,"mini",Ierr,Func)
     CALL Mncomd(Fm,"seek",Ierr,Func)
     CALL Mncomd(Fm,"migrad",Ierr,Func)
@@ -680,7 +680,7 @@ CONTAINS
        CALL MNfree(Fparms(I))
     End Do
 
-    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
+!    CALL MNstat(Fval, foo, foo, NcP, Ierr, Ierr)
     CALL Mncomd(Fm,"migrad",Ierr,Func)
 
 !    Output function value, and position of the minima
