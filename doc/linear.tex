@@ -290,6 +290,63 @@ End Program TestLinear
 \end{lstlisting}
 
 
+\section{Function \texttt{Cholesky(M)}}
+\index{Cholesky@Function \texttt{Cholesky(M)}}
+
+\subsection{Description}
+
+Computes the cholesky decomposition of the matrix $M$.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{M(:,:)}: ] Real or complex, simple or double precision
+  two dimensional array. Th matrix should be positive definite to have
+  a proper cholesky decomposition. 
+\end{description}
+
+\subsection{Output}
+
+A lower triangular matrix L of the same size and type as input, such
+that
+\begin{displaymath}
+M = L^+ L  
+\end{displaymath}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Cholesky,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Computing the cholesky decomposition of a matrix.,
+                   label=cholesky]
+Program Test
+
+  USE NumTypes
+  USE Linear
+
+  Integer, Parameter :: N = 47
+  Real (kind=DP) :: M(N,N), L(N,N)
+
+  CALL Random_Number(M)
+  
+  ! Try tomake it symmetric and positive definite
+  M = M + Transpose(M)
+  Do I = 1, N
+     M(I,I) = M(I,I) + Real(N,kind=DP)
+  End Do
+
+
+  ! Compute the Cholesky decomposition and check it is ok
+  L = Cholesky(M)
+  Write(*,*)'Should be zero: ', Sum(Abs(M-MatMul(L,Transpose(L))))
+
+
+  Stop
+End Program Test
+\end{lstlisting}
+
+
 % Local Variables: 
 % mode: latex
 % TeX-master: "lib"
