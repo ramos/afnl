@@ -988,6 +988,85 @@ End Program Tests
 
 
 
+\section{Subroutine \texttt{Cauchy(X, [c], [$\beta$], [$\mu$])}}
+\index{Cauchy@Subroutine \texttt{Cauchy(X, [c], [$\beta$], [$\mu$])}}
+
+\subsection{Description}
+
+Fills \texttt{X(:)} with numbers from a stable distribution with
+mean $\mu$, scale c and exponent $\alpha=1$. The probability
+distribution is defined via
+\begin{equation}
+  \rho(x) = \frac{1}{\pi} \Re\int_{-\infty}^{+\infty} dt 
+  \exp\left\{ -\imath t (x-\mu) - c|t|^\alpha\left[1+\imath\frac{t\beta}{|t|}\tan\left(\frac{\pi\alpha}{2}\right)\right] \right\}
+\end{equation}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{X(:)}:] Real (Single or Double precision) one
+  dimensional array. A vector that will be filled with numbers
+  according to the normal distribution.
+\item[$\alpha$:] Real (Single or Double precision). The
+  characteristic exponent (or Levy index).
+\item[\texttt{c}:] Real (Single or Double precision), Optional. The
+  scale factor.
+\item[$\beta$:] Real (Single or Double precision), Optional. The 
+  skewness parameter.
+\item[$\mu$:] Real (Single or Double precision), Optional. The 
+  translation factor.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=Cauchy,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtaining numbers with a stable distribution.,
+                   label=cauchy]
+Program CacuchyTest
+
+  USE NumTypes
+  USE Statistics
+  USE NonNumeric
+
+  Integer, Parameter :: N = 5000000, Nd = 200
+  Real (kind=DP) :: X(N), Y(N), V1, V2, h, Div(Nd), alph, b, s, m
+  Integer :: Nt1(Nd), Nt2(Nd), Id
+  
+
+  Read(*,*)b, s, m
+ 
+  CALL Cauchy(X, b, s, m)
+  CALL Normal(Y, 0.0_DP, SR2_DP)
+
+  h = 20.0_DP/Real(Nd,kind=DP)
+  Do I = 1, Nd
+     Div(I) = -10.0_DP + (I-1)*h
+  End Do
+
+  Nt1 = 0
+  Nt2 = 0
+  Do I = 1, N
+     Id = Locate(Div, X(I))
+     Nt1(Id) = Nt1(Id) +1
+     Id = Locate(Div, Y(I))
+     Nt2(Id) = Nt2(Id) +1
+  End Do
+
+  Do I = 2, Nd-1
+     Write(*,*)-10.0_DP + (I-1)*h, Real(Nt1(I))/Real(N), Real(Nt2(I))/Real(N)
+  End Do
+
+  Write(0,*)Mean(X), Stddev(X)
+  Write(0,*)Mean(Y), Stddev(Y)
+
+
+  Stop
+End Program CacuchyTest
+\end{lstlisting}
+
+
 \section{Subroutine \texttt{Levy(X, $\alpha$, [c], [$\beta$], [$\mu$])}}
 \index{Levy@Subroutine \texttt{Levy(X, $\alpha$, [c], [$\beta$], [$\mu$])}}
 
@@ -1001,10 +1080,10 @@ distribution is defined via
   \exp\left\{ -\imath t (x-\mu) - c|t|^\alpha\left[1+\imath\frac{t\beta}{|t|}\tan\left(\frac{\pi\alpha}{2}\right)\right] \right\}
 \end{equation}
 For $\alpha = 1$ the
-distribution reduces to the Cauchy distribution. For $\alpha = 2$ it is
-a Gaussian distribution with $\sigma = \sqrt{2} c$ and mean $\mu$. 
+distribution reduces to the Cauchy distribution, but this function is
+unstable. The cauchy routine should be used.
 
-The algorithm only works for $0 < \alpha \le 2$. 
+The algorithm only works for $0 < \alpha \le 2$ and $\alpha \neq 1$. 
 
 \subsection{Arguments}
 

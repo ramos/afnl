@@ -87,6 +87,10 @@ MODULE Statistics
      Module Procedure Levy_DP, Levy_SP, LevyV_DP, LevyV_SP
   End Interface
 
+  Interface Cauchy
+     Module Procedure Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP
+  End Interface
+
   Interface FishTipp
      Module Procedure FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP
   End Interface
@@ -184,7 +188,8 @@ MODULE Statistics
        & MultiNonLinearRegCorr_SP, DEF_MC_TOL_DP, DEF_MC_TOL_SP, &
        & MCIntegration_DP, MCIntegration_SP, WMedian_DP, WMedian_SP, &
        & Wmean_DP, Wmean_SP, WPercentile_DP, WPercentile_SP, &
-       & WConfInt_DP, WConfInt_SP, Levy_DP, Levy_SP, LevyV_DP, LevyV_SP
+       & WConfInt_DP, WConfInt_SP, Levy_DP, Levy_SP, LevyV_DP,&
+       & LevyV_SP, Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP
 
 CONTAINS
 
@@ -4650,7 +4655,7 @@ End Subroutine RanLux_DP_S
     Real (kind=SP), Intent(in)  :: a
     Real (kind=SP), Intent(in), Optional  :: bi, sigi, mui
     
-    Real (kind=SP) :: b, sig, mu, w, phi, ainv, z
+    Real (kind=SP) :: b, sig, mu, w, phi, z, ainv
     Real (kind=SP) :: U1, U2
     Integer :: I
   
@@ -4692,5 +4697,204 @@ End Subroutine RanLux_DP_S
 
     Return
   End Subroutine  LevyV_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Cauchy_DP(X, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real DP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X
+    Real (kind=DP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=DP) :: b, sig, mu, w, phi
+    Real (kind=DP) :: U1, U2
+    
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_DP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_DP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_DP
+    End If
+   
+    CALL Random_Number(U1)
+    CALL Random_Number(U2)
+    
+    w = -Log(U1)
+    phi = PI_DP * (U2 - 0.5_DP)
+
+    X = 1.0_DP/HALFPI_DP * ( (HALFPI_DP+b*phi)*Tan(phi) - &
+         & b*log( (HALFPI_DP*w*cos(phi))/(HALFPI_DP + b*phi) ) )
+
+    X = sig*X + mu
+
+    Return
+  End Subroutine Cauchy_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine CauchyV_DP(X, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real DP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=DP) :: b, sig, mu, w, phi
+    Real (kind=DP) :: U1, U2
+    Integer :: I
+
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_DP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_DP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_DP
+    End If
+   
+    Do I = 1, Size(X)
+       CALL Random_Number(U1)
+       CALL Random_Number(U2)
+       
+       w = -Log(U1)
+       phi = PI_DP * (U2 - 0.5_DP)
+       
+       X(I) = 1.0_DP/HALFPI_DP * ( (HALFPI_DP+b*phi)*Tan(phi) - &
+            & b*log( (HALFPI_DP*w*cos(phi))/(HALFPI_DP + b*phi) ) )
+       
+    End Do
+    X = sig*X + mu
+
+    Return
+  End Subroutine CauchyV_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Cauchy_SP(X, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real SP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X
+    Real (kind=SP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=SP) :: b, sig, mu, w, phi
+    Real (kind=SP) :: U1, U2
+    
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_SP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_SP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_SP
+    End If
+   
+    CALL Random_Number(U1)
+    CALL Random_Number(U2)
+    
+    w = -Log(U1)
+    phi = PI_SP * (U2 - 0.5_SP)
+
+    X = 1.0_SP/HALFPI_SP * ( (HALFPI_SP+b*phi)*Tan(phi) - &
+         & b*log( (HALFPI_SP*w*cos(phi))/(HALFPI_SP + b*phi) ) )
+
+    X = sig*X + mu
+
+    Return
+  End Subroutine Cauchy_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine CauchyV_SP(X, bi, sigi, mui)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Levy alpha stable 
+!  * distribution in the intent (out) Real SP 
+!  * variable X. Follows CMS algorithm.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent(in), Optional  :: bi, sigi, mui
+    
+    Real (kind=SP) :: b, sig, mu, w, phi
+    Real (kind=SP) :: U1, U2
+    Integer :: I
+
+    If (Present(bi)) Then
+       b = bi
+    Else
+       b = 0.0_SP
+    End If
+
+    If (Present(sigi)) Then
+       sig = sigi
+    Else
+       sig = 1.0_SP
+    End If
+
+    If (Present(bi)) Then
+       mu = mui
+    Else
+       mu = 0.0_SP
+    End If
+   
+    Do I = 1, Size(X)
+       CALL Random_Number(U1)
+       CALL Random_Number(U2)
+       
+       w = -Log(U1)
+       phi = PI_SP * (U2 - 0.5_SP)
+       
+       X(I) = 1.0_SP/HALFPI_SP * ( (HALFPI_SP+b*phi)*Tan(phi) - &
+            & b*log( (HALFPI_SP*w*cos(phi))/(HALFPI_SP + b*phi) ) )
+       
+    End Do
+    X = sig*X + mu
+
+    Return
+  End Subroutine CauchyV_SP
+
   
 End MODULE Statistics
