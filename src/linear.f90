@@ -755,7 +755,7 @@ CONTAINS
 !  * Makes Cholesky decomposition of Matrix M
 !  *********************************************
 
-    Real (kind=DP), Intent (inout) :: M(:,:)
+    Real (kind=DP), Intent (in) :: M(:,:)
 
     Real (kind=DP) :: L(Size(M,1),Size(M,2)), R
     Integer :: I, J
@@ -784,7 +784,7 @@ CONTAINS
 !  * Makes Cholesky decomposition of Matrix M
 !  *********************************************
 
-    Real (kind=SP), Intent (inout) :: M(:,:)
+    Real (kind=SP), Intent (in) :: M(:,:)
 
     Real (kind=SP) :: L(Size(M,1),Size(M,2)), R
     Integer :: I, J
@@ -813,7 +813,7 @@ CONTAINS
 !  * Makes Cholesky decomposition of Matrix M
 !  *********************************************
 
-    Complex (kind=DPC), Intent (inout) :: M(:,:)
+    Complex (kind=DPC), Intent (in) :: M(:,:)
 
     Complex (kind=DPC) :: L(Size(M,1),Size(M,2))
     Real (kind=DP) :: R
@@ -844,7 +844,7 @@ CONTAINS
 !  * Makes Cholesky decomposition of Matrix M
 !  *********************************************
 
-    Complex (kind=SPC), Intent (inout) :: M(:,:)
+    Complex (kind=SPC), Intent (in) :: M(:,:)
 
     Complex (kind=SPC) :: L(Size(M,1),Size(M,2))
     Real (kind=SP) :: R

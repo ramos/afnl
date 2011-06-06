@@ -75,6 +75,13 @@ MODULE Statistics
           & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP
   End Interface
 
+  Interface MultiNormal
+     Module Procedure MultiNormalS, MultiNormalV, &
+          & MultiNormalS_Med, MultiNormalV_med, &
+          & MultiNormalS_SP, MultiNormalV_SP, &
+          & MultiNormalS_Med_SP, MultiNormalV_med_SP
+  End Interface
+
   Interface ChiSqr
      Module Procedure ChiSqr_DP, ChiSqr_SP
   End Interface
@@ -189,7 +196,10 @@ MODULE Statistics
        & MCIntegration_DP, MCIntegration_SP, WMedian_DP, WMedian_SP, &
        & Wmean_DP, Wmean_SP, WPercentile_DP, WPercentile_SP, &
        & WConfInt_DP, WConfInt_SP, Levy_DP, Levy_SP, LevyV_DP,&
-       & LevyV_SP, Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP
+       & LevyV_SP, Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP, &
+       & MultiNormalS, MultiNormalV, MultiNormalS_Med, &
+       & MultiNormalV_med, MultiNormalS_SP, MultiNormalV_SP, &
+       & MultiNormalS_Med_SP, MultiNormalV_med_SP
 
 CONTAINS
 
@@ -4895,6 +4905,204 @@ End Subroutine RanLux_DP_S
 
     Return
   End Subroutine CauchyV_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalS(X, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=DP) :: Z(Size(X)), A(Size(Sig,1), Size(Sig,2))
+    
+    CALL Normal(Z)
+    A = Cholesky(Sig)
+
+    X = MatMul(A,Z)
+
+    Return
+  End Subroutine MultiNormalS
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalS_Med(X, Rmed, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent(in) :: Rmed(:)
+    Real (kind=DP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=DP) :: Z(Size(X)), A(Size(Sig,1), Size(Sig,2))
+    
+    CALL Normal(Z)
+    A = Cholesky(Sig)
+
+    X = MatMul(A,Z) + Rmed
+    
+    Return
+  End Subroutine MultiNormalS_Med
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalV(X, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:,:)
+    Real (kind=DP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=DP) :: Z(Size(X,2)), A(Size(Sig,1), Size(Sig,2))
+    Integer :: I
+    
+
+    A = Cholesky(Sig)
+    Do I = 1, Size(X,1)
+       CALL Normal(Z(:))
+       X(I,:) = MatMul(A,Z)
+    End Do
+
+    Return
+  End Subroutine MultiNormalV
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalV_med(X, Rmed, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:,:)
+    Real (kind=DP), Intent(in) :: Rmed(:)
+    Real (kind=DP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=DP) :: Z(Size(X,2)), A(Size(Sig,1), Size(Sig,2))
+    Integer :: I
+
+    A = Cholesky(Sig)
+    Do I = 1, Size(X,1)
+       CALL Normal(Z(:))
+       X(I,:) = MatMul(A,Z) + Rmed(:)
+    End Do
+
+    Return
+  End Subroutine MultiNormalV_med
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalS_SP(X, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=SP) :: Z(Size(X)), A(Size(Sig,1), Size(Sig,2))
+    
+    CALL Normal(Z)
+    A = Cholesky(Sig)
+
+    X = MatMul(A,Z)
+
+    Return
+  End Subroutine MultiNormalS_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalS_Med_SP(X, Rmed, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent(in) :: Rmed(:)
+    Real (kind=SP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=SP) :: Z(Size(X)), A(Size(Sig,1), Size(Sig,2))
+    
+    CALL Normal(Z)
+    A = Cholesky(Sig)
+
+    X = MatMul(A,Z) + Rmed
+    
+    Return
+  End Subroutine MultiNormalS_Med_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalV_SP(X, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:,:)
+    Real (kind=SP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=SP) :: Z(Size(X,2)), A(Size(Sig,1), Size(Sig,2))
+    Integer :: I
+    
+
+    A = Cholesky(Sig)
+    Do I = 1, Size(X,1)
+       CALL Normal(Z(:))
+       X(I,:) = MatMul(A,Z)
+    End Do
+
+    Return
+  End Subroutine MultiNormalV_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine MultiNormalV_med_SP(X, Rmed, Sig)
+!  *                                           *
+!  *********************************************
+!  * 
+!  * 
+!  * 
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:,:)
+    Real (kind=SP), Intent(in) :: Rmed(:)
+    Real (kind=SP), Intent(in) :: Sig(:,:)
+    
+    Real (kind=SP) :: Z(Size(X,2)), A(Size(Sig,1), Size(Sig,2))
+    Integer :: I
+
+    A = Cholesky(Sig)
+    Do I = 1, Size(X,1)
+       CALL Normal(Z(:))
+       X(I,:) = MatMul(A,Z) + Rmed(:)
+    End Do
+
+    Return
+  End Subroutine MultiNormalV_med_SP
 
   
 End MODULE Statistics
