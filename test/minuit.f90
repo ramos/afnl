@@ -66,6 +66,8 @@ Function Func(X)
   Real (kind=8), Intent (in) :: X(:)
   Real (kind=8) :: Func
 
+
+  Write(*,*)Size(X)
   Func = (X(1)-1.0_DP)**2 + (X(2) - 2.0_DP)**2 + (X(3) - 3.0_DP)**2 &
        & + 0.3_DP*X(1)*X(3)
 

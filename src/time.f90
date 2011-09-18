@@ -168,4 +168,35 @@ CONTAINS
   End Function isleap
 
 
+! ***************************************
+! *
+  Real (kind=DP) Function Julian_Date(t)
+! *
+! ***************************************
+! * Returns .true. if the year is leap,
+! * .false. in any other case
+! ***************************************
+    
+    Type (tm), Intent (in) :: t
+    
+    Integer :: a, y, m, JDN
+    
+    a = Int( (15-t%mon)/12)
+    y = t%year + 4800 - a
+    m = t%mon + 12*a - 2
+    
+    ! First compute Julian Day Number
+    JDN = t%mday + Int((153*m + 2)/5) + 365*y + Int(y/4) - &
+         & Int(y/100) + Int(y/400) - 32045
+    
+    Julian_Date = Real(JDN,kind=DP) + &
+         & Real(t%hour - 12,kind=DP)/24.0_DP + &
+         & Real(t%min, kind=DP)/1440.0_DP    + &
+         & Real(t%sec, kind=DP)/86400.0_DP   + &
+         & Real(t%msec, kind=DP)/86400000.0_DP 
+    
+    Return
+  End Function Julian_Date
+  
+
 End MODULE Time
