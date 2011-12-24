@@ -84,6 +84,10 @@ MODULE Fourier
      Module Procedure DFT_1D, DFT_2D
   End Interface
 
+  Interface FastFT
+     Module Procedure FastFT_1D
+  End Interface
+
   Interface ExpS
      Module Procedure ExpS, ExpS_2D
   End Interface
@@ -1075,7 +1079,7 @@ CONTAINS
     Nterm = Int(Ntot/2)
 
 
-    PreFactor = exp( Side * DPI * (0.0_DP, 1.0_DP) / Ntot )
+    PreFactor = exp( Side * DPI * (0.0_DP, 1.0_DP) / Real(Ntot,kind=DP) )
     CALL Init_Serie(DFT, Nterm)
     
     Do I = -Nterm, Nterm
@@ -1314,6 +1318,77 @@ CONTAINS
     Return
   End Function ConjgFS_2D
 
+
+! ********************************
+! *
+  Recursive Function FastFT_1D(Data, Isign) Result (FFT)
+! *
+! ********************************
+! * Calculates the Discrete Fourier
+! * Transformation from the complex
+! * data stored in data.
+! ********************************
+
+    Complex (kind=DPC), Intent (in) :: Data(:)
+    Integer, Intent (in), Optional :: Isign
+    Complex (kind=DPC) :: FFT(Size(Data))
+
+    Complex (Kind=DPC) :: Factor, Prefactor
+    Complex (kind=DPC), Allocatable :: DfE(:), DfO(:), TW(:)
+    Integer :: Side, I, J, Ntot, Nterm, Nhalf
+
+
+    If (.not. Present(Isign)) Then
+       Side = -1
+    Else
+       Side = Isign
+    End If
+
+    Ntot = Size(Data)
+    PreFactor = exp(Side*DPI*UnitImag_DPC / Cmplx(Ntot,kind=DP) )
+    Write(*,*)Ntot, Prefactor
+    Write(*,*)Data
+    Write(*,*)
+
+    If (Ntot == 2) Then
+       FFT(1) = Data(2) - Data(1)
+       FFT(2) = Data(2) + Data(1)
+    Else If (Mod(Ntot,2) == 0) Then
+       Nhalf = Int(Ntot/2)
+       ALLOCATE(DfE(Nhalf), DfO(Nhalf), Tw(Nhalf))
+       DfE = FastFT(Data(2:Ntot:2))
+       DfO = FastFT(Data(1:Ntot:2))
+       
+       Tw(1) = Prefactor
+       Do I = 2, Nhalf
+          Tw(I) = Tw(I-1)*Prefactor
+       End Do
+       Do I = 1, Nhalf
+          FFT(I)       = DfE(I) + TW(I)*DfO(I)
+          FFT(I+Nhalf) = DfE(I) - TW(I)*DfO(I)
+       End Do
+       Deallocate(DfE, DfO, Tw)
+    Else
+       Do I = 1, Ntot
+          Factor = PreFactor ** I
+          
+          FFT(I) = (0.0_DP, 0.0_DP)
+          Do J = Ntot, 1, -1
+             FFT(I) = ( FFT(I) + Data(J) ) * Factor
+          End Do
+       End Do
+    End If
+
+    If (Side == -1) Then
+!       FFT(:) = FFT(:) / Cmplx(Ntot, kind=DP)
+    End If
+
+    Write(*,*)FFT
+    Write(*,*)
+    Write(*,*)
+
+    Return
+  End Function FASTFT_1D
 
 
 End MODULE Fourier

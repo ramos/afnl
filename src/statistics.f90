@@ -35,7 +35,7 @@ MODULE Statistics
   IMPLICIT NONE
 
   Interface Mean
-     Module Procedure Mean_DP, Mean_SP
+     Module Procedure Mean_DP, Mean_SP, Mean_SPC, Mean_DPC
   End Interface
 
   Interface WMean
@@ -199,9 +199,41 @@ MODULE Statistics
        & LevyV_SP, Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP, &
        & MultiNormalS, MultiNormalV, MultiNormalS_Med, &
        & MultiNormalV_med, MultiNormalS_SP, MultiNormalV_SP, &
-       & MultiNormalS_Med_SP, MultiNormalV_med_SP
+       & MultiNormalS_Med_SP, MultiNormalV_med_SP, Mean_SPC, Mean_DPC
 
 CONTAINS
+
+!  *********************************************
+!  *                                           *
+  Complex (kind=DPC) Function Mean_DPC(X)
+!  *                                           *
+!  *********************************************
+!  * Returns the mean value of the elements in 
+!  * the vector X(:)
+!  *********************************************
+
+    Complex (kind=DPC), Intent (in) :: X(:)
+
+    Mean_DPC = Sum(X) / Size(X)
+
+    Return
+  End Function Mean_DPC
+
+!  *********************************************
+!  *                                           *
+  Complex (kind=SPC) Function Mean_SPC(X)
+!  *                                           *
+!  *********************************************
+!  * Returns the mean value of the elements in 
+!  * the vector X(:)
+!  *********************************************
+
+    Complex (kind=SPC), Intent (in) :: X(:)
+
+    Mean_SPC = Sum(X) / Size(X)
+
+    Return
+  End Function Mean_SPC
 
 !  *********************************************
 !  *                                           *

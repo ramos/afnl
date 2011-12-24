@@ -487,7 +487,7 @@ CONTAINS
 
     Else
 
-       ! Iniitialize the stack
+       ! Initialize the stack
        Ispos = 1
        Ismax = 1
        Stack(ISpos)%Ileft  = 1
@@ -1046,6 +1046,81 @@ CONTAINS
 
     Return
   End Function Partition_IN
+
+! ***************************************
+! *
+  Integer Function Pt2N(P, Npt)
+! *
+! ***************************************
+! * Tranforms a Ndimensional point in an
+! * integer index.
+! ***************************************  
+
+    Integer, Intent (in) :: P(:), Npt(:)
+    Integer :: Nfac, I, Ndim
+
+    Ndim = Size(Npt)
+
+    Pt2N = P(1)-1
+    Nfac = 1
+    Do I = 2, Ndim
+       Nfac = Nfac * Npt(I-1)
+       Pt2N = Pt2N + Nfac*(P(I) - 1)
+    End Do
+
+    Return
+  End Function Pt2N
+
+! ***************************************
+! *
+  Function N2Pt(Npos, Npt) Result (P)
+! *
+! ***************************************
+! * Tranforms a Ndimensional point in an
+! * integer index.
+! ***************************************  
+
+    Integer, Intent (in) :: Npos, Npt(:)
+    Integer :: Ncp, Ndim, I
+
+    Integer :: P(Size(Npt))
+
+    Ndim = Size(Npt)
+
+    Ncp = Npos
+    Do I = 1, Ndim
+       P(I) = Mod(Ncp, Npt(I)) + 1
+       Ncp = Int(Ncp/Npt(I))
+    End Do
+
+    Return
+  End Function N2Pt
+
+! ***************************************
+! *
+  Integer Function Nlines(fname)
+! *
+! ***************************************
+! * Tranforms a Ndimensional point in an
+! * integer index.
+! ***************************************  
+
+    Character (len=*), Intent (in) :: fname
+
+    Open (Unit=77, File=Trim(fname))
+    
+    Nlines = 0
+    Do While (.True.)
+       Read(77,*,END=10)
+       Nlines = Nlines + 1
+    End Do
+10  Continue
+
+    Close(77)
+
+    Return
+  End Function Nlines
+
 
 End MODULE NonNumeric
 
