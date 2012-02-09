@@ -5,11 +5,99 @@ MODULE LapackAPI
   USE NumTypes
   USE ISO_C_BINDING
 
-
   IMPLICIT NONE
 
+  Interface GEVP
+     Module Procedure GEVP_D, GEVP_C
+  End Interface
+
+  Private GEVP_D, GEVP_C
 
 CONTAINS
+
+! ***********************************************
+! *
+  Subroutine GEVP_D(A, B, Dv, U, Info) 
+! *
+! ***********************************************
+! * Solves the Generalized Eigenvalue Problem 
+! *   Av = lBv
+! * "eigenvalues" returned in Dv(:)
+! *  
+! ***********************************************
+
+    Real (kind=DP), Intent (in) :: A(:,:), B(:,:)
+    Real (kind=DP), Intent (out), Optional :: U(:,:)
+    Real (kind=DP), Intent (out) :: Dv(:)
+    Integer, Intent (out), Optional :: Info
+
+!    Real (kind=DP) :: SA(Size(A,1),Size(A,2))
+    Real (kind=DP), Allocatable :: Work(:), SA(:,:), SB(:,:), &
+         & SSv(:)
+    Integer :: N, NWork, Istat
+
+    N = Size(A,1)
+    NWork = 100*Max(N**2,3*N-1)
+    Allocate(Work(NWork), SA(N,N), Sb(N,N), SSV(N))
+
+    SA = A
+    Sb = B
+    CALL DSYGV(1, "V", "L", N, SA, N, SB, N, SSv, Work, NWork, Istat)
+
+    If (Present(Info)) Info = Istat
+    Dv = SSv
+    
+    If (Present(U)) Then
+       U = SA
+    End If
+
+    Deallocate(Work, SA, SSv, SB)
+
+    Return
+  End Subroutine GEVP_D
+
+
+! ***********************************************
+! *
+  Subroutine GEVP_C(A, B, Dv, U, Info) 
+! *
+! ***********************************************
+! * Solves the Generalized Eigenvalue Problem 
+! *   Av = lBv
+! * "eigenvalues" returned in Dv(:)
+! *  
+! ***********************************************
+
+    Complex (kind=DPC), Intent (in) :: A(:,:), B(:,:)
+    Complex (kind=DPC), Intent (out), Optional :: U(:,:)
+    Real (kind=DP), Intent (out) :: Dv(:)
+    Integer, Intent (out), Optional :: Info
+
+!    Real (kind=DP) :: SA(Size(A,1),Size(A,2))
+    Complex (kind=DPC), Allocatable :: Work(:), SA(:,:), SB(:,:)
+    Real (kind=DP), Allocatable :: SSv(:), Rwork(:)
+    Integer :: N, NWork, Istat
+
+    N = Size(A,1)
+    NWork = 100*Max(N**2,3*N-1)
+    Allocate(Work(NWork), SA(N,N), Sb(N,N), SSV(N), Rwork(3*N-2))
+
+    SA = A
+    Sb = B
+    CALL ZHEGV(1, "V", "L", N, SA, N, SB, N, SSv, Work, NWork, Rwork, Istat)
+!        ZHEGV(I, JOB, UPL, N, A, DA, B, DB, W,   WORK, LWORK, RWORK, INFO )
+
+    If (Present(Info)) Info = Istat
+    Dv = SSv
+    
+    If (Present(U)) Then
+       U = SA
+    End If
+
+    Deallocate(Work, SA, SSv, SB)
+
+    Return
+  End Subroutine GEVP_C
 
 ! ***********************************************
 ! *

@@ -4,6 +4,88 @@ of routines to perform calls to the Linear Algebra PACKage.
 
 
 
+\section{Subroutine \texttt{GEVP(A, B,L [,V,Is])}}
+\index{GEVP@Subroutine \texttt{GEVP(A, B,L [,V,Is])}}
+
+\subsection{Description}
+
+The routine \texttt{GEVP}, solves the generalized eigenvalue problem 
+\begin{displaymath}
+  Av^{(n)} = \lambda_{(n)}B v^{(n)}
+\end{displaymath}
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{A, B}:]  Real or complex double precision two
+  dimensional array. The matrices of the general eigenvalue problem.
+
+\item[\texttt{L(:): }] Real double precision one dimensional array. A
+  vector containing the left generalized eigenvalues.
+
+\item[\texttt{U(:,:):}] Real or complex double precision two dimensional
+  array. Output. Optional. The left eigenvectors as columns.
+
+\item[\texttt{Is}] Integer. Output. Optional. 0 if the computation was
+  sucessfull, other integer in any other case. 
+\end{description}
+
+\subsection{Example}
+
+\begin{lstlisting}[emph=GEVP,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using lapack library to solve a generalized
+                   eigenvalue problem.,
+                   label=gevp]
+Program GEVPprg
+
+  USE NumTypes
+  USE Linear
+  USE LapackAPI
+
+  Integer :: N = 2, Is
+  Complex (kind=DPC), Allocatable :: A(:,:), B(:,:), v(:,:)
+  Real (kind=DP), Allocatable :: l(:), R(:)
+
+  ALLOCATE(A(N,N), B(N,N), v(N,N), l(N), R(N))
+
+  A(1,1) = 1.0
+  A(1,2) = 2.0
+  A(2,1) = 2.0
+  A(2,2) = 3.0
+
+  B(1,1) = 2.0
+  B(1,2) = 3.0
+  B(2,1) = 3.0
+  B(2,2) = 8.0
+
+  Write(*,*)'Det(B)', Det(B)
+
+  CALL GEVP(A, B, l, v, Is)
+  Write(*,*)'Success: ', Is
+  Write(*,*)l
+  Write(*,*)
+  Do I = 1, 2
+     Do J = 1, 2
+        Write(*,*)I,J, v(I,J)
+     End Do
+  End Do
+  Write(*,*)
+
+  Write(*,*)'Residuals: '
+  Do J = 1, N
+     Do I = 1, N
+        R(I) = Abs(Sum( (A(I,:)-l(J)*B(I,:))*v(:,J)))
+     End Do
+     Write(*,*)R
+  End Do
+
+
+  Stop
+End Program GEVPprg
+\end{lstlisting}
+
 \section{Subroutine \texttt{SVD(A, L [, U, VT])}}
 \index{SVD@Subroutine \texttt{SVD(A [, U, VT]) }}
 
