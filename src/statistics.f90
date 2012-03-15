@@ -98,6 +98,10 @@ MODULE Statistics
      Module Procedure Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP
   End Interface
 
+  Interface Lorentz
+     Module Procedure  Lorentz_DP, Lorentz_SP, LorentzV_DP, LorentzV_SP
+  End Interface
+
   Interface FishTipp
      Module Procedure FishTipp_DP, FishTipp_SP,FishTipp2_DP, FishTipp2_SP
   End Interface
@@ -199,7 +203,8 @@ MODULE Statistics
        & LevyV_SP, Cauchy_DP, Cauchy_SP, CauchyV_DP, CauchyV_SP, &
        & MultiNormalS, MultiNormalV, MultiNormalS_Med, &
        & MultiNormalV_med, MultiNormalS_SP, MultiNormalV_SP, &
-       & MultiNormalS_Med_SP, MultiNormalV_med_SP, Mean_SPC, Mean_DPC
+       & MultiNormalS_Med_SP, MultiNormalV_med_SP, Mean_SPC, &
+       & Mean_DPC, Lorentz_DP, Lorentz_SP, LorentzV_DP, LorentzV_SP
 
 CONTAINS
 
@@ -5136,5 +5141,111 @@ End Subroutine RanLux_DP_S
     Return
   End Subroutine MultiNormalV_med_SP
 
+!  *********************************************
+!  *                                           *
+  Subroutine Lorentz_DP(X, mu, gamma)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Lorentzian 
+!  * distribution in the intent (out) Real DP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X
+    Real (kind=DP), Intent(in), Optional  :: mu, gamma
+    
+    Real (kind=DP) :: U
+    
+    CALL Random_Number(U)
+    
+    X = Tan(TWOPI_DP*U)
+
+    If (Present(gamma)) X = gamma * X 
+    If (Present(mu))    X = X + mu
+
+
+    Return
+  End Subroutine Lorentz_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine LorentzV_DP(X, mu, gamma)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Lorentzian
+!  * distribution in the intent (out) Real DP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP), Intent(in), Optional  :: mu, gamma
+    
+    Real (kind=DP) :: U
+    Integer :: I
+
+    Do I = 1, Size(X)
+       CALL Random_Number(U)
+       X(I) = Tan(TWOPI_DP*U)
+    End Do
+    
+    If (Present(gamma)) X(:) = gamma * X(:) 
+    If (Present(mu))    X(:) = X(:) + mu
+
+    Return
+  End Subroutine LorentzV_DP
+
+!  *********************************************
+!  *                                           *
+  Subroutine Lorentz_SP(X, mu, gamma)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Lorentzian 
+!  * distribution in the intent (out) Real SP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X
+    Real (kind=SP), Intent(in), Optional  :: mu, gamma
+    
+    Real (kind=SP) :: U
+    
+    CALL Random_Number(U)
+    
+    X = Tan(TWOPI_SP*U)
+
+    If (Present(gamma)) X = gamma * X 
+    If (Present(mu))    X = X + mu
+
+
+    Return
+  End Subroutine Lorentz_SP
+
+!  *********************************************
+!  *                                           *
+  Subroutine LorentzV_SP(X, mu, gamma)
+!  *                                           *
+!  *********************************************
+!  * Returns a number with a Lorentzian
+!  * distribution in the intent (out) Real SP 
+!  * variable X.
+!  *********************************************
+
+    Real (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP), Intent(in), Optional  :: mu, gamma
+    
+    Real (kind=SP) :: U
+    Integer :: I
+
+    Do I = 1, Size(X)
+       CALL Random_Number(U)
+       X(I) = Tan(TWOPI_SP*U)
+    End Do
+    
+    If (Present(gamma)) X(:) = gamma * X(:) 
+    If (Present(mu))    X(:) = X(:) + mu
+
+    Return
+  End Subroutine LorentzV_SP
   
+
 End MODULE Statistics
