@@ -31,6 +31,7 @@ MODULE Statistics
   USE NonNumeric
   USE Linear
   USE SpecialFunc
+  USE Time
 
   IMPLICIT NONE
 
@@ -145,6 +146,10 @@ MODULE Statistics
   Interface Prop_Error
      Module Procedure Prop_Error_DP, Prop_Error_Multi_DP, &
           & Prop_Error_SP, Prop_Error_Multi_SP
+  End Interface
+
+  Interface WriteLuxSeed
+     Module Procedure WriteLuxSeed, WriteLuxSeedS
   End Interface
   
   ! Parameters to tune the Nonlinear fitting routines:
@@ -3806,6 +3811,117 @@ CONTAINS
 
     Return
   End Subroutine GetLuxSeed
+
+! ********************************************
+! *
+  Subroutine WriteLuxSeed(fn, Comment)
+! *
+! ********************************************
+! * Output the seed in a file.
+! ********************************************
+
+    Character (len=*), Intent (in) :: fn
+    Character (len=*), Intent (in), Optional :: Comment
+
+    Integer :: Sd(LUX_base+1),I , IHDR
+
+    CALL GetLuxSeed(Sd)
+
+    IHDR = 204
+    If (Present(Comment)) IHDR = IHDR + len(Trim(Comment))
+    Open (File=Trim(Fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM')
+    Write(69,'(1A)')'******************* LUX SEED *************************'
+    Write(69,'(3X,1A,1I12.12)'             )"Header size:   ", IHDR
+    Write(69,'(3X,1A,1A)'             )"Date and Time: ", asctime(gettime())
+    If (Present(Comment)) Then
+       Write(69,'(3X,1A,1A)'     )"Comment:       ", Trim(Comment)
+    Else
+       Write(69,'(3X,1A)'     )"Comment:       "
+    End If
+    Write(69,'(1A)')'******************************************************'
+    Close(69)
+
+    Open (File=Trim(Fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Position='APPEND')
+
+    Write(69)(Sd(I), I=1, LUX_base+1)    
+    Close(69)
+
+    Return
+  End Subroutine WriteLuxSeed
+
+! ********************************************
+! *
+  Subroutine WriteLuxSeedS(fn, Comment)
+! *
+! ********************************************
+! * Output the seed in a file.
+! ********************************************
+
+    Character (len=*), Intent (in) :: fn
+    Character (len=*), Intent (in) :: Comment(:)
+
+    Integer :: Sd(LUX_base+1),I , IHDR
+
+    CALL GetLuxSeed(Sd)
+
+    IHDR = 204 + 6*(Size(Comment)-1)
+    Do I = 1, Size(Comment)
+       IHDR = IHDR + len(Trim(Comment(I)))
+    End Do
+    Open (File=Trim(Fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM')
+    Write(69,'(1A)')'******************* LUX SEED *************************'
+    Write(69,'(3X,1A,1I12.12)'             )"Header size:   ", IHDR
+    Write(69,'(3X,1A,1A)'             )"Date and Time: ", asctime(gettime())
+    Write(69,'(3X,1A,1A)'     )"Comment:       ", Trim(Comment(1))
+    Do I = 2, Size(Comment)
+       Write(69,'(5X,1A)'     )Trim(Comment(I))
+    End Do
+    Write(69,'(1A)')'******************************************************'
+!!$    Inquire(69,Pos=I)
+!!$    Write(0,*)I
+    Close(69)
+
+    Open (File=Trim(Fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Position='APPEND')
+
+    Write(69)(Sd(I), I=1, LUX_base+1)    
+    Close(69)
+
+    Return
+  End Subroutine WriteLuxSeedS
+
+! ********************************************
+! *
+  Subroutine ReadLuxSeed(fn)
+! *
+! ********************************************
+! * Output the seed in a file.
+! ********************************************
+
+    Character (len=*), Intent (in) :: fn
+
+    Integer :: Sd(LUX_base+1),I , IHDR
+    Character (len=15) :: foo
+
+    Open (File=Trim(Fn), Unit=69, Form='FORMATTED', &
+         & Action='READ')
+    Read(69,*)
+    Read(69,'(3X,1A,1I12.12)')foo, IHDR
+    Close(69)
+
+    Open (File=Trim(Fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action='READ')
+
+    Read(69, POS=IHDR)(Sd(I), I=1, LUX_base+1)    
+    Close(69)
+
+    CALL PutLuxSeed(Sd)
+
+    Return
+  End Subroutine ReadLuxSeed
 
 ! ********************************************
 ! *
