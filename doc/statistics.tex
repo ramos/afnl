@@ -935,6 +935,116 @@ Program Tests
 End Program Tests
 \end{lstlisting}
 
+\section{Subroutine \texttt{WriteLuxSeed(fname,[comment[(:)]])}}
+\index{WriteLuxSeed@Subroutine \texttt{WriteLuxSeed(fname,[comment[(:)]])}}
+
+\subsection{Description}
+
+Writes the position of the LUX random number generator in file
+\texttt{fname}. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{fname}:] Character (len=*). The file name.
+\item[\texttt{Comment[(:)]}:] Character (len=*) or array of Character
+  (len=*). Comments to add to the header of the file. 
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=WriteLuxSeed,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using a previously saved point in the generating process.,
+                   label=writeluxseed]
+
+Program Seed
+
+  USE NumTypes
+  USE Statistics
+
+  Real (kind=DP), Allocatable :: X(:)
+  Character (len=50) :: CC(5)
+
+  CC(1) = 'Follow Input'
+  CC(2) = 'a=1'
+  CC(3) = 'b=2'
+  CC(3) = 'c=23'
+  CC(3) = 'd=276278'
+
+  CALL PutLuxSeed()
+  Allocate(X(1000))
+  CALL Normal(X)
+  CALL WriteLuxSeed('o.seed', CC)
+
+  CALL Normal(X)
+  Write(*,*)X(990:1000)
+
+  Write(*,*)'Again: '
+  CALL ReadLuxSeed('o.seed')
+  CALL Normal(X)
+  Write(*,*)X(990:1000)
+
+  Stop
+End Program Seed
+\end{lstlisting}
+
+
+\section{Subroutine \texttt{ReadLuxSeed(fname)}}
+\index{ReadLuxSeed@Subroutine \texttt{ReadLuxSeed(fname)}}
+
+\subsection{Description}
+
+Reads the position of the LUX random number generator from file
+\texttt{fname}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{fname}:] Character (len=*). The file name.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=ReadLuxSeed,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Using a previously saved point in the generating process.,
+                   label=readluxseed]
+
+Program Seed
+
+  USE NumTypes
+  USE Statistics
+
+  Real (kind=DP), Allocatable :: X(:)
+  Character (len=50) :: CC(5)
+
+  CC(1) = 'Follow Input'
+  CC(2) = 'a=1'
+  CC(3) = 'b=2'
+  CC(3) = 'c=23'
+  CC(3) = 'd=276278'
+
+  CALL PutLuxSeed()
+  Allocate(X(1000))
+  CALL Normal(X)
+  CALL WriteLuxSeed('o.seed', CC)
+
+  CALL Normal(X)
+  Write(*,*)X(990:1000)
+
+  Write(*,*)'Again: '
+  CALL ReadLuxSeed('o.seed')
+  CALL Normal(X)
+  Write(*,*)X(990:1000)
+
+  Stop
+End Program Seed
+\end{lstlisting}
+
+
 \section{Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
 \index{Normal@Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
 
