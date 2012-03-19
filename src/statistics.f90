@@ -4034,13 +4034,14 @@ End Subroutine LUX_init
 
 ! ***********************************
 ! *
-Subroutine LUXRandomize(Nsd)
+Function LUXRandomize(Nsd)
 ! *
 ! ************************************
 
   Integer, Intent (in), Optional :: Nsd
   Integer :: I, jseed, it24, k
-  
+  Integer :: LUXRandomize
+
   Type (tm) :: moment
   Character (len=20) :: st
 
@@ -4054,6 +4055,7 @@ Subroutine LUXRandomize(Nsd)
           & moment%msec
      Read(st,*)jseed
   End If
+  LUXRandomize = jseed
 
   it24 = 2**24
   Do I = 1, LUX_base
@@ -4064,7 +4066,7 @@ Subroutine LUXRandomize(Nsd)
   End Do
   
   Return
-End Subroutine LUXRandomize
+End Function LUXRandomize
 
 ! ********************************************
 ! *

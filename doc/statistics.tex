@@ -1044,8 +1044,8 @@ Program Seed
 End Program Seed
 \end{lstlisting}
 
-\section{Subroutine \texttt{LUXRandomize([N])}}
-\index{LUXRandomize@Subroutine \texttt{LUXRandomize(N)}}
+\section{Function \texttt{LUXRandomize([N])}}
+\index{LUXRandomize@Function \texttt{LUXRandomize(N)}}
 
 \subsection{Description}
 
@@ -1059,6 +1059,10 @@ reduced seed.
   not present it is generated based on hour, minutes, seconds and
   miliseconds of the calling time.
 \end{description}
+
+\subsection{Output}
+
+Integer. The ``reduced seed'' used. 
 
 \subsection{Examples}
 
@@ -1076,7 +1080,7 @@ Program Seed
   Real (kind=DP), Allocatable :: X(:)
 
   CALL PutLuxSeed()
-  CALL LUXRandomize()
+  Iseed = LUXRandomize()
   Allocate(X(1000))
   CALL Normal(X)
 
