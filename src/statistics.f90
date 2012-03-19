@@ -4032,6 +4032,40 @@ Subroutine LUX_init()
   Return
 End Subroutine LUX_init
 
+! ***********************************
+! *
+Subroutine LUXRandomize(Nsd)
+! *
+! ************************************
+
+  Integer, Intent (in), Optional :: Nsd
+  Integer :: I, jseed, it24, k
+  
+  Type (tm) :: moment
+  Character (len=20) :: st
+
+  CALL LUX_Init()
+  
+  If (Present(Nsd)) Then
+     jseed = Nsd
+  Else
+     moment = gettime()
+     Write(st,'(3I2.2,1I4.4)')moment%hour, moment%min, moment%sec,&
+          & moment%msec
+     Read(st,*)jseed
+  End If
+
+  it24 = 2**24
+  Do I = 1, LUX_base
+     k = Int(jseed/53668)
+     jseed = 40014 * (jseed-k*53668) - k * 12211
+     If (jseed < 0) jseed = jseed + 2147483563
+     LUX_Seed(I) = Real(Mod(jseed,it24),kind=SP) * LUX_lastbit
+  End Do
+  
+  Return
+End Subroutine LUXRandomize
+
 ! ********************************************
 ! *
   Subroutine RanLux_DP(Rnd)

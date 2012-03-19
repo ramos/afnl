@@ -1044,6 +1044,46 @@ Program Seed
 End Program Seed
 \end{lstlisting}
 
+\section{Subroutine \texttt{LUXRandomize([N])}}
+\index{LUXRandomize@Subroutine \texttt{LUXRandomize(N)}}
+
+\subsection{Description}
+
+Randomize the LUX random number generator based on actual time or a
+reduced seed. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{N}:] Integer, Optional. If present a reduced seed. If
+  not present it is generated based on hour, minutes, seconds and
+  miliseconds of the calling time.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=LUXRandomize,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Randomizing the LUX generator., 
+                   label=luxrandomize]
+
+Program Seed
+
+  USE NumTypes
+  USE Statistics
+
+  Real (kind=DP), Allocatable :: X(:)
+
+  CALL PutLuxSeed()
+  CALL LUXRandomize()
+  Allocate(X(1000))
+  CALL Normal(X)
+
+  Stop
+End Program Seed
+\end{lstlisting}
+
 
 \section{Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
 \index{Normal@Subroutine \texttt{Normal(X, [Rm], [Rsig])}}
