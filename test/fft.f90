@@ -11,6 +11,7 @@ Program FFTPR
 
   Type (Fourier_Serie) :: S1, S2, S3, S4
   Complex (kind=DPC) :: CD(N)
+  Complex (kind=DPC), Allocatable :: CCC(:)
   Real (kind=DP) :: dr(N), di(N)
   Integer, Allocatable :: Ipt(:)
 
@@ -56,6 +57,11 @@ Program FFTPR
   S3 = FFT(S2,1)
   Write(*,*)'Result: ', Sum(Abs(S1%Coef-S3%Coef)), MaxVal(Abs(S1%Coef-S3%Coef))  
 
+  CALL Fourier2Data(S1, CCC)
+  Write(*,*)'DONE', CCC(:), Size(CCC)
+  
+  CALL Data2Fourier(CCC, S3)
+  Write(*,*)'Result transforms: ', Sum(Abs(S1%Coef-S3%Coef)), MaxVal(Abs(S1%Coef-S3%Coef))  
 
 
 10 FORMAT(100ES13.5)

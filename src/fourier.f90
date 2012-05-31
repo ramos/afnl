@@ -1397,6 +1397,7 @@ CONTAINS
     Integer, Intent (in), Optional :: Isign
     Type (Fourier_Serie) :: FFT
 
+    Complex (kind=DPC) :: DData(Size(Data))
     Real (kind=DP), Allocatable :: Cdt(:), W(:)
     Integer :: N, Is, I
     Integer, Allocatable :: Ipt(:), Ip(:)
@@ -1417,16 +1418,12 @@ CONTAINS
     Ip(0) = 0
     CALL CDFT(N, Is, Cdt, Ip, w)
 
-    CALL Init_Serie(FFT, N/4)
-    Allocate(Ipt(-N/4:N/4))
-
-    ForAll (I=0:N/4) Ipt(I) = I
-    Ipt(-N/4) = N/4
-    ForAll (I=1:N/4-1) Ipt(-N/4+I) = N/4+I
-
-    Do I = -N/4, N/4
-       FFT%Coef(I) = Cmplx( Cdt(2*Ipt(I)), Cdt(2*Ipt(I)+1) )
+    
+    Do I = 1, Size(Data)-1
+       DData(I) = Cmplx(Cdt(2*I), Cdt(2*I+1))
     End Do
+    DData(Size(Data)) = Cmplx(Cdt(0), Cdt(1))
+    CALL Data2Fourier(DData, FFT)
 
     If (Is == -1) Then
        FFT%Coef = 2.0_DP*FFT%Coef / Real(N, kind=DP)
@@ -1434,6 +1431,72 @@ CONTAINS
 
     Return
   End Function FFT_1D
+
+! ********************************
+! *
+  Subroutine Data2Fourier(Data, FT)
+! *
+! ********************************
+! * Calculates the Discrete Fourier
+! * Transformation from the complex
+! * data stored in data.
+! ********************************
+
+    Complex (kind=DPC), Intent (in) :: Data(:)
+    Type (Fourier_Serie), Intent (out) :: FT
+
+    Integer, Allocatable :: Ipt(:)
+    Integer :: N, I
+
+    N = Size(Data)
+
+    CALL Init_Serie(FT, N/2)
+    Allocate(Ipt(-N/2:N/2))
+
+    Ipt(0) = N
+    ForAll (I=1:N/2) Ipt(I) = I
+    Ipt(-N/2) = N/2
+    ForAll (I=1:N/2-1) Ipt(-N/2+I) = N/2+I
+
+    Do I = -N/2, N/2
+       FT%Coef(I) = Data(Ipt(I))
+    End Do
+
+    Return
+  End Subroutine Data2Fourier
+
+! ********************************
+! *
+  Subroutine Fourier2Data(FT,Data)
+! *
+! ********************************
+! * Calculates the Discrete Fourier
+! * Transformation from the complex
+! * data stored in data.
+! ********************************
+
+    Complex (kind=DPC), Allocatable, Intent(out) :: Data(:)
+    Type (Fourier_Serie), Intent (in) :: FT
+
+    Integer, Allocatable :: Ipt(:)
+    Integer :: N, I
+
+    N = 2*FT%Nterm
+    If (Allocated(Data)) Deallocate(Data)
+    Allocate(Data(N))
+    Allocate(Ipt(1:N))
+
+    ForAll (I=1:N/2) Ipt(I) = I
+    Ipt(N) = 0
+    ForAll (I=1:N/2-1) Ipt(N/2+I) = -N/2+I
+
+    Do I = 1, N
+       Data(I) = FT%Coef(Ipt(I))
+    End Do
+
+
+    Return
+  End Subroutine Fourier2Data
 
 
 ! ******************************************
