@@ -109,8 +109,12 @@ MODULE Fourier
   End Interface
 
   Interface cfttree
-     Module Procedure Cfttree
+     Module Procedure CfttreeDummy
   End Interface cfttree
+
+  Interface FFT
+     Module Procedure FFT_1D, FastFT_1D
+  End Interface FFT
 
   Private PI, DPI, Add, Add_2D, Prod, Prod_2D, Equal, Equal_2D,&
        & Eval_Serie_1D, Eval_Serie_2D, Sub, Sub_2D, Prodcte, &
@@ -1342,7 +1346,7 @@ CONTAINS
     Integer, Allocatable :: Ipt(:), Ip(:)
 
     N = 2*Data%Nterm
-    Is = 1
+    Is = -1
     If (Present(Isign)) Is = Isign
 
     ALLOCATE(Cdt(0:2*N-1), Ipt(0:N-1))
@@ -1357,7 +1361,7 @@ CONTAINS
     End Do
 
     Ip(0) = 0
-    CALL CDFT(N, Is, Cdt, Ip, w)
+    CALL CDFT(2*N, Is, Cdt, Ip, w)
 
     CALL Init_Serie(FFT, Data%Nterm)
     Deallocate(Ipt)
@@ -1371,8 +1375,65 @@ CONTAINS
        FFT%Coef(I) = Cmplx( Cdt(2*Ipt(I)), Cdt(2*Ipt(I)+1) )
     End Do
 
+    If (Is == -1) Then
+       FFT%Coef = FFT%Coef / Real(N, kind=DP)
+    End If
+
     Return
   End Function FASTFT_1D
+
+
+! ********************************
+! *
+  Function FFT_1D(Data, Isign) Result (FFT)
+! *
+! ********************************
+! * Calculates the Discrete Fourier
+! * Transformation from the complex
+! * data stored in data.
+! ********************************
+
+    Complex (kind=DPC), Intent (in) :: Data(:)
+    Integer, Intent (in), Optional :: Isign
+    Type (Fourier_Serie) :: FFT
+
+    Real (kind=DP), Allocatable :: Cdt(:), W(:)
+    Integer :: N, Is, I
+    Integer, Allocatable :: Ipt(:), Ip(:)
+
+    N = 2*Size(Data)
+    Is = -1
+    If (Present(Isign)) Is = Isign
+
+    ALLOCATE(Cdt(0:N-1))
+    ALLOCATE(Ip(0:3+Int(Sqrt(Real(N)))), W(0:Int(N/2-1)))
+    Do I = 1, Size(Data)-1
+       Cdt(2*I)   = Real(Data(I))
+       Cdt(2*I+1) = Aimag(Data(I))
+    End Do
+    Cdt(0) = Real(Data(N/2))
+    Cdt(1) = Aimag(Data(N/2))
+
+    Ip(0) = 0
+    CALL CDFT(N, Is, Cdt, Ip, w)
+
+    CALL Init_Serie(FFT, N/4)
+    Allocate(Ipt(-N/4:N/4))
+
+    ForAll (I=0:N/4) Ipt(I) = I
+    Ipt(-N/4) = N/4
+    ForAll (I=1:N/4-1) Ipt(-N/4+I) = N/4+I
+
+    Do I = -N/4, N/4
+       FFT%Coef(I) = Cmplx( Cdt(2*Ipt(I)), Cdt(2*Ipt(I)+1) )
+    End Do
+
+    If (Is == -1) Then
+       FFT%Coef = 2.0_DP*FFT%Coef / Real(N, kind=DP)
+    End If
+
+    Return
+  End Function FFT_1D
 
 
 ! ******************************************
@@ -1812,8 +1873,9 @@ CONTAINS
   !
   ! -------- child routines --------
   !
-  integer function cfttree(n, j, k, a, nw, w)
-    integer n, j, k, nw, i, isplt, m
+  function cfttreedummy(n, j, k, a, nw, w) Result (cfttree)
+    
+    integer n, j, k, nw, i, isplt, m, cfttree
     Real (kind=DP) :: a(0 : j - 1), w(0 : nw - 1)
     if (mod(k, 4) .ne. 0) then
        isplt = mod(k, 2)
@@ -1843,7 +1905,8 @@ CONTAINS
        end if
     end if
     cfttree = isplt
-  end function cfttree
+
+  end function cfttreedummy
   !
   subroutine cftfsub(n, a, ip, nw, w)
     integer n, ip(0 : *), nw
@@ -3190,7 +3253,7 @@ CONTAINS
   end subroutine cftb1st
   !
   subroutine cftrec4(n, a, nw, w)
-    integer n, nw, cfttree, isplt, j, k, m
+    integer n, nw, isplt, j, k, m
     Real (kind=DP) :: a(0 : n - 1), w(0 : nw - 1)
     m = n
     do while (m .gt. 512)
