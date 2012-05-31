@@ -1098,16 +1098,13 @@ CONTAINS
 
 ! ***************************************
 ! *
-  Integer Function Nlines(fname)
+  Integer Function NumberOfLines(fname) Result (Nlines)
 ! *
 ! ***************************************
-! * Tranforms a Ndimensional point in an
-! * integer index.
-! ***************************************  
 
     Character (len=*), Intent (in) :: fname
 
-    Open (Unit=77, File=Trim(fname))
+    Open (Unit=77, File=Trim(fname), ACTION="READ")
     
     Nlines = 0
     Do While (.True.)
@@ -1119,8 +1116,36 @@ CONTAINS
     Close(77)
 
     Return
-  End Function Nlines
+  End Function NumberOfLines
 
+! ***************************************
+! *
+  Integer Function NumberOfColumns(fname) Result (Ncol)
+! *
+! ***************************************
+
+    Character (len=*), Intent (in) :: fname
+
+    Character (len=10000) :: foo
+    Integer :: J
+    Real (kind=DP) :: A
+
+    Open (Unit=77, File=Trim(fname), ACTION="READ")
+    
+    Read(77,'(1A)')foo
+    Close(77)
+    
+    Ncol=1
+    Do While (.True.)
+       Read(foo,*,ERR=20, END=20)(A,J=1,Ncol)
+       Ncol = Ncol + 1
+    End Do
+20  Continue
+    Ncol = Ncol - 1
+    
+    Return
+  End Function NumberOfColumns
+  
 
 End MODULE NonNumeric
 
