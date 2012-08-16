@@ -33,6 +33,7 @@ MODULE NonNumeric
 
   USE NumTypes
   USE Error
+  USE Time
 
   IMPLICIT NONE
 
@@ -55,6 +56,10 @@ MODULE NonNumeric
   Interface Partition
      Module Procedure Partition_SP, Partition_IN, Partition_DP
   End Interface
+
+  Interface WriteBuffer
+     Module Procedure WriteBuffer, WriteBuffer2
+  End Interface WriteBuffer
 
 
   Private Locate_IN, Locate_SP, &
@@ -1145,7 +1150,231 @@ CONTAINS
     
     Return
   End Function NumberOfColumns
+
+! ***************************************
+! *
+  Integer Function Hash(Iarr) 
+! *
+! ***************************************
+! * Computes a HASH for an integer array
+! * in a system independent way. 
+! * With the help of the transfer intrinsic
+! * this routine generates a Checksum for 
+! * any data
+! ***************************************
   
+    Integer, Intent (in) :: Iarr(:)
+
+    Integer :: I, J1, J2, J3, J4
+    Integer :: table(0:255) = &
+         & (/ -520310904, -23640796 ,-1755350438 , 88677750 , &
+         &-858319660 , -2101220352 ,  & 
+         -1124865239 , -2095760803 , 44142808 , 1428115983 , -1051390829 ,  & 
+         1708352218 , 1722642428 , 774853257 , -983812907 , 580229275 ,  & 
+         458811929 , 1385753749 , -889423576 , -202374012 , -512184309 ,  & 
+         -1833420199 , 879783905 , 1064866508 , 87813449 , &
+         &-1317557734 ,  & 
+         1275168835 , -1012938719 , 132108151 , -1397571578 , -980931160 ,  & 
+         -367568929 , -941835371 , -1659849734 , 1428861935 , -1437799479 ,  & 
+         -779465134 , 1667768843 , 1953079905 , -1145752466 , -12411307 ,  & 
+         -64593167 , 1886342641 , 1930672847 , 530346494 , 1723067341 ,  & 
+         491614680 , 1435901097 , 96193509 , -2091922483 , &
+         &-1489648432 ,  & 
+         -468587754 , 1986973157 , -913563874 , -517392711 , -1549896364 ,  & 
+         91708779 , -598424656 , 1417853772 , -36573354 , 1224210515 ,  & 
+         1798300502 , -1606047633 , 184606139 , 798926046 , -1452817147 ,  & 
+         -1536717465 , 1384522629 , -387404411 , 1331304314 , 810407370 ,  & 
+         -1909117988 , -1244393878 , 1791454215 , 1928670958 , 180738758 ,  & 
+         456692149 , -873748860 , 885539777 , 1337483815 , 1005448863&
+         & ,  & 
+         -756459815 , 65899348 , 554233642 , -317322574 , -1790463615 ,  & 
+         340348919 , -488050614 , 1256839619 , 1944139941 , 2069847744 ,  & 
+         1979897372 , -1110137825 , -577503759 , 1607741816 , 2091098967 ,  & 
+         -2127124658 , -1679820319 , -1175785395 , 1917773833 , &
+         &-1773654459 ,  & 
+         553064530 , 1685687797 , -402586688 , 547875482 , 1535445404 ,  & 
+         -1876593190 , 283394127 , 455278762 , 462872717 , -1736499462 ,  & 
+         -431196092 , 990322979 , 1943716543 , 457632225 , -1162460171 ,  & 
+         7224510 , -316660299 , 1653121126 , -356898455 , -1520267046 ,  & 
+         1294113126 , -702268712 , 1076591054 , -559072099 ,&
+         & 952824385 ,  & 
+         188814664 , -626504961 , 1064196292 , -2034554489 , 724966511 ,  & 
+         -2013666511 , 717684207 , 220007275 , 1686086786 , 2138089290 ,  & 
+         -293936682 , -1400968910 , -1397103180 , 236648461 , 803609507 ,  & 
+         -1953190615 , -557468531 , -1542736622 , 1638685862 , 1837384809 ,  & 
+         126242359 , -1998084886 , 1926153284 , 1425372941 , -1117635688 ,  & 
+         1476236195 , 1424983543 , -342458768 , 1460677252 ,&
+         & 494183745 ,  & 
+         -2011045553 , -955133617 , -2064459243 , -1304826384 , 267700582 ,  & 
+         -605258983 , 552131509 , -1260164126 , -104399828 , 1941920290 ,  & 
+         1610044994 , -668369221 , 441807305 , -482645958 , 1988645233 ,  & 
+         2072623063 , 704294290 , 685324416 , 831514048 , -1566531683 ,  & 
+         1499992087 , -770471118 , 1941194843 , -1422644807 , &
+         &-1519837591 ,  & 
+         64336491 , -656418956 , -977203574 , 2071121624 , 665990048 ,  & 
+         1231935040 , -896111611 , 1221186953 , 1249395953 , -1614887967 ,  & 
+         -937293250 , -1811954021 , -1035737928 , -534402710 , -1391628134 ,  & 
+         1145936422 , 919172998 , 1652242472 , -1012298421 , -1067982730 ,  & 
+         66134802 , -499962716 , 853827516 , -28119185 , -404107906 ,  & 
+         278680114 , -841625883 , 1516954392 , -1255512391 , &
+         &-1852979883 ,  & 
+         -185941740 , 500081968 , 261370080 , -302237855 , -40718178 ,  & 
+         -861784371 , -298112727 , -713517878 , -605484984 , 510758174 ,  & 
+         1516754003 , -1720521400 , -726037970 , -450268245 , -798457399 ,  & 
+         -378130769 , 739370423 , -1556413841 , -1526980292 , -699204581 ,  & 
+         -916568279 , -2083403346 , -1942818214 , 1912912161 , -1770934318 ,  & 
+         363338731 , 262615298 , -1005128728 , -1987768399 ,&
+         & 1803066496 ,  & 
+         2106827396 , 2135399440 , -1140689457 , 98958985 , 1567478145 ,  & 
+         71616901 , -1948064131 , 1369392574 , 1754779077 , -1023731795 ,  & 
+         123565065 , -1089699658 , 1777593670 , 101116517 , 1621514258 /)
+    
+
+    Hash = 314159265
+    J1 = 0
+    J2 = 0
+    J3 = 0
+    J4 = 0  
+    Do I = 1, Size(Iarr)
+       CALL mvbits(Iarr(I), 24,  8, J1, 0)
+       CALL mvbits(Iarr(I), 16,  8, J2, 0)
+       CALL mvbits(Iarr(I), 8,  8, J3, 0)
+       CALL mvbits(Iarr(I), 0,  8, J4, 0)
+       
+       Hash = Ieor(Hash,table(J1))
+       Hash = Ishftc(Hash, 3)
+       Hash = Ieor(Hash,table(J2))
+       Hash = Ieor(Hash,table(J3))
+       Hash = Ishftc(Hash, 5)
+       Hash = Ieor(Hash,table(J4))
+    End Do
+
+    Return
+  End Function Hash
+
+
+! ***************************************
+! *
+  Subroutine WriteBuffer(buf, fn, Comment) 
+! *
+! ***************************************
+
+    Integer, Intent (in) :: buf(:)
+    Character (len=*), Intent (in) :: fn
+    Character (len=*), Intent (in), Optional :: Comment
+
+    Character :: HDR=':'
+
+    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM', Action="WRITE")
+    
+    Write(69,'(1A)')'####'
+    Write(69,'(1X,1A,1Z9)'     )"# Checksum:      ", &
+         & Hash(buf)
+    Write(69,'(1X,1A,1A)'     )"# Date and Time: ", &
+         & asctime(gettime())    
+    If (Present(Comment)) Then
+       Write(69,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment)
+    End If
+    Write(69,'(1A)')'####'
+    Write(69,'(2A)')HDR, 'DATA'
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Position='APPEND')
+
+    Write(69)Size(buf)
+    Write(69)buf
+
+    Close(69)
+
+    Return
+  End Subroutine WriteBuffer
+
+! ***************************************
+! *
+  Subroutine WriteBuffer2(buf, fn, Comment) 
+! *
+! ***************************************
+
+    Integer, Intent (in) :: buf(:)
+    Character (len=*), Intent (in) :: fn
+    Character (len=*), Intent (in) :: Comment(:)
+
+    Character :: HDR=':'
+    Integer :: I
+
+    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM', Action="WRITE")
+    
+    Write(69,'(1A)')'####'
+    Write(69,'(1X,1A,1Z9)'     )"# Checksum:      ", &
+         & Hash(buf)
+    Write(69,'(1X,1A,1A)'     )"# Date and Time: ", &
+         & asctime(gettime())    
+    Write(69,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment(1))
+    Do I = 2, Size(Comment)
+       Write(69,'(1X,1A,1A)'  )"#                ", Trim(Comment(I))
+    End Do
+    Write(69,'(1A)')'####'
+    Write(69,'(1A)')HDR
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Position='APPEND')
+
+    Write(69)Size(buf)
+    Write(69)buf
+
+    Close(69)
+
+    Return
+  End Subroutine WriteBuffer2
+
+! ***************************************
+! *
+  Subroutine ReadBuffer(buf, fn, chk) 
+! *
+! ***************************************
+
+    Integer, Intent (out), allocatable :: buf(:)
+    Character (len=*), Intent (in) :: fn
+    Logical, Intent (out), Optional :: chk
+
+    Character :: HDR=':', RD
+    Character (len=17) :: foo
+    Integer :: Npos, Nsz, Is, CHKsum
+
+    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM', Action="READ")
+    
+    Read(69,*)
+    Read(69,'(1X,1A,1Z9)')foo, CHKsum
+    Do
+       Read(69,'(1A1)', IOSTAT=Is)RD
+       If (Is /= 0) CALL Abort('End of file in ReadBuffer', 'No')
+       If (RD == HDR) Exit
+    End Do
+    Inquire(69,POS=Npos)
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READ")
+
+    Read(69, POS=NPOS)Nsz
+    If (Allocated(buf)) Deallocate(buf)
+    Allocate(buf(Nsz))
+    Read(69)buf
+    Close(69)
+
+    If (Present(chk)) Then
+       chk = .False.
+       If (CHKsum == Hash(buf)) chk = .True.
+    End If
+
+    Return
+  End Subroutine ReadBuffer
+
 
 End MODULE NonNumeric
 

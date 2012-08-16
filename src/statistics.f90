@@ -76,6 +76,10 @@ MODULE Statistics
           & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP
   End Interface
 
+  Interface GNormal 
+     Module Procedure GNormalV
+  End Interface
+
   Interface MultiNormal
      Module Procedure MultiNormalS, MultiNormalV, &
           & MultiNormalS_Med, MultiNormalV_med, &
@@ -764,6 +768,47 @@ CONTAINS
 
     Return
   End Subroutine  NormalV
+
+!  *********************************************
+!  *                                           *
+  Subroutine GNormalV(X, pp)
+!  *                                           *
+!  *********************************************
+!  * Returns a vector of numbers with Generalized N(0,1) 
+!  * distribution in the intent (out) Real DP 
+!  * variable X
+!  *********************************************
+
+    Real (kind=DP), Intent(out) :: X(:)
+    Integer, Intent (in), Optional :: pp
+    Real (kind=DP) :: U1, U2, Rp, Rip, Z
+
+    Integer ::  Istat, p, kont
+
+    If (Present(pp)) Then
+       p = pp
+    Else
+       p = 4
+    End If
+    Rp = (Real(p,kind=DP)/Real(p-1,kind=DP))
+    Rip = 1.0_DP/Real(p,kind=DP)
+
+    kont = 1
+    Do While (kont <= Size(X))
+       CALL Random_Number(U1)
+       CALL Random_Number(U2)
+       U1 = 2.0_DP*U1-1.0_DP
+       U2 = 2.0_DP*U2-1.0_DP
+
+       Z = Abs(U1)**p + Abs(U2)**Rp
+       If (Z <= 1.0_DP) Then
+          X(kont) = U1 * (-Real(p,kind=DP) * (log(Z))/Z)**Rip
+          kont = kont + 1
+       End If
+    End Do
+
+    Return
+  End Subroutine  GNormalV
 
 !  *********************************************
 !  *                                           *
