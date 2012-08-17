@@ -5,29 +5,25 @@ Program Checksum
   use iso_c_binding, only: c_ptr
 
   Type data
-     Real (kind=DP) :: C(100)
+     Real (kind=DP) :: C(200)
      Integer :: N
      Character (len=100) :: Comment
   End type data
 
-  Type (data) :: ex, ex2
-  Type (c_ptr) :: p
-  Integer, Allocatable :: buf(:), dt(:)
-  Integer :: I
-  Real (kind=DP), Allocatable :: X(:)
-  Logical :: Ierr
+  Type (data) :: ex(2)
+  Integer, Allocatable :: buf(:)
+  Integer :: I, J
 
-  Allocate(X(100))
-  CALL Random_Number(X)
-  Allocate(buf(Size(Transfer(X, buf))))
-  buf = Transfer(X, buf)
-  I = Hash(buf)
+  Allocate(buf(Size(Transfer(ex, buf))))
+  buf = Transfer(ex, buf)
+
+  Do I = 1, 10
+     J = Hash(buf)
+  End Do
+
   Write(*,'(1I8.8,2X,1Z9.9)')Size(buf), I
 
   CALL WriteBuffer(buf, 'data', 'Estos datos no valen ni pa cagarla!')
-  CALL ReadBuffer(dt,'data', Ierr)
-
-  Write(*,*)Ierr
 
   Stop
 End Program Checksum
