@@ -152,6 +152,10 @@ MODULE Statistics
           & Prop_Error_SP, Prop_Error_Multi_SP
   End Interface
 
+  Interface WriteLuxSeedOld
+     Module Procedure WriteLuxSeedold, WriteLuxSeedSold
+  End Interface
+  
   Interface WriteLuxSeed
      Module Procedure WriteLuxSeed, WriteLuxSeedS
   End Interface
@@ -3861,7 +3865,7 @@ CONTAINS
 
 ! ********************************************
 ! *
-  Subroutine WriteLuxSeed(fn, Comment)
+  Subroutine WriteLuxSeedOld(fn, Comment)
 ! *
 ! ********************************************
 ! * Output the seed in a file.
@@ -3896,11 +3900,34 @@ CONTAINS
     Close(69)
 
     Return
+  End Subroutine WriteLuxSeedOld
+
+! ********************************************
+! *
+  Subroutine WriteLuxSeed(fn, Comment)
+! *
+! ********************************************
+! * Output the seed in a file.
+! ********************************************
+
+    Character (len=*), Intent (in) :: fn
+    Character (len=*), Intent (in), Optional :: Comment
+
+    Integer :: Sd(LUX_base+1)
+
+    CALL GetLuxSeed(Sd)
+    If (Present(Comment)) Then
+       CALL WriteBuffer(Sd, fn, Comment)
+    Else
+       CALL WriteBuffer(Sd, fn)
+    End If
+
+    Return
   End Subroutine WriteLuxSeed
 
 ! ********************************************
 ! *
-  Subroutine WriteLuxSeedS(fn, Comment)
+  Subroutine WriteLuxSeedSOld(fn, Comment)
 ! *
 ! ********************************************
 ! * Output the seed in a file.
@@ -3938,11 +3965,30 @@ CONTAINS
     Close(69)
 
     Return
+  End Subroutine WriteLuxSeedSOld
+
+! ********************************************
+! *
+  Subroutine WriteLuxSeedS(fn, Comment)
+! *
+! ********************************************
+! * Output the seed in a file.
+! ********************************************
+
+    Character (len=*), Intent (in) :: fn
+    Character (len=*), Intent (in) :: Comment(:)
+
+    Integer :: Sd(LUX_base+1),I , IHDR
+
+    CALL GetLuxSeed(Sd)
+    CALL WriteBuffer(Sd, fn, Comment)
+
+    Return
   End Subroutine WriteLuxSeedS
 
 ! ********************************************
 ! *
-  Subroutine ReadLuxSeed(fn)
+  Subroutine ReadLuxSeedOld(fn)
 ! *
 ! ********************************************
 ! * Output the seed in a file.
@@ -3966,6 +4012,29 @@ CONTAINS
     Close(69)
 
     CALL PutLuxSeed(Sd)
+
+    Return
+  End Subroutine ReadLuxSeedOld
+
+! ********************************************
+! *
+  Subroutine ReadLuxSeed(fn)
+! *
+! ********************************************
+! * Output the seed in a file.
+! ********************************************
+
+    Character (len=*), Intent (in) :: fn
+
+    Integer, Allocatable :: Sd(:)
+    Logical :: chk
+
+    CALL ReadBuffer(Sd, fn, chk)
+    If (chk) Then
+       CALL PutLuxSeed(Sd)
+    Else
+       CALL Abort('[ReadLuxSeed]', 'Checksum of seed '//Trim(fn)//' failed')
+    End If
 
     Return
   End Subroutine ReadLuxSeed
