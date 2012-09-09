@@ -240,6 +240,300 @@ Program TestNN
 End Program TestNN
 \end{lstlisting}
 
+\section{Function \texttt{NumberOfLines(fname)}}
+\index{NumberOfLines@Function \texttt{NumberOfLines(fname)}}
+
+\subsection{Description}
+
+Returns the numbr of lines in file \texttt{fname}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{fname}: ] Character (len=*). A file name.
+\end{description}
+
+\subsection{Output}
+
+Integer. The number of lines of file \texttt{fname}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=NumberOfLines,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtainning the number of columns of a file.,
+                   label=nol]
+Program TestNN
+
+  USE NumTypes
+  USE NonNumeric
+
+  Write(*,*)NumberOfLines('foo.dat')
+
+  Stop
+End Program TestNN
+\end{lstlisting}
+
+
+\section{Function \texttt{NumberOfColumns(fname)}}
+\index{NumberOfColumns@Function \texttt{NumberOfColumns(fname)}}
+
+\subsection{Description}
+
+Returns the numbr of columns of file \texttt{fname}.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{fname}: ] Character (len=*). A file name.
+\end{description}
+
+\subsection{Output}
+
+Integer. The number of columns of file \texttt{fname}.
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=NumberOfColumns,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtainning the number of columns of a file.,
+                   label=nol]
+Program TestNN
+
+  USE NumTypes
+  USE NonNumeric
+
+  Write(*,*)NumberOfColumns('foo.dat')
+
+  Stop
+End Program TestNN
+\end{lstlisting}
+
+\section{Function \texttt{Hash(buf)}}
+\index{Hash@Function \texttt{Hash(buf)}}
+
+\subsection{Description}
+
+Returns a hash for the array of integers \texttt{buf(:)}. The code
+uses a random table lookup to provide an fast and efficient hash. Use
+the transfer function to hash arbitrary data.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{buf(:)}: ] Integer one dimensional array. Data to
+  compute the hash.
+\end{description}
+
+\subsection{Output}
+
+Integer. The number of columns of file \texttt{fname}.
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=NumberOfColumns,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Checksum of data in a structure.,
+                   label=nol]
+Program Checksum
+ 
+  USE NonNumeric
+ 
+  Type data
+     Real (kind=DP) :: C(200)
+     Integer :: N
+     Character (len=100) :: Comment
+  End type data
+ 
+  Type (data) :: ex(200000)
+  Integer, Allocatable :: buf(:)
+  Integer :: I, J
+ 
+  Allocate(buf(Size(Transfer(ex, buf))))
+  buf = Transfer(ex, buf)
+ 
+  Write(*,*)Hash(buf)
+ 
+  Stop
+End Program Checksum
+\end{lstlisting}
+
+\section{Subroutine \texttt{WriteBuffer(buf,fn,[comment])}}
+\index{WriteBuffer@Function \texttt{WriteBuffer(buf,fn,[comment])}}
+
+\subsection{Description}
+
+Writes a header with date and checksum and the data from
+\texttt{buf(:)} in binary in file \texttt{fn}. Use
+the transfer function to store arbitrary data.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{buf(:)}: ] Integer one dimensional array. Data to
+  store in a file.
+\item[\texttt{fn}: ] Character (len=*). File name to store data.
+\item[\texttt{Comment[(:)]}: ] Character (len=*) or an array of
+  them. Possible information to store in ASCII in the metadata section.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=NumberOfColumns,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Stoing data on a file.,
+                   label=nol]
+Program Checksum
+ 
+  USE NonNumeric
+ 
+  Type data
+     Real (kind=DP) :: C(200)
+     Integer :: N
+     Character (len=100) :: Comment
+  End type data
+ 
+  Type (data) :: ex(200000)
+  Integer, Allocatable :: buf(:)
+  Integer :: I, J
+ 
+  Allocate(buf(Size(Transfer(ex, buf))))
+  buf = Transfer(ex, buf)
+ 
+  CALL WriteBuffer(buf,'ex.data','Silly data, but big file')
+ 
+  Stop
+End Program Checksum
+\end{lstlisting}
+
+\section{Subroutine \texttt{ReadBuffer(buf,fn)}}
+\index{ReadBuffer@Function \texttt{ReadBuffer(buf,fn)}}
+
+\subsection{Description}
+
+Reads data of file \texttt{fn}, checks the checksum and return the
+bits in an array of integers. Use
+the transfer function to store arbitrary data.
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{buf(:)}: ] Integer one dimensional allocatable
+  array. Stores the data after reading the file.
+\item[\texttt{fn}: ] Character (len=*). File name with data.
+\end{description}
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=NumberOfColumns,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Reading data from file.,
+                   label=nol]
+Program Checksum
+ 
+  USE NonNumeric
+ 
+  Type data
+     Real (kind=DP) :: C(200)
+     Integer :: N
+     Character (len=100) :: Comment
+  End type data
+ 
+  Type (data) :: ex(200000)
+  Integer, Allocatable :: buf(:)
+  Integer :: I, J
+ 
+  CALL WriteBuffer(buf,'ex.data')
+  ex = Transfer(buf, ex)
+ 
+  CALL WriteBuffer(buf,'ex.data','Silly data, but big file')
+ 
+  Stop
+End Program Checksum
+\end{lstlisting}
+
+\section{Function \texttt{GetOpt(opt, [val])}}
+\index{GetOpt@Function \texttt{GetOpt(opt,[val])}}
+
+\subsection{Description}
+
+Check if command line argument \texttt{opt} is present, and if this is
+the case returs the value in val. 
+
+\subsection{Arguments}
+
+\begin{description}
+\item[\texttt{opt}: ] Character (len=*). An command line option.
+\item[\texttt{val}: ] Integer, Real simple or double
+  precision. Optional. Returns the value of the command line option.
+\end{description}
+
+\subsection{Output}
+
+Logical. \texttt{.True.} is \texttt{opt} is present as a command line
+argument, \texttt{.False.} otherwise.
+
+\subsection{Examples}
+
+\begin{lstlisting}[emph=GetOpt,
+                   emphstyle=\color{blue},
+                   frame=trBL,
+                   caption=Obtainning command line arguments.,
+                   label=nol]
+Program OPT
+
+  USE NumTypes
+  USE NonNumeric
+
+  Integer :: NN
+  Character (len=10) :: aa
+  Real (kind=SP) :: r
+  Real (kind=DP) :: d
+
+
+  If (GetOpt('-i', NN)) Then
+     Write(*,*)'Valor del argumento -i: ', NN
+  Else
+     Write(*,*)'Argumento -i no esta presente'
+  End If
+
+  If (GetOpt('-c', aa)) Then
+     Write(*,*)'Valor del argumento -c: ', aa
+  Else
+     Write(*,*)'Argumento -c no esta presente'
+  End If
+
+  If (GetOpt('-s', r)) Then
+     Write(*,*)'Valor del argumento -s: ', r
+  Else
+     Write(*,*)'Argumento -s no esta presente'
+  End If
+
+  If (GetOpt('-d', d)) Then
+     Write(*,*)'Valor del argumento -d: ', d
+  Else
+     Write(*,*)'Argumento -d no esta presente'
+  End If
+
+  If (GetOpt('-h')) Then
+     Write(*,*)' Usage: opt.x [options]'
+     Write(*,*)'   -i int'
+     Write(*,*)'   -c character string'
+     Write(*,*)'   -s real'
+     Write(*,*)'   -d double'
+     Write(*,*)'   -h'
+  End If
+
+  Stop
+End Program OPT
+\end{lstlisting}
+
+
 % Local Variables: 
 % mode: latex
 % TeX-master: "lib"
