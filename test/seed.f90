@@ -20,7 +20,7 @@ Program Seed
   Write(*,*)'Reduced seed: ', is
   Allocate(X(1000))
   CALL Normal(X)
-  CALL WriteLuxSeed('o.seed', CC)
+  CALL WriteLuxSeed('o2.seed', CC)
 
   CALL Normal(X)
   Write(*,*)X(990:1000)

@@ -65,6 +65,10 @@ MODULE NonNumeric
      Module Procedure ReadBuffer, ReadBuffer2
   End Interface ReadBuffer
 
+  Interface GetOpt
+     Module Procedure GetOptCh, GetOptInt, GetOptDP, GetOptSP, GetOptTest
+  End Interface GetOpt
+
 
   Character :: HDR=':'
 
@@ -1402,6 +1406,214 @@ CONTAINS
     Return
   End Subroutine ReadBuffer2
 
+! ***************************************
+! *
+  Function GetOptCh(opt, val) Result (GetOpt)
+! *
+! ***************************************
+
+    Character (len=*), Intent (in)  :: opt
+    Character (len=*), Intent (out) :: val
+    Logical :: GetOpt
+
+    Integer :: I, Narg, Ist
+    Character (len=len(opt)) :: arg
+
+    Narg   = Command_argument_count()
+
+    GetOpt = .False.
+    If (Narg == 0) Return
+
+    I = 0
+    Do 
+       I = I + 1
+       Call Get_command_argument(I, arg)
+       
+       If (arg == opt) Then
+          I = I+1
+          Call Get_command_argument(I, val, STATUS=Ist)
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Fail retriving the argument '//Trim(opt))
+          GetOpt = .True.
+          Return
+       End If
+          
+       If (I == Narg) Return
+    End Do
+    
+
+    Return
+  End Function GetOptCh
+
+! ***************************************
+! *
+  Function GetOptInt(opt, Ival) Result (GetOpt)
+! *
+! ***************************************
+
+    Character (len=*), Intent (in)  :: opt
+    Integer, Intent (out) :: Ival
+    Logical :: GetOpt
+
+    Integer :: I, Narg, Ist
+    Character (len=len(opt)) :: arg
+    Character (len=10000) :: foo
+
+    Narg   = Command_argument_count()
+
+    GetOpt = .False.
+    If (Narg == 0) Return
+
+    I = 0
+    Do 
+       I = I + 1
+       Call Get_command_argument(I, arg)
+       
+       If (arg == opt) Then
+          I = I+1
+          Call Get_command_argument(I, foo, STATUS=Ist)
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Fail retriving the argument '//Trim(opt))
+
+          Read(foo,*,IOSTAT=Ist)Ival
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Argument error '//Trim(opt))
+
+          GetOpt = .True.
+          Return
+       End If
+          
+       If (I == Narg) Return
+    End Do
+    
+
+    Return
+  End Function GetOptInt
+
+! ***************************************
+! *
+  Function GetOptSP(opt, val) Result (GetOpt)
+! *
+! ***************************************
+
+    Character (len=*), Intent (in)  :: opt
+    Real (kind=SP), Intent (out) :: val
+    Logical :: GetOpt
+
+    Integer :: I, Narg, Ist
+    Character (len=len(opt)) :: arg
+    Character (len=10000) :: foo
+
+    Narg   = Command_argument_count()
+
+    GetOpt = .False.
+    If (Narg == 0) Return
+
+    I = 0
+    Do 
+       I = I + 1
+       Call Get_command_argument(I, arg)
+       
+       If (arg == opt) Then
+          I = I+1
+          Call Get_command_argument(I, foo, STATUS=Ist)
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Fail retriving the argument '//Trim(opt))
+
+          Read(foo,*,IOSTAT=Ist)val
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Argument error '//Trim(opt))
+
+          GetOpt = .True.
+          Return
+       End If
+          
+       If (I == Narg) Return
+    End Do
+    
+
+    Return
+  End Function GetOptSP
+
+! ***************************************
+! *
+  Function GetOptDP(opt, val) Result (GetOpt)
+! *
+! ***************************************
+
+    Character (len=*), Intent (in)  :: opt
+    Real (kind=DP), Intent (out) :: val
+    Logical :: GetOpt
+
+    Integer :: I, Narg, Ist
+    Character (len=len(opt)) :: arg
+    Character (len=10000) :: foo
+
+    Narg   = Command_argument_count()
+
+    GetOpt = .False.
+    If (Narg == 0) Return
+
+    I = 0
+    Do 
+       I = I + 1
+       Call Get_command_argument(I, arg)
+       
+       If (arg == opt) Then
+          I = I+1
+          Call Get_command_argument(I, foo, STATUS=Ist)
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Fail retriving the argument '//Trim(opt))
+
+          Read(foo,*,IOSTAT=Ist)val
+          If (Ist /= 0) CALL Abort('GetOptCh', &
+               & 'Argument error '//Trim(opt))
+
+          GetOpt = .True.
+          Return
+       End If
+          
+       If (I == Narg) Return
+    End Do
+    
+
+    Return
+  End Function GetOptDP
+
+! ***************************************
+! *
+  Function GetOptTest(opt) Result (GetOpt)
+! *
+! ***************************************
+
+    Character (len=*), Intent (in)  :: opt
+    Logical :: GetOpt
+
+    Integer :: I, Narg, Ist
+    Character (len=len(opt)) :: arg
+    Character (len=10000) :: foo
+
+    Narg   = Command_argument_count()
+
+    GetOpt = .False.
+    If (Narg == 0) Return
+
+    I = 0
+    Do 
+       I = I + 1
+       Call Get_command_argument(I, arg)
+       
+       If (arg == opt) Then
+          GetOpt = .True.
+          Return
+       End If
+          
+       If (I == Narg) Return
+    End Do
+    
+
+    Return
+  End Function GetOptTest
 
 End MODULE NonNumeric
 

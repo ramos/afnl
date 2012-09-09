@@ -4,7 +4,7 @@ Program TestTime
   USE NumTypes
   USE Time
 
-  Type (tm) :: OneDay
+  Type (tm) :: OneDay, moment
 
   Write(*,*)Julian_Date(gettime())
 
@@ -20,6 +20,10 @@ Program TestTime
   Write(*,*)asctime(OneDay)
   Write(*,*)Julian_Date(OneDay)
 
+
+  moment = gettime()
+  Write(*,'(3I2.2,1I4.4)')moment%hour, moment%min, moment%sec,&
+          & moment%msec
 
   Stop
 End Program TestTime
