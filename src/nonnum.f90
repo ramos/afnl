@@ -71,12 +71,14 @@ MODULE NonNumeric
 
 
   Character :: HDR=':'
+  Integer, Parameter :: MAXLN=1000
 
 
   Private Locate_IN, Locate_SP, &
        & Locate_DP, Insrt_IN, Insrt_SP, Insrt_DP, Swap_IN, &
        & Swap_SP, Swap_DP, NewQsort_IN, NewQsort_SP, NewQsort_DP, &
-       & Partition_SP, Partition_IN, Partition_DP, Partition, HDR
+       & Partition_SP, Partition_IN, Partition_DP, Partition, HDR, &
+       & MAXLN
 
 CONTAINS
 
@@ -1322,7 +1324,7 @@ CONTAINS
        Write(69,'(1X,1A,1A)'  )"#                ", Trim(Comment(I))
     End Do
     Write(69,'(1A)')'####'
-    Write(69,'(1A)')HDR
+    Write(69,'(2A)')HDR, 'DATA'
     Close(69)
 
     Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
@@ -1417,7 +1419,7 @@ CONTAINS
     Logical :: GetOpt
 
     Integer :: I, Narg, Ist
-    Character (len=len(opt)) :: arg
+    Character (len=MAXLN) :: arg
 
     Narg   = Command_argument_count()
 
@@ -1429,7 +1431,7 @@ CONTAINS
        I = I + 1
        Call Get_command_argument(I, arg)
        
-       If (arg == opt) Then
+       If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, val, STATUS=Ist)
           If (Ist /= 0) CALL Abort('GetOptCh', &
@@ -1456,7 +1458,7 @@ CONTAINS
     Logical :: GetOpt
 
     Integer :: I, Narg, Ist
-    Character (len=len(opt)) :: arg
+    Character (len=MAXLN) :: arg
     Character (len=10000) :: foo
 
     Narg   = Command_argument_count()
@@ -1469,7 +1471,7 @@ CONTAINS
        I = I + 1
        Call Get_command_argument(I, arg)
        
-       If (arg == opt) Then
+       If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, foo, STATUS=Ist)
           If (Ist /= 0) CALL Abort('GetOptCh', &
@@ -1501,7 +1503,7 @@ CONTAINS
     Logical :: GetOpt
 
     Integer :: I, Narg, Ist
-    Character (len=len(opt)) :: arg
+    Character (len=MAXLN) :: arg
     Character (len=10000) :: foo
 
     Narg   = Command_argument_count()
@@ -1514,7 +1516,7 @@ CONTAINS
        I = I + 1
        Call Get_command_argument(I, arg)
        
-       If (arg == opt) Then
+       If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, foo, STATUS=Ist)
           If (Ist /= 0) CALL Abort('GetOptCh', &
@@ -1546,7 +1548,7 @@ CONTAINS
     Logical :: GetOpt
 
     Integer :: I, Narg, Ist
-    Character (len=len(opt)) :: arg
+    Character (len=MAXLN) :: arg
     Character (len=10000) :: foo
 
     Narg   = Command_argument_count()
@@ -1559,7 +1561,7 @@ CONTAINS
        I = I + 1
        Call Get_command_argument(I, arg)
        
-       If (arg == opt) Then
+       If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, foo, STATUS=Ist)
           If (Ist /= 0) CALL Abort('GetOptCh', &
@@ -1590,7 +1592,7 @@ CONTAINS
     Logical :: GetOpt
 
     Integer :: I, Narg, Ist
-    Character (len=len(opt)) :: arg
+    Character (len=MAXLN) :: arg
     Character (len=10000) :: foo
 
     Narg   = Command_argument_count()

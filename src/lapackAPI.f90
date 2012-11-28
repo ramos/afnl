@@ -11,6 +11,10 @@ MODULE LapackAPI
      Module Procedure GEVP_D, GEVP_C
   End Interface
 
+  Interface Diag
+     Module Procedure Diag_DPC
+  End Interface Diag
+
   Private GEVP_D, GEVP_C
 
 CONTAINS
@@ -179,6 +183,32 @@ CONTAINS
 
     Return
   End Function PseudoInverse
+
+! ***********************************************
+! *
+  Subroutine Diag_DPC(A, Lm, U, Info) 
+! *
+! ***********************************************
+
+    Complex (kind=DPC), Intent (inout) :: A(:,:)
+    Real (kind=DP), Intent (out) :: Lm(Size(A,1))
+    Complex (kind=DPC), Intent (out) :: U(Size(A,1),Size(A,2))
+    Integer, Intent (out), Optional :: Info
+
+    Real (kind=DP) :: Tol
+    Complex (kind=DPC) :: Work(2*Size(A,1)), RWork(7*Size(A,1))
+    Integer :: Iwork(5*Size(A,1)), Ifail(Size(A,1))
+    Integer :: Nfoo, Jinfo
+
+    Tol = 2.0_DP*Tiny(0.0_DP)
+    CALL ZHEEVX( 'V', 'A', 'U', Size(A,1), A, Size(A,1), 0.0_DP, &
+         & 0.0_DP, 0, 0, Tol, Nfoo, Lm, U, Size(A,1), Work, &
+         & 2*Size(A,1), Rwork, Iwork, IFAIL, Jinfo )
+
+    If (Present(Info)) Info = Jinfo
+
+    Return
+  End Subroutine Diag_DPC
   
 END MODULE LapackAPI
   
