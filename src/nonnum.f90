@@ -65,6 +65,10 @@ MODULE NonNumeric
      Module Procedure ReadBuffer, ReadBuffer2
   End Interface ReadBuffer
 
+  Interface AddBuffer
+     Module Procedure AddBuffer, AddBufferS
+  End Interface AddBuffer
+
   Interface GetOpt
      Module Procedure GetOptCh, GetOptInt, GetOptDP, GetOptSP, GetOptTest
   End Interface GetOpt
@@ -1237,7 +1241,7 @@ CONTAINS
 ! ***************************************
   
     Integer, Intent (in) :: Iarr(:)
-    Integer, Optional :: Ist
+    Integer, Optional, Intent (in) :: Ist
 
     Integer :: I, J1, J2, J3, J4
     
@@ -1246,6 +1250,7 @@ CONTAINS
     Else
        Hash = Start_Hash
     End If
+
     J1 = 0
     J2 = 0
     J3 = 0
@@ -1283,8 +1288,6 @@ CONTAINS
          & Access='STREAM', Action="WRITE")
     
     Write(69,'(1A)')'####'
-    Write(69,'(1X,1A,1Z9)'     )"# Hash:          ", &
-         & Hash(buf)
     Write(69,'(1X,1A,1A)'     )"# Date and Time: ", &
          & asctime(gettime())    
     If (Present(Comment)) Then
@@ -1299,6 +1302,7 @@ CONTAINS
 
     Write(69)Size(buf)
     Write(69)buf
+    Write(69)Hash(buf)
 
     Close(69)
 
@@ -1321,8 +1325,6 @@ CONTAINS
          & Access='STREAM', Action="WRITE")
     
     Write(69,'(1A)')'####'
-    Write(69,'(1X,1A,1Z9)'     )"# Checksum:      ", &
-         & Hash(buf)
     Write(69,'(1X,1A,1A)'     )"# Date and Time: ", &
          & asctime(gettime())    
     Write(69,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment(1))
@@ -1338,6 +1340,7 @@ CONTAINS
 
     Write(69)Size(buf)
     Write(69)buf
+    Write(69)Hash(buf)
 
     Close(69)
 
@@ -1384,9 +1387,6 @@ CONTAINS
     Read(69,*, IOSTAT=Is)
     If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
 
-    Read(69,'(1X,1A,1Z9)', IOSTAT=Is)foo, CHKsum
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
-    
     Do
        Read(69,'(1A1)', IOSTAT=Is)RD
        If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
@@ -1404,7 +1404,9 @@ CONTAINS
     If (Allocated(buf)) Deallocate(buf)
     Allocate(buf(Nsz))
     Read(69, IOSTAT=Is)buf
-       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    
+    Read(69)CHKSum
     Close(69)
 
     chk = .False.
@@ -1416,6 +1418,107 @@ CONTAINS
 
 ! ***************************************
 ! *
+  Subroutine AddBuffer(buf, fn) 
+! *
+! ***************************************
+
+    Integer, Intent (in) :: buf(:)
+    Character (len=*), Intent (in) :: fn
+
+    Character :: RD
+    Character (len=17) :: foo
+    Integer :: Npos, Nsz, Is, CHKsum, N, I
+
+
+    CHKsum = GetHash(fn)
+    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM', Action="READ")
+    
+    Do
+       Read(69,'(1A1)', IOSTAT=Is)RD
+       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (RD == HDR) Exit
+    End Do
+    Inquire(69,POS=Npos)
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READ")
+
+    Read(69, POS=NPOS, IOSTAT=Is)Nsz
+    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READWRITE")
+    Write(69, POS=NPOS, IOSTAT=Is)Nsz+Size(buf)
+
+
+    Do I = 1, Nsz
+       Read(69)N
+    End Do
+    Write(69)buf
+    Write(69)Hash(buf, CHKsum)
+
+
+    Read(69)CHKSum
+    Close(69)
+
+    Return
+  End Subroutine AddBuffer
+
+! ***************************************
+! *
+  Subroutine AddBufferS(buf, fn) 
+! *
+! ***************************************
+
+    Integer, Intent (in) :: buf
+    Character (len=*), Intent (in) :: fn
+
+    Character :: RD
+    Integer :: Npos, Nsz, Is, CHKsum, N, I
+
+
+    CHKsum = GetHash(fn)
+    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+         & Access='STREAM', Action="READ")
+    
+    Do
+       Read(69,'(1A1)', IOSTAT=Is)RD
+       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (RD == HDR) Exit
+    End Do
+    Inquire(69,POS=Npos)
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READ")
+
+    Read(69, POS=NPOS, IOSTAT=Is)Nsz
+    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    Close(69)
+
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READWRITE")
+    Write(69, POS=NPOS, IOSTAT=Is)Nsz+1
+
+
+    Do I = 1, Nsz
+       Read(69)N
+    End Do
+    Write(69)buf
+    Write(69)Hash((/buf/), CHKsum)
+
+
+    Read(69)CHKSum
+    Close(69)
+
+    Return
+  End Subroutine AddBufferS
+
+! ***************************************
+! *
   Function GetHash(fn) 
 ! *
 ! ***************************************
@@ -1423,17 +1526,29 @@ CONTAINS
     Character (len=*), Intent (in) :: fn
     Integer :: GetHash
 
-    Character (len=17) :: foo
-    Integer :: Is
+    Character :: RD
+    Integer :: Is, Nsz, I, Npos
 
     Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
          & Access='STREAM', Action="READ")
     
-    Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    Do
+       Read(69,'(1A1)', IOSTAT=Is)RD
+       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (RD == HDR) Exit
+    End Do
+    Inquire(69,POS=Npos)
+    Close(69)
 
-    Read(69,'(1X,1A,1Z9)', IOSTAT=Is)foo, GetHash
+    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READ")
+
+    Read(69, POS=NPOS, IOSTAT=Is)Nsz
     If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    Do I = 1, Nsz
+       Read(69)Is
+    End Do
+    Read(69)GetHash
     Close(69)
 
     Return
@@ -1455,9 +1570,6 @@ CONTAINS
          & Access='STREAM', Action="READ")
     
     Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
-
-    Read(69,'(1X,1A,1Z9)', IOSTAT=Is)foo, Ifoo
     If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
 
     Read(69,'(1X,1A,1A24)', IOSTAT=Is)foo, GetDT
@@ -1482,8 +1594,6 @@ CONTAINS
     Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
          & Access='STREAM', Action="READ")
     
-    Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
     Read(69,*, IOSTAT=Is)
     If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
     Read(69,*, IOSTAT=Is)
