@@ -88,7 +88,7 @@ CONTAINS
        Day_Of_Week = Day + Int(26*(mon+1)/10) + Int(5*yy/4) + &
             & Int(cc/4) - 2*cc 
     End If
-    Day_Of_Week = Mod(Day_Of_Week-1,7)
+    Day_Of_Week = Modulo(Day_Of_Week-1,7)
 
 
     Return

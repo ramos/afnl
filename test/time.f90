@@ -6,7 +6,7 @@ Program TestTime
 
   Type (tm) :: OneDay, moment
 
-  Write(*,*)Julian_Date(gettime())
+!  Write(*,*)Julian_Date(gettime())
 
   OneDay%hour = 12
   OneDay%min = 0
@@ -17,7 +17,17 @@ Program TestTime
   OneDay%year = 2132
   OneDay%wday = 3
 
+  OneDay = gettime()
+  Write(*,*)'Year: ', OneDay%year
+  Write(*,*)'Year: ', OneDay%mday
+  Write(*,*)'Year: ', OneDay%mon
+  Write(*,*)'Year: ', OneDay%wday
+  Write(*,*)'Year: ', Modulo(OneDay%wday,7)
+  Write(*,*)'Year: ', Mod(OneDay%wday,7)
   Write(*,*)asctime(OneDay)
+  Stop
+  Write(*,*)Len(asctime(gettime()))
+  Write(*,*)asctime(gettime())
   Write(*,*)Julian_Date(OneDay)
 
 
