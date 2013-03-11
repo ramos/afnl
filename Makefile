@@ -18,7 +18,7 @@ constants.o: numtypes.o constants.f90
 error.o: numtypes.o constants.o error.f90
 	$(F90) -c $^ -o $@
 
-nonnum.o: numtypes.o error.o constants.o nonnum.f90
+nonnum.o: numtypes.o error.o constants.o time.o nonnum.f90
 	$(F90) -c $^ -o $@
 
 linear.o: numtypes.o error.o constants.o linear.f90

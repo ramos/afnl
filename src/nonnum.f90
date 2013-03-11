@@ -66,7 +66,8 @@ MODULE NonNumeric
   End Interface ReadBuffer
 
   Interface AddBuffer
-     Module Procedure AddBuffer, AddBufferS
+     Module Procedure AddBuffer, AddBufferS, AddbufferR, &
+          & AddbufferD, AddbufferRV, AddbufferDV
   End Interface AddBuffer
 
   Interface GetOpt
@@ -142,7 +143,8 @@ MODULE NonNumeric
        & Locate_DP, Insrt_IN, Insrt_SP, Insrt_DP, Swap_IN, &
        & Swap_SP, Swap_DP, NewQsort_IN, NewQsort_SP, NewQsort_DP, &
        & Partition_SP, Partition_IN, Partition_DP, Partition, HDR, &
-       & MAXLN, Start_Hash, table
+       & MAXLN, Start_Hash, table, AddBufferS, AddbufferR, &
+       & AddbufferD, AddbufferRV, AddbufferDV
 
 CONTAINS
 
@@ -1208,8 +1210,8 @@ CONTAINS
 
     Character (len=*), Intent (in) :: fname
 
-    Character (len=10000) :: foo
     Integer :: J
+    Character (len=100000) :: foo
     Real (kind=DP) :: A
 
     Open (Unit=77, File=Trim(fname), ACTION="READ")
@@ -1378,7 +1380,6 @@ CONTAINS
     Integer, Intent (out) :: Ihsh
 
     Character :: RD
-    Character (len=17) :: foo
     Integer :: Npos, Nsz, Is, CHKsum
 
     Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
@@ -1418,6 +1419,53 @@ CONTAINS
 
 ! ***************************************
 ! *
+  Function OpenBuffer(fn, nnsz) 
+! *
+! ***************************************
+
+    Character (len=*), Intent (in) :: fn
+    Integer, Intent (out), Optional :: nnsz
+
+    Integer :: OpenBuffer
+
+    Character :: RD
+    Integer :: Npos, Nsz, Is
+    Logical :: is_used
+
+    OpenBuffer = 69
+    Do 
+       Inquire(OpenBuffer, Opened=is_used)
+       If (is_used) Then
+          OpenBuffer = OpenBuffer + 1
+       Else
+          Exit
+       End If
+    End Do
+
+    Open (File=Trim(fn), Unit=OpenBuffer, Form='FORMATTED', &
+         & Access='STREAM', Action="READ")
+    
+    Do
+       Read(OpenBuffer,'(1A1)', IOSTAT=Is)RD
+       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (RD == HDR) Exit
+    End Do
+    Inquire(OpenBuffer,POS=Npos)
+    Close(OpenBuffer)
+
+    Open (File=Trim(fn), Unit=OpenBuffer, Form='UNFORMATTED', &
+         & Access='STREAM', Action="READ")
+
+    Read(OpenBuffer, POS=NPOS, IOSTAT=Is)Nsz
+    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+
+    If (Present(nnsz)) nnsz = Nsz
+
+    Return
+  End Function OpenBuffer
+
+! ***************************************
+! *
   Subroutine AddBuffer(buf, fn) 
 ! *
 ! ***************************************
@@ -1426,7 +1474,6 @@ CONTAINS
     Character (len=*), Intent (in) :: fn
 
     Character :: RD
-    Character (len=17) :: foo
     Integer :: Npos, Nsz, Is, CHKsum, N, I
 
 
@@ -1466,6 +1513,86 @@ CONTAINS
 
     Return
   End Subroutine AddBuffer
+
+! ***************************************
+! *
+  Subroutine AddBufferD(D, fn) 
+! *
+! ***************************************
+
+    Real (kind=DP), Intent (in) :: D
+    Character (len=*), Intent (in) :: fn
+
+    Integer, Allocatable :: ib(:)
+
+    Allocate(ib(Size(Transfer(D, ib))))
+    ib = Transfer(D, ib)
+
+    CALL AddBuffer(ib, fn)
+    Deallocate(ib)
+
+    Return
+  End Subroutine AddBufferD
+
+! ***************************************
+! *
+  Subroutine AddBufferDV(D, fn) 
+! *
+! ***************************************
+
+    Real (kind=DP), Intent (in) :: D(:)
+    Character (len=*), Intent (in) :: fn
+
+    Integer, Allocatable :: ib(:)
+
+    Allocate(ib(Size(Transfer(D, ib))))
+    ib = Transfer(D, ib)
+
+    CALL AddBuffer(ib, fn)
+    Deallocate(ib)
+
+    Return
+  End Subroutine AddBufferDV
+
+! ***************************************
+! *
+  Subroutine AddBufferR(D, fn) 
+! *
+! ***************************************
+
+    Real (kind=SP), Intent (in) :: D
+    Character (len=*), Intent (in) :: fn
+
+    Integer, Allocatable :: ib(:)
+
+    Allocate(ib(Size(Transfer(D, ib))))
+    ib = Transfer(D, ib)
+
+    CALL AddBuffer(ib, fn)
+    Deallocate(ib)
+
+    Return
+  End Subroutine AddBufferR
+
+! ***************************************
+! *
+  Subroutine AddBufferRV(D, fn) 
+! *
+! ***************************************
+
+    Real (kind=SP), Intent (in) :: D(:)
+    Character (len=*), Intent (in) :: fn
+
+    Integer, Allocatable :: ib(:)
+
+    Allocate(ib(Size(Transfer(D, ib))))
+    ib = Transfer(D, ib)
+
+    CALL AddBuffer(ib, fn)
+    Deallocate(ib)
+
+    Return
+  End Subroutine AddBufferRV
 
 ! ***************************************
 ! *
@@ -1556,6 +1683,32 @@ CONTAINS
 
 ! ***************************************
 ! *
+  Subroutine SetTable(tb) 
+! *
+! ***************************************
+    
+    Integer, Intent (in) :: tb(0:255)
+
+    table(0:255) = tb(0:255)
+
+    Return
+  End Subroutine SetTable
+
+! ***************************************
+! *
+  Subroutine SetStartHash(Ih) 
+! *
+! ***************************************
+    
+    Integer, Intent (in) :: Ih
+
+    Start_Hash = Abs(Ih)
+
+    Return
+  End Subroutine SetStartHash
+
+! ***************************************
+! *
   Function GetDT(fn) 
 ! *
 ! ***************************************
@@ -1564,7 +1717,7 @@ CONTAINS
     Character (len=25) :: GetDT
 
     Character (len=17) :: foo
-    Integer :: Is, Ifoo
+    Integer :: Is
 
     Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
          & Access='STREAM', Action="READ")
@@ -1589,7 +1742,7 @@ CONTAINS
     Character (len=*), Intent (out) :: cm
 
     Character (len=17) :: foo
-    Integer :: Is, Ifoo
+    Integer :: Is
 
     Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
          & Access='STREAM', Action="READ")
@@ -1789,9 +1942,8 @@ CONTAINS
     Character (len=*), Intent (in)  :: opt
     Logical :: GetOpt
 
-    Integer :: I, Narg, Ist
+    Integer :: I, Narg
     Character (len=MAXLN) :: arg
-    Character (len=10000) :: foo
 
     Narg   = Command_argument_count()
 

@@ -1400,7 +1400,7 @@ CONTAINS
     Complex (kind=DPC) :: DData(Size(Data))
     Real (kind=DP), Allocatable :: Cdt(:), W(:)
     Integer :: N, Is, I
-    Integer, Allocatable :: Ipt(:), Ip(:)
+    Integer, Allocatable :: Ip(:)
 
     N = 2*Size(Data)
     Is = -1

@@ -787,7 +787,7 @@ CONTAINS
     Integer, Intent (in), Optional :: pp
     Real (kind=DP) :: U1, U2, Rp, Rip, Z
 
-    Integer ::  Istat, p, kont
+    Integer ::  p, kont
 
     If (Present(pp)) Then
        p = pp
@@ -2342,7 +2342,7 @@ CONTAINS
 
 ! ********************************************
 ! *
-  Function Irand_S(I, J)
+  Subroutine Irand_S(Ir, I, J)
 ! *
 ! ********************************************
 ! * Generates a Random integer number between
@@ -2350,15 +2350,15 @@ CONTAINS
 ! ********************************************
 
     Integer, Intent (in) :: I, J
-    Integer :: Irand_s
+    Integer, Intent (out) :: Ir
     
     Real (kind=DP) :: U
     
     CALL Random_Number(U)
-    Irand_S = Int((J-I+1)*U + I)
+    Ir = Int((J-I+1)*U + I)
 
     Return
-  End Function Irand_S
+  End Subroutine Irand_S
 
 ! ********************************************
 ! *
@@ -3784,7 +3784,7 @@ CONTAINS
 
     Forall (I=1:Ns) Idx(I) = I
     Do I = 1, Ns
-       J = Irand(1, Ns)
+       CALL Irand(J, 1, Ns)
        If (I /= J) CALL Swap(Idx, I, J)
     End Do
 
@@ -3978,7 +3978,7 @@ CONTAINS
     Character (len=*), Intent (in) :: fn
     Character (len=*), Intent (in) :: Comment(:)
 
-    Integer :: Sd(LUX_base+1),I , IHDR
+    Integer :: Sd(LUX_base+1)
 
     CALL GetLuxSeed(Sd)
     CALL WriteBuffer(Sd, fn, Comment)
