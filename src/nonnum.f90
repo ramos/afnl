@@ -1523,9 +1523,11 @@ CONTAINS
     Real (kind=DP), Intent (in) :: D
     Character (len=*), Intent (in) :: fn
 
+    Integer :: Nib
     Integer, Allocatable :: ib(:)
 
-    Allocate(ib(Size(Transfer(D, ib))))
+    Nib = Size(Transfer(D, ib))
+    Allocate(ib(Nib))
     ib = Transfer(D, ib)
 
     CALL AddBuffer(ib, fn)
@@ -1544,8 +1546,10 @@ CONTAINS
     Character (len=*), Intent (in) :: fn
 
     Integer, Allocatable :: ib(:)
+    Integer :: Nib
 
-    Allocate(ib(Size(Transfer(D, ib))))
+    Nib = Size(Transfer(D, ib))
+    Allocate(ib(Nib))
     ib = Transfer(D, ib)
 
     CALL AddBuffer(ib, fn)
@@ -1564,8 +1568,10 @@ CONTAINS
     Character (len=*), Intent (in) :: fn
 
     Integer, Allocatable :: ib(:)
+    Integer :: Nib
 
-    Allocate(ib(Size(Transfer(D, ib))))
+    Nib = Size(Transfer(D, ib))
+    Allocate(ib(Nib))
     ib = Transfer(D, ib)
 
     CALL AddBuffer(ib, fn)
@@ -1584,8 +1590,10 @@ CONTAINS
     Character (len=*), Intent (in) :: fn
 
     Integer, Allocatable :: ib(:)
+    Integer :: Nib
 
-    Allocate(ib(Size(Transfer(D, ib))))
+    Nib = Size(Transfer(D, ib))
+    Allocate(ib(Nib))
     ib = Transfer(D, ib)
 
     CALL AddBuffer(ib, fn)
