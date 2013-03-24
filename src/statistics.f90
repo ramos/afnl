@@ -4159,7 +4159,7 @@ Function LUXRandomize(Nsd)
   Integer :: LUXRandomize
 
   Type (tm) :: moment
-  Character (len=20) :: st
+  Character (len=10) :: st
 
   CALL LUX_Init()
   
@@ -4167,8 +4167,8 @@ Function LUXRandomize(Nsd)
      jseed = Nsd
   Else
      moment = gettime()
-     Write(st,'(3I2.2,1I4.4)')moment%hour, moment%min, moment%sec,&
-          & moment%msec
+     Write(st,'(3I2.2,1I3.3)')moment%hour, moment%min, moment%sec,&
+          & Int(moment%msec/10)
      Read(st,*)jseed
   End If
   LUXRandomize = jseed
