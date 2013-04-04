@@ -1284,29 +1284,41 @@ CONTAINS
     Integer, Intent (in) :: buf(:)
     Character (len=*), Intent (in) :: fn
     Character (len=*), Intent (in), Optional :: Comment
+    Integer :: ifn
+    Logical :: is_used
+
+    ifn = 69
+    Do 
+       Inquire(ifn, Opened=is_used)
+       If (is_used) Then
+          ifn = ifn + 1
+       Else
+          Exit
+       End If
+    End Do
 
 
-    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='FORMATTED', &
          & Access='STREAM', Action="WRITE")
     
-    Write(69,'(1A)')'####'
-    Write(69,'(1X,1A,1A)'     )"# Date and Time: ", &
+    Write(ifn,'(1A)')'####'
+    Write(ifn,'(1X,1A,1A)'     )"# Date and Time: ", &
          & asctime(gettime())    
     If (Present(Comment)) Then
-       Write(69,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment)
+       Write(ifn,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment)
     End If
-    Write(69,'(1A)')'####'
-    Write(69,'(2A)')HDR, 'DATA'
-    Close(69)
+    Write(ifn,'(1A)')'####'
+    Write(ifn,'(2A)')HDR, 'DATA'
+    Close(ifn)
 
-    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
          & Access='STREAM', Position='APPEND')
 
-    Write(69)Size(buf)
-    Write(69)buf
-    Write(69)Hash(buf)
+    Write(ifn)Size(buf)
+    Write(ifn)buf
+    Write(ifn)Hash(buf)
 
-    Close(69)
+    Close(ifn)
 
     Return
   End Subroutine WriteBuffer
@@ -1322,29 +1334,41 @@ CONTAINS
     Character (len=*), Intent (in) :: Comment(:)
 
     Integer :: I
+    Integer :: ifn
+    Logical :: is_used
 
-    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+    ifn = 69
+    Do 
+       Inquire(ifn, Opened=is_used)
+       If (is_used) Then
+          ifn = ifn + 1
+       Else
+          Exit
+       End If
+    End Do
+
+    Open (File=Trim(fn), Unit=ifn, Form='FORMATTED', &
          & Access='STREAM', Action="WRITE")
     
-    Write(69,'(1A)')'####'
-    Write(69,'(1X,1A,1A)'     )"# Date and Time: ", &
+    Write(ifn,'(1A)')'####'
+    Write(ifn,'(1X,1A,1A)'     )"# Date and Time: ", &
          & asctime(gettime())    
-    Write(69,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment(1))
+    Write(ifn,'(1X,1A,1A)'  )"# Comment:       ", Trim(Comment(1))
     Do I = 2, Size(Comment)
-       Write(69,'(1X,1A,1A)'  )"#                ", Trim(Comment(I))
+       Write(ifn,'(1X,1A,1A)'  )"#                ", Trim(Comment(I))
     End Do
-    Write(69,'(1A)')'####'
-    Write(69,'(2A)')HDR, 'DATA'
-    Close(69)
+    Write(ifn,'(1A)')'####'
+    Write(ifn,'(2A)')HDR, 'DATA'
+    Close(ifn)
 
-    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
          & Access='STREAM', Position='APPEND')
 
-    Write(69)Size(buf)
-    Write(69)buf
-    Write(69)Hash(buf)
+    Write(ifn)Size(buf)
+    Write(ifn)buf
+    Write(ifn)Hash(buf)
 
-    Close(69)
+    Close(ifn)
 
     Return
   End Subroutine WriteBuffer2
@@ -1432,7 +1456,7 @@ CONTAINS
     Integer :: Npos, Nsz, Is
     Logical :: is_used
 
-    OpenBuffer = 69
+    OpenBuffer = 56
     Do 
        Inquire(OpenBuffer, Opened=is_used)
        If (is_used) Then
@@ -1475,41 +1499,52 @@ CONTAINS
 
     Character :: RD
     Integer :: Npos, Nsz, Is, CHKsum, N, I
+    Integer :: ifn
+    Logical :: is_used
 
+    ifn = 69
+    Do 
+       Inquire(ifn, Opened=is_used)
+       If (is_used) Then
+          ifn = ifn + 1
+       Else
+          Exit
+       End If
+    End Do
 
     CHKsum = GetHash(fn)
-    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='FORMATTED', &
          & Access='STREAM', Action="READ")
     
     Do
-       Read(69,'(1A1)', IOSTAT=Is)RD
+       Read(ifn,'(1A1)', IOSTAT=Is)RD
        If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
-    Inquire(69,POS=Npos)
-    Close(69)
+    Inquire(ifn,POS=Npos)
+    Close(ifn)
 
-    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
          & Access='STREAM', Action="READ")
 
-    Read(69, POS=NPOS, IOSTAT=Is)Nsz
+    Read(ifn, POS=NPOS, IOSTAT=Is)Nsz
     If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
-    Close(69)
+    Close(ifn)
 
-    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
          & Access='STREAM', Action="READWRITE")
-    Write(69, POS=NPOS, IOSTAT=Is)Nsz+Size(buf)
+    Write(ifn, POS=NPOS, IOSTAT=Is)Nsz+Size(buf)
 
 
     Do I = 1, Nsz
-       Read(69)N
+       Read(ifn)N
     End Do
-    Write(69)buf
-    Write(69)Hash(buf, CHKsum)
+    Write(ifn)buf
+    Write(ifn)Hash(buf, CHKsum)
 
 
-    Read(69)CHKSum
-    Close(69)
+    Read(ifn)CHKSum
+    Close(ifn)
 
     Return
   End Subroutine AddBuffer
@@ -1613,41 +1648,52 @@ CONTAINS
 
     Character :: RD
     Integer :: Npos, Nsz, Is, CHKsum, N, I
+    Integer :: ifn
+    Logical :: is_used
 
+    ifn = 69
+    Do 
+       Inquire(ifn, Opened=is_used)
+       If (is_used) Then
+          ifn = ifn + 1
+       Else
+          Exit
+       End If
+    End Do
 
     CHKsum = GetHash(fn)
-    Open (File=Trim(fn), Unit=69, Form='FORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='FORMATTED', &
          & Access='STREAM', Action="READ")
     
     Do
-       Read(69,'(1A1)', IOSTAT=Is)RD
+       Read(ifn,'(1A1)', IOSTAT=Is)RD
        If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
-    Inquire(69,POS=Npos)
-    Close(69)
+    Inquire(ifn,POS=Npos)
+    Close(ifn)
 
-    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
          & Access='STREAM', Action="READ")
 
-    Read(69, POS=NPOS, IOSTAT=Is)Nsz
+    Read(ifn, POS=NPOS, IOSTAT=Is)Nsz
     If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
-    Close(69)
+    Close(ifn)
 
-    Open (File=Trim(fn), Unit=69, Form='UNFORMATTED', &
+    Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
          & Access='STREAM', Action="READWRITE")
-    Write(69, POS=NPOS, IOSTAT=Is)Nsz+1
+    Write(ifn, POS=NPOS, IOSTAT=Is)Nsz+1
 
 
     Do I = 1, Nsz
-       Read(69)N
+       Read(ifn)N
     End Do
-    Write(69)buf
-    Write(69)Hash((/buf/), CHKsum)
+    Write(ifn)buf
+    Write(ifn)Hash((/buf/), CHKsum)
 
 
-    Read(69)CHKSum
-    Close(69)
+    Read(ifn)CHKSum
+    Close(ifn)
 
     Return
   End Subroutine AddBufferS

@@ -2390,15 +2390,16 @@ CONTAINS
 ! * array of sizes N x Nb
 ! ********************************************
 
-    Integer, Intent (out) :: Ibt(:,:)
+    Integer, Intent (out) :: Ibt(:,0:)
 
     Integer :: Nb, N, I
 
-    Nb = Size(Ibt,2)
+    Nb = Size(Ibt,2)-1
     N  = Size(Ibt,1)
 
-    Do I = 1, N
-       CALL Irand_V(Ibt(I,:), 1, N) 
+    ForAll (I=1:N) Ibt(I,0) = I
+    Do I = 1, Nb
+       CALL Irand_V(Ibt(:,I), 1, N) 
     End Do
 
     Return
