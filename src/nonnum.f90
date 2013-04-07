@@ -1543,7 +1543,6 @@ CONTAINS
     Write(ifn)Hash(buf, CHKsum)
 
 
-    Read(ifn)CHKSum
     Close(ifn)
 
     Return
@@ -1692,7 +1691,6 @@ CONTAINS
     Write(ifn)Hash((/buf/), CHKsum)
 
 
-    Read(ifn)CHKSum
     Close(ifn)
 
     Return
