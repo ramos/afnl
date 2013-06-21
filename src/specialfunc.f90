@@ -1060,8 +1060,8 @@ CONTAINS
     mabs = Abs(m)
     If (m < 0) Then
        If (l == mabs) Then
-          NegFac = (-1)**mabs / &
-               & Factorial(l-m)
+          NegFac = Real((-1)**mabs / &
+               & Factorial(l-m),kind=SP)
        Else
           NegFac = (-1)**mabs * &
                & Real(Exp(GammaLn(Real(l-mabs,kind=DP)) - & 

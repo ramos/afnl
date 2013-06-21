@@ -816,13 +816,13 @@ CONTAINS
     Complex (kind=DPC), Intent (in) :: M(:,:)
 
     Complex (kind=DPC) :: L(Size(M,1),Size(M,2))
-    Real (kind=DP) :: R
+    Complex (kind=DP) :: R
     Integer :: I, J
 
     L = 0.0_DPC
     Do J = 1, Size(M,2)
        R = M(J,J) - Sum(Abs(L(J,1:J-1))**2)
-       If (R > 0.0_DPC) Then
+       If (Abs(R) > 0.0_DPC) Then
           L(J,J) = Sqrt(R)
        Else
           CALL abort("Cholesky", "Matrix not positive definite")
@@ -847,13 +847,13 @@ CONTAINS
     Complex (kind=SPC), Intent (in) :: M(:,:)
 
     Complex (kind=SPC) :: L(Size(M,1),Size(M,2))
-    Real (kind=SP) :: R
+    Complex (kind=SP) :: R
     Integer :: I, J
 
     L = 0.0_SPC
     Do J = 1, Size(M,2)
        R = M(J,J) - Sum(Abs(L(J,1:J-1))**2)
-       If (R > 0.0_SPC) Then
+       If (Abs(R) > 0.0_SP) Then
           L(J,J) = Sqrt(R)
        Else
           CALL abort("Cholesky", "Matrix not positive definite")
