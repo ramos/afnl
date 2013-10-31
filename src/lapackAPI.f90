@@ -23,7 +23,11 @@ MODULE LapackAPI
      Module Procedure Diag_DPC
   End Interface Diag
 
-  Private GEVP_D, GEVP_C
+  Interface expM
+     Module Procedure expM_C
+  End Interface ExpM
+
+  Private GEVP_D, GEVP_C, expM_C
 
 CONTAINS
 
@@ -275,6 +279,41 @@ CONTAINS
 
     Return
   End Function PseudoInverse_C
+
+! ***********************************************
+! *
+  Function expM_C(A) Result(Aexp)
+! *
+! ***********************************************
+! *
+! * Computes the exponential of matrix A(:,:)
+! * 
+! ***********************************************
+
+    Complex (kind=DPC), Intent (in) :: A(:,:)
+    Complex (kind=DPC) :: Aexp(Size(A,1),Size(A,2))
+
+    Complex (kind=DPC), Allocatable :: U(:,:)
+    Real (kind=DP), Allocatable :: S(:)
+    Integer :: N, I
+
+    N = Size(A,1)
+    Allocate(U(N,N), S(N))
+
+    Aexp = A
+    CALL Diag(Aexp, S, U)
+    S(1:N) = exp(S(1:N))
+    
+    Aexp = Cmplx(0.0_DP)
+    Do I = 1, N
+       Aexp(I,:) = S(I)*Conjg(U(:,I))
+    End Do
+    Aexp = MatMul(U,Aexp)
+
+    Deallocate(U, S)
+
+    Return
+  End Function expM_C
 
 ! ***********************************************
 ! *
