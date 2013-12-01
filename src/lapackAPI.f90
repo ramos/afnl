@@ -282,7 +282,7 @@ CONTAINS
 
 ! ***********************************************
 ! *
-  Function expM_C(A) Result(Aexp)
+  Function expM_C(A, t) Result(Aexp)
 ! *
 ! ***********************************************
 ! *
@@ -291,18 +291,23 @@ CONTAINS
 ! ***********************************************
 
     Complex (kind=DPC), Intent (in) :: A(:,:)
+    Real (kind=DP), Intent (in), Optional :: t
     Complex (kind=DPC) :: Aexp(Size(A,1),Size(A,2))
 
     Complex (kind=DPC), Allocatable :: U(:,:)
     Real (kind=DP), Allocatable :: S(:)
+    Real (kind=DP) :: tf
     Integer :: N, I
 
     N = Size(A,1)
     Allocate(U(N,N), S(N))
+    tf = 1.0_DP
+    If (Present(t)) tf = t
+
 
     Aexp = A
     CALL Diag(Aexp, S, U)
-    S(1:N) = exp(S(1:N))
+    S(1:N) = exp(tf*S(1:N))
     
     Aexp = Cmplx(0.0_DP)
     Do I = 1, N
