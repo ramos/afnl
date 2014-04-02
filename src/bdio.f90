@@ -50,6 +50,8 @@ MODULE ModBDio
        & BDIO_BUF_SIZE, BDIO_MAX_HOST_LENGTH, BDIO_MAX_USER_LENGTH, &
        & BDIO_MAX_PINFO_LENGTH
 
+  Logical :: DEFAULT_HASH_CHECK = .False.
+
   Data BDIO_MAGIC /Z'7ffbd07e'/
   Data BDIO_VERSION /1/
   
@@ -104,7 +106,8 @@ MODULE ModBDio
   Type :: BDIO_record
      logical :: ishdr, islong
      Integer (kind=8) :: rlen, rpos, rend
-     Integer :: rfmt = -1, ruinfo = -1, rid = -1, iver = -1, hash = 314159265
+     Integer :: rfmt = -1, ruinfo = -1, rid = -1, iver = -1, &
+          & hash = 314159265
 
      Type (BDIO_record), Pointer :: next => null(), prev => null()
   End type BDIO_RECORD
@@ -117,7 +120,17 @@ MODULE ModBDio
           & byteswap_int64, byteswap_int64V
   End Interface byteswap
 
-
+  Interface BDIO_write
+     Module Procedure BDIO_write_i32, BDIO_write_i64, &
+          & BDIO_write_f32, BDIO_write_f64, BDIO_write_z32, &
+          & BDIO_write_z64
+  End Interface BDIO_write
+  
+  Interface BDIO_read
+     Module Procedure BDIO_read_i32, BDIO_read_i64, &
+          & BDIO_read_f32, BDIO_read_f64, BDIO_read_z32, &
+          & BDIO_read_z64
+  End Interface BDIO_read
   
 
   Private :: BDIO_MAGIC, BDIO_VERSION, BDIO_R_MODE, &
@@ -127,9 +140,308 @@ MODULE ModBDio
        & BDIO_MAX_PINFO_LENGTH, byteswap_int32, byteswap_int32V, &
        & byteswap_R, byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
        & byteswap_DZV, byteswap_ZV, byteswap_Z, byteswap_int64, &
-       & byteswap_int64V
+       & byteswap_int64V, Rewrite_rlen, BDIO_read_f32, BDIO_read_f64, &
+       & BDIO_read_i32, BDIO_read_i64, BDIO_read_z32, BDIO_read_z64, &
+       & BDIO_write_i32, BDIO_write_i64, BDIO_write_f32, &
+       & BDIO_write_f64, BDIO_write_z32, BDIO_write_z64
 
 CONTAINS
+
+! ********************************
+! *
+    Subroutine BDIO_close(fbd)
+! *
+! ********************************
+      
+      Type (BDIO), Intent (inout) :: fbd
+      Type (BDIO_record), pointer :: p, n
+
+      Integer :: kont
+
+      p => fbd%first
+
+      kont = 0
+      Do 
+         If (.not.Associated(p)) Exit
+         n => p%next
+         Deallocate(p)
+         p => n
+         kont = kont+1
+      End Do
+      Close(fbd%ifn)
+
+      Return
+    End Subroutine BDIO_close
+
+! ********************************
+! *
+    Subroutine BDIO_error(fbd, routine, msg)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Character (len=*), Intent (in) :: routine, msg
+
+      Write(0,*)'In '//Trim(routine)// ' :'
+      Write(0,'(5X,1A)')Trim(msg)
+      Write(0,*)
+      Write(0,*)'Current Record: ', fbd%current%rid
+      Stop
+      
+      Return
+    End Subroutine BDIO_error
+
+! ********************************
+! *
+    Function BDIO_write_i32(fbd,ibuf)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Integer (kind=4), Intent (inout) :: ibuf(:)
+      Integer :: BDIO_write_i32, ios
+
+      Integer (kind=8) :: iln
+      Type (BDIO_record), pointer :: p
+
+      BDIO_write_i32 = -1
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_INT32LE).and.&
+           &(p%rfmt /= BDIO_BIN_INT32BE).and.&
+           &(p%rfmt /= BDIO_BIN_INT32  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_i32', &
+              & 'Incorrect data type') 
+      End If
+
+      If (  ( (p%rfmt == BDIO_BIN_INT32BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_INT32LE).and.(.not.fbd%lendian) ) ) &
+           & Then
+         CALL ByteSwap(ibuf)
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         CALL ByteSwap(ibuf)
+      Else
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+      End If
+      
+      iln = fbd%current%rlen + 4_8*Size(ibuf)
+      CALL Rewrite_rlen(fbd, iln)
+
+      If (ios == 0) BDIO_write_i32 = 4*Size(ibuf)
+
+      Return
+    End Function BDIO_write_i32
+
+! ********************************
+! *
+    Function BDIO_write_f32(fbd,buf)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Real (kind=4), Intent (inout) :: buf(:)
+      Integer :: BDIO_write_f32, ios
+
+      Integer (kind=8) :: iln
+      Type (BDIO_record), pointer :: p
+
+      BDIO_write_f32 = -1
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F32LE).and.&
+           &(p%rfmt /= BDIO_BIN_F32BE).and.&
+           &(p%rfmt /= BDIO_BIN_F32  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_f32', &
+              & 'Incorrect data type') 
+      End If
+
+      If (  ( (p%rfmt == BDIO_BIN_F32BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
+           & Then
+         CALL ByteSwap(buf)
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         CALL ByteSwap(buf)
+      Else
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+      End If
+
+      iln = fbd%current%rlen + 4_8*Size(buf)
+      CALL Rewrite_rlen(fbd, iln)
+
+      If (ios == 0) BDIO_write_f32 = 4*Size(buf)
+
+      Return
+    End Function BDIO_write_f32
+
+! ********************************
+! *
+    Function BDIO_write_i64(fbd,ibuf)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Integer (kind=8), Intent (inout) :: ibuf(:)
+      Integer :: BDIO_write_i64, ios
+
+      Integer (kind=8) :: iln
+      Type (BDIO_record), pointer :: p
+
+      BDIO_write_i64 = -1
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_INT64LE).and.&
+           &(p%rfmt /= BDIO_BIN_INT64BE).and.&
+           &(p%rfmt /= BDIO_BIN_INT64  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_i64', &
+              & 'Incorrect data type') 
+      End If
+
+      If (  ( (p%rfmt == BDIO_BIN_INT64BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_INT64LE).and.(.not.fbd%lendian) ) ) &
+           & Then
+         CALL ByteSwap(ibuf)
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         CALL ByteSwap(ibuf)
+      Else
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+      End If
+      
+      iln = fbd%current%rlen + 8_8*Size(ibuf)
+      CALL Rewrite_rlen(fbd, iln)
+
+      If (ios == 0) BDIO_write_i64 = 8*Size(ibuf)
+
+      Return
+    End Function BDIO_write_i64
+
+! ********************************
+! *
+    Function BDIO_write_f64(fbd,ibuf)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Real (kind=8), Intent (inout) :: ibuf(:)
+      Integer :: BDIO_write_f64, ios
+
+      Integer (kind=8) :: iln
+      Type (BDIO_record), pointer :: p
+
+      BDIO_write_f64 = -1
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F64LE).and.&
+           &(p%rfmt /= BDIO_BIN_F64BE).and.&
+           &(p%rfmt /= BDIO_BIN_F64  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_f64', &
+              & 'Incorrect data type') 
+      End If
+
+      If (  ( (p%rfmt == BDIO_BIN_F64BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
+           & Then
+         CALL ByteSwap(ibuf)
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         CALL ByteSwap(ibuf)
+      Else
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+      End If
+      
+      iln = fbd%current%rlen + 8_8*Size(ibuf)
+      CALL Rewrite_rlen(fbd, iln)
+
+      If (ios == 0) BDIO_write_f64 = 8*Size(ibuf)
+
+      Return
+    End Function BDIO_write_f64
+    
+! ********************************
+! *
+    Function BDIO_write_z64(fbd,buf)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Complex (kind=8), Intent (inout) :: buf(:)
+      Integer :: BDIO_write_z64, ios
+
+      Integer (kind=8) :: iln
+      Type (BDIO_record), pointer :: p
+
+      BDIO_write_z64 = -1
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F64LE).and.&
+           &(p%rfmt /= BDIO_BIN_F64BE).and.&
+           &(p%rfmt /= BDIO_BIN_F64  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_z64', &
+              & 'Incorrect data type') 
+      End If
+
+      If (  ( (p%rfmt == BDIO_BIN_F64BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
+           & Then
+         CALL ByteSwap(buf)
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         CALL ByteSwap(buf)
+      Else
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+      End If
+      
+      iln = fbd%current%rlen + 16_8*Size(buf)
+      CALL Rewrite_rlen(fbd, iln)
+
+      If (ios == 0) BDIO_write_z64 = 16*Size(buf)
+
+      Return
+    End Function BDIO_write_z64
+    
+! ********************************
+! *
+    Function BDIO_write_z32(fbd,buf)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Complex (kind=4), Intent (inout) :: buf(:)
+      Integer :: BDIO_write_z32, ios
+
+      Integer (kind=8) :: iln
+      Type (BDIO_record), pointer :: p
+
+      BDIO_write_z32 = -1
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F32LE).and.&
+           &(p%rfmt /= BDIO_BIN_F32BE).and.&
+           &(p%rfmt /= BDIO_BIN_F32  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_z32', &
+              & 'Incorrect data type') 
+      End If
+
+      If (  ( (p%rfmt == BDIO_BIN_F32BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
+           & Then
+         CALL ByteSwap(buf)
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         CALL ByteSwap(buf)
+      Else
+         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+      End If
+
+      iln = fbd%current%rlen + 8_8*Size(buf)
+      CALL Rewrite_rlen(fbd, iln)
+
+      If (ios == 0) BDIO_write_z32 = 8*Size(buf)
+
+      Return
+    End Function BDIO_write_z32
 
 ! ********************************
 ! *
@@ -160,18 +472,51 @@ CONTAINS
 
 ! ********************************
 ! *
-    Subroutine BDIO_start_record(fbd)
+    Subroutine BDIO_start_record(fbd,ifmt,iuinfo,long)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
-      Integer, Intent (inout) :: ibuf(:)
-      Logical, Optional :: do_chk
+      Integer, Intent (in) :: ifmt, iuinfo
+      Logical, Intent (in), Optional :: long
 
       Type (BDIO_record), pointer :: newr, aux
-      Integer :: nmax
+      Integer :: irc, i4, ilong
+      Integer (kind=8) :: ipos, iln
+      logical :: lrec
 
+      fbd%current => fbd%last
+      Read(fbd%ifn,Pos=fbd%current%rend)
+      ilong = 0
+      If (Present(long)) Then
+         lrec = long
+         if (lrec) ilong = 1
+      Else
+         lrec = .False.
+      End If
+
+      irc = 1
+      i4  = 0
+      CALL MVbits(irc,0,1,i4,0)
+      CALL MVBits(ilong,0,1,i4,3)
+      CALL MVBits(ifmt,0,4,i4,4)
+      CALL MVBits(iuinfo,0,4,i4,8)
+      Write(fbd%ifn)i4
+      i4 = 0
+      If (lrec) Write(fbd%ifn)i4
+      Inquire(fbd%ifn,Pos=ipos)
+      fbd%rwpos = ipos
+
+      iln = 0
       Allocate(newr)
+      newr%ishdr = .False.
+      newr%rlen  = iln
+      newr%rpos  = ipos
+      newr%rend  = ipos
+      newr%rfmt  = ifmt
+      newr%ruinfo = iuinfo
+      newr%rid   = fbd%tcnt
+      newr%islong = lrec
       If (Associated(fbd%first)) Then
          aux => fbd%last
 
@@ -183,59 +528,47 @@ CONTAINS
          fbd%first => newr
          fbd%last  => newr
       End If
+
       fbd%rcnt = fbd%rcnt + 1
       fbd%tcnt = fbd%tcnt + 1
-      
+
       Return
     End Subroutine BDIO_start_record
 
 ! ********************************
 ! *
-    Subroutine BDIO_read_f32(fbd, buf, do_chk)
-! *
-! ********************************
-
-      Type (BDIO), Intent (inout) :: fbd
-      Real (kind=4), Intent (inout) :: buf(:)
-      Logical, Optional :: do_chk
-
-      Type (BDIO_record), pointer :: p
-      Integer :: nmax
-
-      p => fbd%current
-      Write(*,*)p%rid
-      nmax = size(buf)
-      If (size(buf) > p%rlen/4) nmax = p%rlen/4
-      Write(*,*)nmax
-      Read(fbd%ifn,Pos=fbd%rwpos)buf(:nmax)
-      If (  ( (p%rfmt == BDIO_BIN_F32BE).and.(fbd%lendian) ).or. &
-           &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
-           & CALL ByteSwap(buf)
-
-      fbd%rwpos = fbd%rwpos + 4*nmax
-
-      Return
-    End Subroutine BDIO_read_f32
-
-! ********************************
-! *
-    Subroutine BDIO_read_int32(fbd, ibuf, do_chk)
+    Function BDIO_read_i32(fbd, ibuf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Integer, Intent (inout) :: ibuf(:)
       Logical, Optional :: do_chk
+      Integer :: BDIO_read_i32, ios
 
       Type (BDIO_record), pointer :: p
-      Integer :: nmax
+      Integer (kind=8) :: nmax
+      logical :: chk
 
+      BDIO_read_i32 = -1
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       p => fbd%current
-      Write(*,*)p%rid
+      If (  (p%rfmt /= BDIO_BIN_INT32LE).and.&
+           &(p%rfmt /= BDIO_BIN_INT32BE).and.&
+           &(p%rfmt /= BDIO_BIN_INT32  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_i32', &
+              & 'Incorrect data type') 
+      End If
+
       nmax = size(ibuf)
-      If (size(ibuf) > p%rlen/4) nmax = p%rlen/4
-      Write(*,*)nmax
-      Read(fbd%ifn,Pos=fbd%rwpos)ibuf(:nmax)
+      If (4_8*size(ibuf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)/4
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)ibuf(:nmax)
       If (  ( (p%rfmt == BDIO_BIN_INT32BE).and.(fbd%lendian) ).or. &
            &( (p%rfmt == BDIO_BIN_INT32LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(ibuf)
@@ -243,66 +576,244 @@ CONTAINS
       
       If (Present(do_chk)) p%hash = Hash(ibuf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 4*nmax
+
+      If (ios == 0) BDIO_read_i32 = 4*Int(nmax,kind=4)
       
       Return
-    End Subroutine BDIO_read_int32
+    End Function BDIO_read_i32
 
 ! ********************************
 ! *
-    Subroutine BDIO_read_int64(fbd, ibuf, do_chk)
+    Function BDIO_read_i64(fbd, ibuf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Integer (kind=8), Intent (inout) :: ibuf(:)
       Logical, Optional :: do_chk
+      Integer :: BDIO_read_i64, ios
 
       Type (BDIO_record), pointer :: p
-      Integer :: nmax
+      Integer (kind=8) :: nmax
+      logical :: chk
 
+      BDIO_read_i64 = -1
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       p => fbd%current
-      Write(*,*)p%rid
+      If (  (p%rfmt /= BDIO_BIN_INT64LE).and.&
+           &(p%rfmt /= BDIO_BIN_INT64BE).and.&
+           &(p%rfmt /= BDIO_BIN_INT64  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_i64', &
+              & 'Incorrect data type') 
+      End If
+
       nmax = size(ibuf)
-      If (size(ibuf) > p%rlen/8) nmax = p%rlen/8
-      Write(*,*)nmax
-      Read(fbd%ifn,Pos=fbd%rwpos)ibuf(:nmax)
+      If (8_8*size(ibuf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)/8
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)ibuf(:nmax)
       If (  ( (p%rfmt == BDIO_BIN_INT64BE).and.(fbd%lendian) ).or. &
            &( (p%rfmt == BDIO_BIN_INT64LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(ibuf)
-
+      
+      If (Present(do_chk)) p%hash = Hash(ibuf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
+      If (ios == 0) BDIO_read_i64 = 8*Int(nmax,kind=4)
+      
       Return
-    End Subroutine BDIO_read_int64
+    End Function BDIO_read_i64
 
 ! ********************************
 ! *
-    Subroutine BDIO_read_f64(fbd, buf, do_chk)
+    Function BDIO_read_f32(fbd, buf, do_chk)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Real (kind=4), Intent (inout) :: buf(:)
+      Logical, Optional :: do_chk
+      Integer :: BDIO_read_f32, ios
+
+      Type (BDIO_record), pointer :: p
+      Integer (kind=8) :: nmax
+      logical :: chk
+
+      BDIO_read_f32 = -1
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F32LE).and.&
+           &(p%rfmt /= BDIO_BIN_F32BE).and.&
+           &(p%rfmt /= BDIO_BIN_F32  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_f32', &
+              & 'Incorrect data type') 
+      End If
+
+      nmax = size(buf)
+      If (4_8*size(buf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)/4
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)buf(:nmax)
+      If (  ( (p%rfmt == BDIO_BIN_F32BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
+           & CALL ByteSwap(buf)
+
+      
+      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      fbd%rwpos = fbd%rwpos + 4*nmax
+
+      If (ios == 0) BDIO_read_f32 = 4*Int(nmax,kind=4)
+      
+      Return
+    End Function BDIO_read_f32
+
+! ********************************
+! *
+    Function BDIO_read_f64(fbd, buf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Real (kind=8), Intent (inout) :: buf(:)
       Logical, Optional :: do_chk
+      Integer :: BDIO_read_f64, ios
 
       Type (BDIO_record), pointer :: p
-      Integer :: nmax
+      Integer (kind=8) :: nmax
+      logical :: chk
 
+      BDIO_read_f64 = -1
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       p => fbd%current
-      Write(*,*)p%rid
+      If (  (p%rfmt /= BDIO_BIN_F64LE).and.&
+           &(p%rfmt /= BDIO_BIN_F64BE).and.&
+           &(p%rfmt /= BDIO_BIN_F64  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_f64', &
+              & 'Incorrect data type') 
+      End If
+
       nmax = size(buf)
-      If (size(buf) > p%rlen/8) nmax = p%rlen/8
-      Write(*,*)nmax
-      Read(fbd%ifn,Pos=fbd%rwpos)buf(:nmax)
+      If (8_8*size(buf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)/8
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)buf(:nmax)
       If (  ( (p%rfmt == BDIO_BIN_F64BE).and.(fbd%lendian) ).or. &
            &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(buf)
-
+      
+      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
+      If (ios == 0) BDIO_read_f64 = 8*Int(nmax,kind=4)
+      
       Return
-    End Subroutine BDIO_read_f64
+    End Function BDIO_read_f64
 
+! ********************************
+! *
+    Function BDIO_read_z32(fbd, buf, do_chk)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Complex (kind=4), Intent (inout) :: buf(:)
+      Logical, Optional :: do_chk
+      Integer :: BDIO_read_z32, ios
+
+      Type (BDIO_record), pointer :: p
+      Integer (kind=8) :: nmax
+      logical :: chk
+
+      BDIO_read_z32 = -1
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F32LE).and.&
+           &(p%rfmt /= BDIO_BIN_F32BE).and.&
+           &(p%rfmt /= BDIO_BIN_F32  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_f32', &
+              & 'Incorrect data type') 
+      End If
+
+      nmax = size(buf)
+      If (8_8*size(buf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)/8
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)buf(:nmax)
+      If (  ( (p%rfmt == BDIO_BIN_F32BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
+           & CALL ByteSwap(buf)
+
+      
+      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      fbd%rwpos = fbd%rwpos + 8*nmax
+
+      If (ios == 0) BDIO_read_z32 = 8*Int(nmax,kind=4)
+      
+      Return
+    End Function BDIO_read_z32
+
+! ********************************
+! *
+    Function BDIO_read_z64(fbd, buf, do_chk)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Complex (kind=8), Intent (inout) :: buf(:)
+      Logical, Optional :: do_chk
+      Integer :: BDIO_read_z64, ios
+
+      Type (BDIO_record), pointer :: p
+      Integer (kind=8) :: nmax
+      logical :: chk
+
+      BDIO_read_z64 = -1
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_BIN_F64LE).and.&
+           &(p%rfmt /= BDIO_BIN_F64BE).and.&
+           &(p%rfmt /= BDIO_BIN_F64  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_f64', &
+              & 'Incorrect data type') 
+      End If
+
+      nmax = size(buf)
+      If (16_8*size(buf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)/16
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)buf(:nmax)
+      If (  ( (p%rfmt == BDIO_BIN_F64BE).and.(fbd%lendian) ).or. &
+           &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
+           & CALL ByteSwap(buf)
+      
+      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      fbd%rwpos = fbd%rwpos + 16*nmax
+
+      If (ios == 0) BDIO_read_z64 = 16*Int(nmax,kind=4)
+      
+      Return
+    End Function BDIO_read_z64
+    
 ! ********************************
 ! *
     Function BDIO_open(fname, mode, protocol_info) Result (fbd)
@@ -325,8 +836,8 @@ CONTAINS
       Case ('a')
          fbd%imode = BDIO_A_MODE
       Case Default
-         Write(*,*)'Error'
-         Stop
+         Call BDIO_error(fbd,'BDIO_Open', &
+              & 'Incorrect mode') 
       End Select
       
       fbd%lendian = isLittleEndian()
@@ -349,20 +860,15 @@ CONTAINS
          fbd%opened = .True.
 !         CALL BDIO_Read_header(fbd)
       CASE (BDIO_A_MODE) 
-         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READ", &
-              & Form='UNFORMATTED', Access='STREAM')
-         Inquire(fbd%ifn, Pos=ipos)
-
-!         CALL BDIO_Read_header(fbd)
-!         CALL BDIO_Close(fbd)
-
          Open (File=Trim(fname), unit=fbd%ifn, ACTION="READWRITE", &
-              & Form='UNFORMATTED', Access='STREAM', Position="APPEND")
+              & Form='UNFORMATTED', Access='STREAM')
+         Rewind(fbd%ifn)
+
          fbd%opened = .True.
       End Select
 
-      fbd%startfile=ipos
-
+      CALL BDIO_parse(fbd)
+      fbd%current => fbd%first
 
       Return
     End Function BDIO_open
@@ -379,6 +885,7 @@ CONTAINS
       Integer (kind=8) :: ipos
       
       
+      Rewind(fbd%ifn)
       Do 
          Inquire(fbd%ifn, Pos=ipos)
          Read(fbd%ifn,END=20)i4
@@ -432,7 +939,9 @@ CONTAINS
       iln = Int(j,kind=8)
       If (ilong==1) Then
          Read(fbd%ifn)i4
-         iln = iln + 2_8**20*Int(i4,kind=8)
+         CALL MVBits(i4,0,32,j,0)
+         jlong=Int(j,kind=8)
+         CALL MVBits(jlong,20,32,iln,0)
       End If
       Inquire(fbd%ifn, Pos=ipos)
       Read(fbd%ifn)(ch, jlong=1, iln)
@@ -595,6 +1104,42 @@ CONTAINS
 
       Return
     End Subroutine BDIO_show
+
+! ********************************
+! *
+    Subroutine Rewrite_rlen(fbd, iln)
+! *
+! ********************************
+      
+      Type (BDIO), Intent (inout) :: fbd
+      Integer (kind=8), Intent (in) :: iln
+      
+      Integer (kind=4) :: i4(2), j
+      Integer (kind=8) :: jl
+      Type (BDIO_record), pointer :: p
+
+      p => fbd%current
+      If (p%islong) Then
+         CALL MVBits(iln, 0, 20, jl, 0)
+         j = Int(jl,kind=4)
+         CALL MVBits(j,0,20,i4(1),12)
+         CALL MVBits(iln, 21, 32, jl, 0)
+         j = Int(jl,kind=4)
+         CALL MVBits(j,0,32,i4(2),0)
+         Write(fbd%ifn,Pos=p%rpos-8)i4(1:2)
+      Else
+         Read(fbd%ifn,Pos=p%rpos-4)i4(1)
+         CALL MVBits(iln, 0, 20, jl, 0)
+         j = Int(jl,kind=4)
+         CALL MVBits(j,0,20,i4(1),12)
+         Write(fbd%ifn,Pos=fbd%current%rpos-4)i4(1)
+      End If
+
+      p%rlen = iln
+      p%rend = fbd%current%rpos + iln
+
+      Return
+    End Subroutine Rewrite_rlen
 
 ! ********************************         
 ! *  
@@ -856,5 +1401,6 @@ CONTAINS
 
       Return
     End Subroutine byteswap_ZV
-  
+
+
 End MODULE ModBDio

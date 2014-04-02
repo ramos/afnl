@@ -57,12 +57,9 @@ lapackAPI.o: numtypes.o lapackAPI.f90
 bdio.o: bdio.f90
 	$(F90) -c $^ -o $@
 
-bdio2.o: bdio2.f90
-	$(F90) -c $^ -o $@
-
 lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
 	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o \
-	minuitAPI.o lapackAPI.o bdio.o bdio2.o
+	minuitAPI.o lapackAPI.o bdio.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o

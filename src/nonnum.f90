@@ -74,6 +74,10 @@ MODULE NonNumeric
      Module Procedure GetOptCh, GetOptInt, GetOptDP, GetOptSP, GetOptTest
   End Interface GetOpt
 
+  Interface Hash
+     Module Procedure Hash_i32, Hash_i64, Hash_f32, Hash_f64, &
+          & Hash_z32, Hash_z64
+  End Interface Hash
 
   Character :: HDR=':'
   Integer, Parameter :: MAXLN=1000
@@ -1232,7 +1236,7 @@ CONTAINS
 
 ! ***************************************
 ! *
-  Integer Function Hash(Iarr, Ist) 
+  Integer Function Hash_i32(Iarr, Ist) Result (Hash)
 ! *
 ! ***************************************
 ! * Computes a HASH for an integer array
@@ -1242,7 +1246,7 @@ CONTAINS
 ! * any data
 ! ***************************************
   
-    Integer, Intent (in) :: Iarr(:)
+    Integer (kind=4), Intent (in) :: Iarr(:)
     Integer, Optional, Intent (in) :: Ist
 
     Integer :: I, J1, J2, J3, J4
@@ -1272,8 +1276,162 @@ CONTAINS
     End Do
 
     Return
-  End Function Hash
+  End Function Hash_i32
 
+! ***************************************
+! *
+  Integer Function Hash_i64(Iarr, Ist) Result (Hash)
+! *
+! ***************************************
+! * Computes a HASH for an integer array
+! * in a system independent way. 
+! * With the help of the transfer intrinsic
+! * this routine generates a Checksum for 
+! * any data
+! ***************************************
+  
+    Integer (kind=8), Intent (in) :: Iarr(:)
+    Integer, Optional, Intent (in) :: Ist
+
+    Integer :: I, Itmp(2)
+    
+    If (Present(Ist)) Then
+       Hash = Ist
+    Else
+       Hash = Start_Hash
+    End If
+
+    Do I = 1, Size(Iarr)
+       Itmp = Transfer(Iarr(I), Itmp)
+       Hash = Hash_i32(Itmp,Hash)
+    End Do
+
+    Return
+  End Function Hash_i64
+
+! ***************************************
+! *
+  Integer Function Hash_f32(arr, Ist) Result (Hash)
+! *
+! ***************************************
+! * Computes a HASH for an integer array
+! * in a system independent way. 
+! * With the help of the transfer intrinsic
+! * this routine generates a Checksum for 
+! * any data
+! ***************************************
+  
+    Real (kind=4), Intent (in) :: arr(:)
+    Integer, Optional, Intent (in) :: Ist
+
+    Integer :: I, Itmp(1)
+    
+    If (Present(Ist)) Then
+       Hash = Ist
+    Else
+       Hash = Start_Hash
+    End If
+
+    Do I = 1, Size(arr)
+       Itmp = Transfer(arr(I), Itmp)
+       Hash = Hash_i32(Itmp,Hash)
+    End Do
+
+    Return
+  End Function Hash_f32
+
+! ***************************************
+! *
+  Integer Function Hash_f64(arr, Ist) Result (Hash)
+! *
+! ***************************************
+! * Computes a HASH for an integer array
+! * in a system independent way. 
+! * With the help of the transfer intrinsic
+! * this routine generates a Checksum for 
+! * any data
+! ***************************************
+  
+    Real (kind=8), Intent (in) :: arr(:)
+    Integer, Optional, Intent (in) :: Ist
+
+    Integer :: I, Itmp(2)
+    
+    If (Present(Ist)) Then
+       Hash = Ist
+    Else
+       Hash = Start_Hash
+    End If
+
+    Do I = 1, Size(arr)
+       Itmp = Transfer(arr(I), Itmp)
+       Hash = Hash_i32(Itmp,Hash)
+    End Do
+
+    Return
+  End Function Hash_f64
+
+! ***************************************
+! *
+  Integer Function Hash_z64(arr, Ist) Result (Hash)
+! *
+! ***************************************
+! * Computes a HASH for an integer array
+! * in a system independent way. 
+! * With the help of the transfer intrinsic
+! * this routine generates a Checksum for 
+! * any data
+! ***************************************
+  
+    Complex (kind=8), Intent (in) :: arr(:)
+    Integer, Optional, Intent (in) :: Ist
+
+    Integer :: I, Itmp(4)
+    
+    If (Present(Ist)) Then
+       Hash = Ist
+    Else
+       Hash = Start_Hash
+    End If
+
+    Do I = 1, Size(arr)
+       Itmp = Transfer(arr(I), Itmp)
+       Hash = Hash_i32(Itmp,Hash)
+    End Do
+
+    Return
+  End Function Hash_z64
+
+! ***************************************
+! *
+  Integer Function Hash_z32(arr, Ist) Result (Hash)
+! *
+! ***************************************
+! * Computes a HASH for an integer array
+! * in a system independent way. 
+! * With the help of the transfer intrinsic
+! * this routine generates a Checksum for 
+! * any data
+! ***************************************
+  
+    Complex (kind=4), Intent (in) :: arr(:)
+    Integer, Optional, Intent (in) :: Ist
+
+    Integer :: I, Itmp(2)
+    
+    If (Present(Ist)) Then
+       Hash = Ist
+    Else
+       Hash = Start_Hash
+    End If
+
+    Do I = 1, Size(arr)
+       Itmp = Transfer(arr(I), Itmp)
+       Hash = Hash_i32(Itmp,Hash)
+    End Do
+
+    Return
+  End Function Hash_z32
 
 ! ***************************************
 ! *
