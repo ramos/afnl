@@ -173,8 +173,6 @@ CONTAINS
   Real (kind=DP) Function Julian_Date(t)
 ! *
 ! ***************************************
-! * Returns .true. if the year is leap,
-! * .false. in any other case
 ! ***************************************
     
     Type (tm), Intent (in) :: t

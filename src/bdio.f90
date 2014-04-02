@@ -35,13 +35,15 @@ MODULE BDio
   IMPLICIT NONE
 
 
+  Integer, Parameter :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2
+
   Integer :: BDIO_MAGIC, BDIO_VERSION, BDIO_BIN_GENERIC, &
        & BDIO_ASC_EXEC, BDIO_BIN_INT32BE, BDIO_BIN_INT32LE, &
        & BDIO_BIN_INT64BE, BDIO_BIN_INT64LE, BDIO_BIN_F32BE, &
        & BDIO_BIN_F32LE, BDIO_BIN_F64BE, BDIO_BIN_F64LE, &
        & BDIO_ASC_GENERIC, BDIO_ASC_XML, BDIO_BIN_INT32, &
-       & BDIO_BIN_INT64, BDIO_BIN_F32, BDIO_BIN_F64, BDIO_R_MODE, &
-       & BDIO_W_MODE, BDIO_A_MODE, BDIO_H_STATE, BDIO_R_STATE, &
+       & BDIO_BIN_INT64, BDIO_BIN_F32, BDIO_BIN_F64, &
+       & BDIO_H_STATE, BDIO_R_STATE, &
        & BDIO_N_STATE, BDIO_E_STATE, BDIO_LEND, BDIO_BEND, &
        & BDIO_MAX_RECORD_LENGTH, BDIO_MAX_LONG_RECORD_LENGTH, &
        & BDIO_BUF_SIZE, BDIO_MAX_HOST_LENGTH, BDIO_MAX_USER_LENGTH, &
@@ -69,10 +71,6 @@ MODULE BDio
   DATA BDIO_BIN_F32     /Z'F2'/
   DATA BDIO_BIN_F64     /Z'F3'/
 
-  DATA  BDIO_R_MODE /0/
-  DATA  BDIO_W_MODE /1/
-  DATA  BDIO_A_MODE /2/
-
   DATA  BDIO_H_STATE /1/
   DATA  BDIO_R_STATE /2/
   DATA  BDIO_N_STATE /3/
@@ -94,17 +92,26 @@ MODULE BDio
   
 
   Type BDIO_t
-     Integer :: Istate, Imode, Iverbose, nerr, Ihcnt
-     Integer :: Iversion, ifn, iferr, imagic, irstart, rcnt, rlen
+     Integer :: Istate ! (H)eader/(R)ecord/(N)owhere/(E)rror 
+     Integer :: Imode ! r/w/a
+     Integer :: Iverbose, nerr, nhdr ! Verbose, # of errors, # of headers
+
+     Integer :: Iversion, ifn, iferr, imagic, irstart, rcnt
+     Integer (kind=8) :: rlen
      Integer :: ridx, rfmt, ruinfo
+
      Logical :: lendian, verbose
+
+
+     Character (len=1) :: buf(16384)
   End type BDIO_t
 
 
   Interface byteswap
-     Module Procedure byteswap_int, byteswap_intV, byteswap_R, &
+     Module Procedure byteswap_int32, byteswap_int32V, byteswap_R, &
           & byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
-          & byteswap_DZV, byteswap_ZV, byteswap_Z
+          & byteswap_DZV, byteswap_ZV, byteswap_Z, &
+          & byteswap_int64, byteswap_int64V
   End Interface byteswap
 
 
@@ -116,55 +123,132 @@ MODULE BDio
        & BDIO_BIN_F32LE, BDIO_BIN_F64BE, BDIO_BIN_F64LE, &
        & BDIO_ASC_GENERIC, BDIO_ASC_XML, BDIO_BIN_INT32, &
        & BDIO_BIN_INT64, BDIO_BIN_F32, BDIO_BIN_F64, BDIO_R_MODE, &
-       & BDIO_W_MODE, BDIO_A_MODE, BDIO_H_STATE, BDIO_R_STATE, &
-       & BDIO_N_STATE, BDIO_E_STATE, BDIO_LEND, BDIO_BEND, &
+       & BDIO_W_MODE, BDIO_A_MODE, BDIO_LEND, BDIO_BEND, &
        & BDIO_MAX_RECORD_LENGTH, BDIO_MAX_LONG_RECORD_LENGTH, &
        & BDIO_BUF_SIZE, BDIO_MAX_HOST_LENGTH, BDIO_MAX_USER_LENGTH, &
-       & BDIO_MAX_PINFO_LENGTH, byteswap_int, byteswap_intV, byteswap_R, &
-       & byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
-       & byteswap_DZV, byteswap_ZV, byteswap_Z
+       & BDIO_MAX_PINFO_LENGTH, byteswap_int32, byteswap_int32V, &
+       & byteswap_R, byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
+       & byteswap_DZV, byteswap_ZV, byteswap_Z, byteswap_int64, &
+       & byteswap_int64V
 
   CONTAINS
 
 ! ********************************
 ! *
-    Subroutine BDIO_read_header(fbd)
+    Subroutine BDIO_seek_record(fbd)
 ! *
 ! ********************************
 
       Type (BDIO_t), Intent (inout) :: fbd
 
-      Integer (kind=4) :: i4
-      Integer (kind=2) :: i2
-!      Integer (kind=1) :: i1
-!      Character (len=4) :: c4
+      Integer (kind=4) :: i4, ilong, irc, j
+      Integer (kind=8) :: ipos
+      Integer (kind=8) :: jlong
+      Character (kind=1) :: ch
 
-      Read(fbd%ifn)i4
+
+      ! Record
+      Inquire(fbd%ifn, Pos=ipos)
+      Read(fbd%ifn,END=20)i4
+      irc = 0
+      ilong = 0
+      CALL MVbits(i4,0,1,irc,0)
+      CALL MVbits(i4,3,1,ilong,0)
+      CALL MVbits(i4,4,4,fbd%rfmt,0)
+      CALL MVbits(i4,8,4,fbd%ruinfo,0)
+      
+      If (irc /= 1) Then
+         Read(fbd%ifn, Pos=ipos)
+         CALL BDIO_Read_header(fbd)
+      Else
+         j = 0
+         CALL MVbits(i4,12,20,j,0)
+         fbd%rlen = Int(j,kind=8)
+         If (ilong==1) Then
+            Read(fbd%ifn)i4
+            fbd%rlen = fbd%rlen + 2_8**20*Int(i4,kind=8)
+         End If
+         Read(fbd%ifn)(ch, jlong=1, fbd%rlen)
+         
+         fbd%Istate = BDIO_R_STATE
+         fbd%ridx = fbd%ridx + 1
+         
+         Return
+      End If
+
+20    Continue
+      Write(*,*)'Final!'
+      fbd%Istate = BDIO_N_STATE
+
+      Return
+    End Subroutine BDIO_seek_record
+
+! ********************************
+! *
+    Subroutine BDIO_read_header(fbd, ipos)
+! *
+! ********************************
+
+      Type (BDIO_t), Intent (inout) :: fbd
+      Integer (kind=8), Intent (in), Optional :: ipos
+
+      Integer (kind=4) :: i4, j, iln, isp, iv
+      Character (kind=1) :: ch
+
+      If (Present(ipos)) Then
+         Read(fbd%ifn,END=20,Pos=ipos)i4
+      Else
+         Read(fbd%ifn,END=20)i4
+      End If
+      if (.not.fbd%lendian) CALL ByteSwap(i4)
       If (i4/=BDIO_MAGIC) Then
          Write(0,*)'File not recognized as BDIO'
          Stop
       End If
 
-      Write(*,*)i4
-      Read(fbd%ifn)i2
-      Write(*,*)i2
+      Read(fbd%ifn)i4
+      if (.not.fbd%lendian) CALL ByteSwap(i4)
+
+      iln = 0
+      isp = 0
+      iv  = 0
+      CALL MVbits(i4,0,12,iln,0)
+      CALL MVbits(i4,12,4,isp,0)
+      CALL MVbits(i4,16,16,iv,0)
+      Write(*,*)'Header', iln, isp, iv
+      Read(fbd%ifn)(ch, j=1, iln)
+      fbd%Istate = BDIO_H_STATE
+      fbd%ridx = 0
+
+20    Continue
 
       Return
     End Subroutine BDIO_read_header
 
 ! ********************************
 ! *
+    Subroutine BDIO_CLOSE(fbd)
+! *
+! ********************************
+      Type (BDIO_t), Intent (in) :: fbd
+      
+      Close(fbd%ifn)
+
+      Return
+    End Subroutine BDIO_CLOSE
+
+! ********************************
+! *
     Function BDIO_open(fname, mode, protocol_info) Result (fbd)
 ! *
 ! ********************************
-      Character (len=*), Intent (in) :: fname, protocol_info
+      Character (len=*), Intent (in) :: fname
       Character (len=1), Intent (in) :: mode
+      Character (len=*), Intent (in), Optional ::  protocol_info
       
       Type (BDIO_t) :: fbd
 
       Logical :: is_used
-!      Integer :: JJ
-
 
       Select Case (mode)
       Case ('r')
@@ -189,8 +273,21 @@ MODULE BDio
             Exit
          End If
       End Do
-      Open (File=Trim(fname), unit=fbd%ifn, ACTION="READ", &
-           & Form='UNFORMATTED', Access='STREAM')
+
+      Select Case (fbd%imode)
+      Case (BDIO_R_MODE) 
+         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READ", &
+              & Form='UNFORMATTED', Access='STREAM')
+         CALL BDIO_Read_header(fbd)
+      CASE (BDIO_A_MODE) 
+         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READ", &
+              & Form='UNFORMATTED', Access='STREAM')
+         CALL BDIO_Read_header(fbd)
+         CALL BDIO_Close(fbd)
+
+         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READWRITE", &
+              & Form='UNFORMATTED', Access='STREAM', Position="APPEND")
+      End Select
 
       Return
     End Function BDIO_open
@@ -212,7 +309,7 @@ MODULE BDio
       I   = Transfer(ch, I)
 
       Isw = 48
-      CALL ByteSwap_int(Isw)
+      CALL ByteSwap(Isw)
 
       isLittleEndian = .True.
       If (I(1) == 48) Then
@@ -229,32 +326,32 @@ MODULE BDio
 
 ! ********************************
 ! *
-    Subroutine byteswap_int(Iii)
+    Subroutine byteswap_int32(Iii)
 ! *
 ! ********************************
 
-      Integer, Intent (inout) :: Iii
+      Integer (kind=4), Intent (inout) :: Iii
       
       Character (kind=1) :: isw(4)
-      Integer :: J(1)
+      Integer (kind=4) :: J(1)
 
       isw  = Transfer(Iii,isw, 4)
       J    = Transfer(isw(4:1:-1), J)
       Iii  = J(1)
 
       Return
-    End Subroutine byteswap_int
+    End Subroutine byteswap_int32
 
 ! ********************************
 ! *
-    Subroutine byteswap_intV(Iii)
+    Subroutine byteswap_int32V(Iii)
 ! *
 ! ********************************
 
-      Integer, Intent (inout) :: Iii(:)
+      Integer (kind=4), Intent (inout) :: Iii(:)
       
       Character (kind=1) :: isw(4)
-      Integer :: J(1), K
+      Integer (kind=4) :: J(1), K
 
       Do K = 1, Size(Iii)
          isw  = Transfer(Iii(K),isw, 4)
@@ -263,7 +360,46 @@ MODULE BDio
       End Do
 
       Return
-    End Subroutine byteswap_intV
+    End Subroutine byteswap_int32V
+
+! ********************************
+! *
+    Subroutine byteswap_int64(Iii)
+! *
+! ********************************
+
+      Integer (kind=8), Intent (inout) :: Iii
+      
+      Character (kind=1) :: isw(8)
+      Integer (kind=8) :: J(1)
+
+      isw  = Transfer(Iii,isw, 8)
+      J    = Transfer(isw(8:1:-1), J)
+      Iii  = J(1)
+
+      Return
+    End Subroutine byteswap_int64
+
+! ********************************
+! *
+    Subroutine byteswap_int64V(Iii)
+! *
+! ********************************
+
+      Integer (kind=8), Intent (inout) :: Iii(:)
+      
+      Character (kind=1) :: isw(8)
+      Integer (kind=8) :: J(1)
+      Integer :: K
+
+      Do K = 1, Size(Iii)
+         isw  = Transfer(Iii(K),isw, 8)
+         J    = Transfer(isw(8:1:-1), J)
+         Iii(K)  = J(1)
+      End Do
+
+      Return
+    End Subroutine byteswap_int64V
 
 ! ********************************
 ! *
