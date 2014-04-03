@@ -6,6 +6,8 @@ Program AA
   USE ModBDIO
   USE Statistics
 
+  Integer, Parameter :: Ns=58754
+
   Type (BDIO) :: bb
   Character (len=200) :: fn, type
   Character (kind=1) :: ch
@@ -19,34 +21,44 @@ Program AA
   Real (kind=8) :: r8
   Complex (kind=DPC) :: z16
 
-  Real (kind=DP) :: da(34), db(34)
-  Complex (kind=DPC) :: zarr(34)
+  Real (kind=DP) :: da(Ns), db(Ns)
+  Complex (kind=DPC) :: zarr(Ns)
 
 
   If (.not.GetOpt('-i', fn)) Stop
 
 
-  CALL SetLuxLevel(6)
+  CALL SetLuxLevel(5)
+  CALL Putluxseed()
   I(1) = LUXrandomize()
   CALL Random_Number(dd)
 
 
-  CALL Normal(db)
-  Write(*,*)j
-  bb = BDIO_open(fn, 'a')
-  CALL BDIO_start_record(bb,BDIO_BIN_F64LE,2)
+
+  Forall (j=1:100) I(j) = j
+
+
+  bb = BDIO_open(fn, 'a')!, 'Test file with complex numbers')
+!  CALL BDIO_show(bb)   alberto
+  CALL BDIO_start_record(bb,BDIO_BIN_F64LE,2,.true.)
   CALL Normal(db)
   CALL Normal(da)
   zarr = Cmplx(da, db)
-  Write(*,*)BDIO_write(bb,zarr)
-  CALL BDIO_close(bb)
+  Write(*,*)BDIO_write(bb,zarr), ' Complex written'
 
+  CALL BDIO_start_record(bb,BDIO_BIN_INT32LE,2,.false.)
+  Write(*,*)BDIO_write(bb,I)
+  CALL BDIO_start_record(bb,BDIO_BIN_INT32LE,2,.true.)
+  Write(*,*)BDIO_write(bb,I)
+
+  Stop
   zarr = Cmplx(0.0_DP,0.0_DP)
   bb = BDIO_Open(fn,'r')
-  Write(*,*)bb%tcnt, bb%rcnt, bb%hcnt
+!  Write(*,*)bb%tcnt, bb%rcnt, bb%hcnt
   CALL BDIO_Seek(bb,bb%tcnt-1)
-  Write(*,*)BDIO_read(bb,zarr(1:2))
-  Write(*,*)zarr(1:4)
+  Write(*,*)BDIO_read(bb,zarr(1:2)), ' Complex read!'
+!  Write(*,*)zarr(1:4)
+
 
   Stop
 !!$  CALL BDIO_start_record(bb,BDIO_BIN_INT32LE,7)

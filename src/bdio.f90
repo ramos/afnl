@@ -35,79 +35,44 @@ MODULE ModBDio
   IMPLICIT NONE
 
 
-  Integer, Parameter :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2, &
-       & MAXFNAME = 4096
+  Integer, Parameter, Private :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2, &
+       & MAXFNAME = 4096, BDIO_SHORT_LEN = 256, BDIO_LONG_LEN = 4096, &
+       & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1
 
-  Integer :: BDIO_MAGIC, BDIO_VERSION, BDIO_BIN_GENERIC, &
-       & BDIO_ASC_EXEC, BDIO_BIN_INT32BE, BDIO_BIN_INT32LE, &
-       & BDIO_BIN_INT64BE, BDIO_BIN_INT64LE, BDIO_BIN_F32BE, &
-       & BDIO_BIN_F32LE, BDIO_BIN_F64BE, BDIO_BIN_F64LE, &
-       & BDIO_ASC_GENERIC, BDIO_ASC_XML, BDIO_BIN_INT32, &
-       & BDIO_BIN_INT64, BDIO_BIN_F32, BDIO_BIN_F64, &
-       & BDIO_H_STATE, BDIO_R_STATE, &
-       & BDIO_N_STATE, BDIO_E_STATE, BDIO_LEND, BDIO_BEND, &
-       & BDIO_MAX_RECORD_LENGTH, BDIO_MAX_LONG_RECORD_LENGTH, &
-       & BDIO_BUF_SIZE, BDIO_MAX_HOST_LENGTH, BDIO_MAX_USER_LENGTH, &
-       & BDIO_MAX_PINFO_LENGTH
+  Integer, Parameter :: BDIO_BIN_GENERIC = 0, BDIO_ASC_EXEC = 1, &
+       & BDIO_BIN_INT32BE = 2, BDIO_BIN_INT32LE = 3, &
+       & BDIO_BIN_INT64BE = 4, BDIO_BIN_INT64LE = 5, &
+       & BDIO_BIN_F32BE   = 6, BDIO_BIN_F32LE   = 7, &
+       & BDIO_BIN_F64BE   = 8, BDIO_BIN_F64LE   = 9, &
+       & BDIO_ASC_GENERIC =10, BDIO_ASC_XML     =11, &
+       & BDIO_BIN_INT32 = 240, BDIO_BIN_INT64 = 241, &
+       & BDIO_BIN_F32   = 242, BDIO_BIN_F64   = 243
+
 
   Logical :: DEFAULT_HASH_CHECK = .False.
 
-  Data BDIO_MAGIC /Z'7ffbd07e'/
-  Data BDIO_VERSION /1/
-  
-  ! Record data formats
-  DATA BDIO_BIN_GENERIC /Z'00'/
-  DATA BDIO_ASC_EXEC    /Z'01'/
-  DATA BDIO_BIN_INT32BE /Z'02'/
-  DATA BDIO_BIN_INT32LE /Z'03'/
-  DATA BDIO_BIN_INT64BE /Z'04'/
-  DATA BDIO_BIN_INT64LE /Z'05'/
-  DATA BDIO_BIN_F32BE   /Z'06'/
-  DATA BDIO_BIN_F32LE   /Z'07'/
-  DATA BDIO_BIN_F64BE   /Z'08'/
-  DATA BDIO_BIN_F64LE   /Z'09'/
-  DATA BDIO_ASC_GENERIC /Z'0A'/
-  DATA BDIO_ASC_XML     /Z'0B'/
-
-  DATA BDIO_BIN_INT32   /Z'F0'/
-  DATA BDIO_BIN_INT64   /Z'F1'/
-  DATA BDIO_BIN_F32     /Z'F2'/
-  DATA BDIO_BIN_F64     /Z'F3'/
-
-  DATA  BDIO_H_STATE /1/
-  DATA  BDIO_R_STATE /2/
-  DATA  BDIO_N_STATE /3/
-  DATA  BDIO_E_STATE /4/
-
-  DATA  BDIO_LEND /0/
-  DATA  BDIO_BEND /1/
-
-  DATA  BDIO_MAX_RECORD_LENGTH /1048575/
-  DATA  BDIO_MAX_LONG_RECORD_LENGTH /268435455 /
-
-  DATA  BDIO_BUF_SIZE /7777/
-
-  DATA  BDIO_MAX_HOST_LENGTH /256/
-
-  DATA  BDIO_MAX_USER_LENGTH /33/
-
-  DATA  BDIO_MAX_PINFO_LENGTH /3505/
-  
   Type :: BDIO
      Integer :: ifn, rcnt=0, hcnt=0, tcnt=0
      Integer :: imode ! r/w/a
      Integer (kind=8) :: startfile=-1, endfile=-1, rwpos=-1
      Logical :: lendian, opened
+
+     Character (len=BDIO_SHORT_LEN) :: user='alberto', host='desy.de'
      
      Type (BDIO_record), pointer :: first => null(), last => null(), &
-          & current => null()
+          & current => null(), lasthdr => null()
   End type BDIO
 
   Type :: BDIO_record
      logical :: ishdr, islong
-     Integer (kind=8) :: rlen, rpos, rend
+     Integer (kind=8) :: rlen, rpos, rend, hlu, hlh, hcr, hmd 
      Integer :: rfmt = -1, ruinfo = -1, rid = -1, iver = -1, &
           & hash = 314159265
+
+     Integer :: created, modified, hlulen, hlhlen
+     Character (len=BDIO_SHORT_LEN) :: cuser, luser, chost, &
+          & lhost
+     Character (len=BDIO_LONG_LEN) :: info
 
      Type (BDIO_record), Pointer :: next => null(), prev => null()
   End type BDIO_RECORD
@@ -133,11 +98,7 @@ MODULE ModBDio
   End Interface BDIO_read
   
 
-  Private :: BDIO_MAGIC, BDIO_VERSION, BDIO_R_MODE, &
-       & BDIO_W_MODE, BDIO_A_MODE, BDIO_LEND, BDIO_BEND, &
-       & BDIO_MAX_RECORD_LENGTH, BDIO_MAX_LONG_RECORD_LENGTH, &
-       & BDIO_BUF_SIZE, BDIO_MAX_HOST_LENGTH, BDIO_MAX_USER_LENGTH, &
-       & BDIO_MAX_PINFO_LENGTH, byteswap_int32, byteswap_int32V, &
+  Private :: byteswap_int32, byteswap_int32V, &
        & byteswap_R, byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
        & byteswap_DZV, byteswap_ZV, byteswap_Z, byteswap_int64, &
        & byteswap_int64V, Rewrite_rlen, BDIO_read_f32, BDIO_read_f64, &
@@ -156,17 +117,12 @@ CONTAINS
       Type (BDIO), Intent (inout) :: fbd
       Type (BDIO_record), pointer :: p, n
 
-      Integer :: kont
-
       p => fbd%first
-
-      kont = 0
       Do 
          If (.not.Associated(p)) Exit
          n => p%next
          Deallocate(p)
          p => n
-         kont = kont+1
       End Do
       Close(fbd%ifn)
 
@@ -205,6 +161,10 @@ CONTAINS
       Type (BDIO_record), pointer :: p
 
       BDIO_write_i32 = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_i32', &
+           & 'Not in write mode') 
+
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -227,8 +187,9 @@ CONTAINS
       
       iln = fbd%current%rlen + 4_8*Size(ibuf)
       CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
 
-      If (ios == 0) BDIO_write_i32 = 4*Size(ibuf)
+      If (ios == 0) BDIO_write_i32 = Size(ibuf)
 
       Return
     End Function BDIO_write_i32
@@ -247,6 +208,10 @@ CONTAINS
       Type (BDIO_record), pointer :: p
 
       BDIO_write_f32 = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_f32', &
+           & 'Not in write mode') 
+
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -269,8 +234,9 @@ CONTAINS
 
       iln = fbd%current%rlen + 4_8*Size(buf)
       CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
 
-      If (ios == 0) BDIO_write_f32 = 4*Size(buf)
+      If (ios == 0) BDIO_write_f32 = Size(buf)
 
       Return
     End Function BDIO_write_f32
@@ -289,6 +255,10 @@ CONTAINS
       Type (BDIO_record), pointer :: p
 
       BDIO_write_i64 = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_i64', &
+           & 'Not in write mode') 
+
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -311,8 +281,9 @@ CONTAINS
       
       iln = fbd%current%rlen + 8_8*Size(ibuf)
       CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
 
-      If (ios == 0) BDIO_write_i64 = 8*Size(ibuf)
+      If (ios == 0) BDIO_write_i64 = Size(ibuf)
 
       Return
     End Function BDIO_write_i64
@@ -331,6 +302,10 @@ CONTAINS
       Type (BDIO_record), pointer :: p
 
       BDIO_write_f64 = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_if64', &
+           & 'Not in write mode') 
+
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -353,8 +328,9 @@ CONTAINS
       
       iln = fbd%current%rlen + 8_8*Size(ibuf)
       CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
 
-      If (ios == 0) BDIO_write_f64 = 8*Size(ibuf)
+      If (ios == 0) BDIO_write_f64 = Size(ibuf)
 
       Return
     End Function BDIO_write_f64
@@ -373,6 +349,10 @@ CONTAINS
       Type (BDIO_record), pointer :: p
 
       BDIO_write_z64 = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_z64', &
+           & 'Not in write mode') 
+
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -395,8 +375,9 @@ CONTAINS
       
       iln = fbd%current%rlen + 16_8*Size(buf)
       CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
 
-      If (ios == 0) BDIO_write_z64 = 16*Size(buf)
+      If (ios == 0) BDIO_write_z64 = Size(buf)
 
       Return
     End Function BDIO_write_z64
@@ -415,6 +396,10 @@ CONTAINS
       Type (BDIO_record), pointer :: p
 
       BDIO_write_z32 = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_z32', &
+           & 'Not in write mode') 
+
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -437,8 +422,9 @@ CONTAINS
 
       iln = fbd%current%rlen + 8_8*Size(buf)
       CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
 
-      If (ios == 0) BDIO_write_z32 = 8*Size(buf)
+      If (ios == 0) BDIO_write_z32 = Size(buf)
 
       Return
     End Function BDIO_write_z32
@@ -469,6 +455,100 @@ CONTAINS
 
       Return
     End Subroutine BDIO_seek
+
+! ********************************
+! *
+    Subroutine BDIO_start_header(fbd, info)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Character (len=*), Intent (in) :: info
+      
+      Integer (kind=4) :: i4, I, iln, iv
+      Integer (kind=8) :: ipos, iend
+      Type (BDIO_Record), pointer :: newr, aux
+
+      If (isLittleEndian()) Then
+         i4 = BDIO_MAGIC
+         Write(fbd%ifn)i4
+         fbd%lendian = .True.
+      Else
+         i4 = BDIO_MAGIC
+         CALL Byteswap(i4)
+         Write(fbd%ifn)i4
+         fbd%lendian = .False.
+      End If
+
+      ! First 12 bits are the header length
+      i4 = 0
+      iv = 1
+      CALL MVBits(iv,0,16,i4,16)
+      If (.not.fbd%lendian) CALL ByteSwap(i4)
+      Write(fbd%ifn)i4
+      Inquire(fbd%ifn, pos=ipos)
+
+      Allocate(newr)
+      i4 = 0
+      Write(fbd%ifn)i4
+
+      Inquire(fbd%ifn,Pos=newr%hcr)
+      Write(fbd%ifn)UnixTime()
+      Inquire(fbd%ifn,Pos=newr%hmd)
+      Write(fbd%ifn)UnixTime()
+
+      Write(fbd%ifn)Trim(fbd%user)//char(0)
+      Inquire(fbd%ifn,Pos=newr%hlu)
+      Write(fbd%ifn)Trim(fbd%user)//char(0)
+      newr%hlulen = Len(Trim(fbd%host))
+
+      Write(fbd%ifn)Trim(fbd%host)//char(0)
+      Inquire(fbd%ifn,Pos=newr%hlh)
+      Write(fbd%ifn)Trim(fbd%host)//char(0)
+      newr%hlhlen = Len(Trim(fbd%host))
+
+      Write(fbd%ifn)Trim(info)//char(0)
+
+      Inquire(fbd%ifn, Pos=iend)
+      If (Mod(Int(iend-ipos,kind=4),4) /= 0) Then
+         Do I = 1, (Int(iend-ipos,kind=4)/4+1)*4-Int(iend-ipos,kind=4)
+            Write(fbd%ifn)char(0)
+         End Do
+         Inquire(fbd%ifn, Pos=iend)
+      End If
+
+      iln = Int(iend-ipos,kind=4)
+      Read(fbd%ifn,Pos=ipos-4)i4
+      If (.not.fbd%lendian) CALL ByteSwap(i4)
+      CALL MVBits(iln,0,12,i4,0)
+      If (.not.fbd%lendian) CALL ByteSwap(i4)
+      Write(fbd%ifn,Pos=ipos-4)i4
+      Read(fbd%ifn, Pos=iend)
+
+
+      newr%ishdr = .True.
+      newr%rlen  = Int(iln,kind=8)
+      newr%rpos  = ipos
+      newr%rend  = iend
+      newr%rid   = fbd%tcnt
+      newr%iver  = iv
+      If (Associated(fbd%first)) Then
+         aux => fbd%last
+
+         aux%next => newr
+         newr%prev => aux
+         fbd%last => newr
+      Else
+         Allocate(fbd%first)
+         fbd%first => newr
+         fbd%last  => newr
+      End If
+      fbd%hcnt = fbd%hcnt + 1
+      fbd%tcnt = fbd%tcnt + 1
+      fbd%lasthdr => newr
+
+      Return
+    End Subroutine BDIO_start_header
 
 ! ********************************
 ! *
@@ -552,6 +632,10 @@ CONTAINS
 
       BDIO_read_i32 = -1
 
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_i32', &
+           & 'Not in read mode') 
+
       If (Present(do_chk)) Then
          chk = do_chk
       Else
@@ -574,10 +658,10 @@ CONTAINS
            & CALL ByteSwap(ibuf)
 
       
-      If (Present(do_chk)) p%hash = Hash(ibuf(:nmax), p%hash)
+      If (chk) p%hash = Hash(ibuf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 4*nmax
 
-      If (ios == 0) BDIO_read_i32 = 4*Int(nmax,kind=4)
+      If (ios == 0) BDIO_read_i32 = Int(nmax,kind=4)
       
       Return
     End Function BDIO_read_i32
@@ -598,6 +682,9 @@ CONTAINS
       logical :: chk
 
       BDIO_read_i64 = -1
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_i64', &
+           & 'Not in read mode') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -620,10 +707,10 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_INT64LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(ibuf)
       
-      If (Present(do_chk)) p%hash = Hash(ibuf(:nmax), p%hash)
+      If (chk) p%hash = Hash(ibuf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
-      If (ios == 0) BDIO_read_i64 = 8*Int(nmax,kind=4)
+      If (ios == 0) BDIO_read_i64 = Int(nmax,kind=4)
       
       Return
     End Function BDIO_read_i64
@@ -644,6 +731,9 @@ CONTAINS
       logical :: chk
 
       BDIO_read_f32 = -1
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_f32', &
+           & 'Not in read mode') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -667,10 +757,10 @@ CONTAINS
            & CALL ByteSwap(buf)
 
       
-      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      If (chk) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 4*nmax
 
-      If (ios == 0) BDIO_read_f32 = 4*Int(nmax,kind=4)
+      If (ios == 0) BDIO_read_f32 = Int(nmax,kind=4)
       
       Return
     End Function BDIO_read_f32
@@ -691,6 +781,9 @@ CONTAINS
       logical :: chk
 
       BDIO_read_f64 = -1
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_f64', &
+           & 'Not in read mode') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -713,10 +806,10 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(buf)
       
-      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      If (do_chk) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
-      If (ios == 0) BDIO_read_f64 = 8*Int(nmax,kind=4)
+      If (ios == 0) BDIO_read_f64 = Int(nmax,kind=4)
       
       Return
     End Function BDIO_read_f64
@@ -737,6 +830,9 @@ CONTAINS
       logical :: chk
 
       BDIO_read_z32 = -1
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_z32', &
+           & 'Not in read mode') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -747,7 +843,7 @@ CONTAINS
       If (  (p%rfmt /= BDIO_BIN_F32LE).and.&
            &(p%rfmt /= BDIO_BIN_F32BE).and.&
            &(p%rfmt /= BDIO_BIN_F32  ) ) Then
-         Call BDIO_error(fbd,'BDIO_Read_f32', &
+         Call BDIO_error(fbd,'BDIO_Read_z32', &
               & 'Incorrect data type') 
       End If
 
@@ -760,10 +856,10 @@ CONTAINS
            & CALL ByteSwap(buf)
 
       
-      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      If (do_chk) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
-      If (ios == 0) BDIO_read_z32 = 8*Int(nmax,kind=4)
+      If (ios == 0) BDIO_read_z32 = Int(nmax,kind=4)
       
       Return
     End Function BDIO_read_z32
@@ -784,6 +880,9 @@ CONTAINS
       logical :: chk
 
       BDIO_read_z64 = -1
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_z64', &
+           & 'Not in read mode') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -794,7 +893,7 @@ CONTAINS
       If (  (p%rfmt /= BDIO_BIN_F64LE).and.&
            &(p%rfmt /= BDIO_BIN_F64BE).and.&
            &(p%rfmt /= BDIO_BIN_F64  ) ) Then
-         Call BDIO_error(fbd,'BDIO_Read_f64', &
+         Call BDIO_error(fbd,'BDIO_Read_z64', &
               & 'Incorrect data type') 
       End If
 
@@ -806,10 +905,10 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(buf)
       
-      If (Present(do_chk)) p%hash = Hash(buf(:nmax), p%hash)
+      If (chk) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 16*nmax
 
-      If (ios == 0) BDIO_read_z64 = 16*Int(nmax,kind=4)
+      If (ios == 0) BDIO_read_z64 = Int(nmax,kind=4)
       
       Return
     End Function BDIO_read_z64
@@ -858,17 +957,24 @@ CONTAINS
          Inquire(fbd%ifn, Pos=ipos)
 
          fbd%opened = .True.
-!         CALL BDIO_Read_header(fbd)
+         CALL BDIO_parse(fbd)
+         fbd%current => fbd%first
       CASE (BDIO_A_MODE) 
          Open (File=Trim(fname), unit=fbd%ifn, ACTION="READWRITE", &
               & Form='UNFORMATTED', Access='STREAM')
          Rewind(fbd%ifn)
 
          fbd%opened = .True.
-      End Select
+         CALL BDIO_parse(fbd)
+         fbd%current => fbd%last
+      CASE (BDIO_W_MODE)
+         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READWRITE", &
+              & Form='UNFORMATTED', Access='STREAM', STATUS='NEW')
 
-      CALL BDIO_parse(fbd)
-      fbd%current => fbd%first
+         fbd%opened=.True.
+         CALL BDIO_start_header(fbd,protocol_info)
+         fbd%current => fbd%first
+      End Select
 
       Return
     End Function BDIO_open
@@ -883,7 +989,7 @@ CONTAINS
 
       Integer (kind=4) :: i4, irc
       Integer (kind=8) :: ipos
-      
+      Character (len=32) :: ai
       
       Rewind(fbd%ifn)
       Do 
@@ -899,7 +1005,8 @@ CONTAINS
             Read(fbd%ifn, Pos=ipos)
             CALL BDIO_Read_record(fbd)
          Else
-            Write(0,*)'Corrupt file!'
+            Write(ai,'(1I32)')ipos
+            CALL BDIO_error(fbd, 'BDIO_parse', 'Neither a record nor a header at position: '//Trim(ai))
          End If
       End Do
          
@@ -919,7 +1026,6 @@ CONTAINS
       Integer (kind=4) :: i4, ilong, irc, j, ifmt, iuinfo
       Integer (kind=8) :: ipos, iend, iln
       Integer (kind=8) :: jlong
-      Character (kind=1) :: ch
 
       Type (BDIO_Record), pointer :: newr, aux
 
@@ -941,10 +1047,11 @@ CONTAINS
          Read(fbd%ifn)i4
          CALL MVBits(i4,0,32,j,0)
          jlong=Int(j,kind=8)
-         CALL MVBits(jlong,20,32,iln,0)
+         CALL MVBits(jlong,0,32,iln,20)
+         iln = iln - 4
       End If
       Inquire(fbd%ifn, Pos=ipos)
-      Read(fbd%ifn)(ch, jlong=1, iln)
+      Read(fbd%ifn, Pos=ipos+iln)
       Inquire(fbd%ifn, Pos=iend)
       
       Allocate(newr)
@@ -987,11 +1094,12 @@ CONTAINS
 
       Type (BDIO), Intent (inout) :: ptf
 
-      Integer (kind=4) :: i4, j, isp, iv, iln
+      Integer (kind=4) :: i4, isp, iv, iln
       Character (kind=1) :: ch
       Integer (kind=8) :: ipos, iend
 
       Type (BDIO_Record), pointer :: newr, aux
+      Integer :: I
 
       Read(ptf%ifn,END=20)i4
       if (.not.ptf%lendian) CALL ByteSwap(i4)
@@ -1010,9 +1118,8 @@ CONTAINS
       CALL MVbits(i4,12,4,isp,0)
       CALL MVbits(i4,16,16,iv,0)
       Inquire(ptf%ifn, pos=ipos)
-      Read(ptf%ifn)(ch, j=1, iln-1)
+      Read(ptf%ifn,Pos=ipos+iln)
       Inquire(ptf%ifn, pos=iend)
-      Read(ptf%ifn)ch
       
       Allocate(newr)
       newr%ishdr = .True.
@@ -1021,6 +1128,61 @@ CONTAINS
       newr%rend  = iend
       newr%rid   = ptf%tcnt
       newr%iver  = iv
+
+      Read(ptf%ifn,Pos=ipos)
+      If (iln>0) Then
+         Read(ptf%ifn)i4
+         Inquire(ptf%ifn,Pos=newr%hcr)
+         Read(ptf%ifn)newr%created
+         Inquire(ptf%ifn,Pos=newr%hmd)
+         Read(ptf%ifn)newr%modified
+         I=1
+         Do
+            Read(ptf%ifn)ch
+            If (ch == char(0)) Exit
+            newr%cuser(I:I) = ch
+            I=I+1
+         End Do
+!         Write(*,*)'cuser: ', I, Trim(newr%cuser)
+         I=1
+         Do
+            Inquire(ptf%ifn,Pos=newr%hlu)
+            Read(ptf%ifn)ch
+            If (ch == char(0)) Exit
+            newr%luser(I:I) = ch
+            I=I+1
+         End Do
+         newr%hlulen=I
+!         Write(*,*)'luser: ', I, Trim(newr%luser)
+         I=1
+         Do
+            Read(ptf%ifn)ch
+            If (ch == char(0)) Exit
+            newr%chost(I:I) = ch
+            I=I+1
+         End Do
+!         Write(*,*)'chost: ', I, Trim(newr%chost)
+         I=1
+         Do
+            Inquire(ptf%ifn,Pos=newr%hlh)
+            Read(ptf%ifn)ch
+            If (ch == char(0)) Exit
+            newr%lhost(I:I) = ch
+            I=I+1
+         End Do
+         newr%hlhlen=I
+!         Write(*,*)'lhost: ', I, Trim(newr%lhost)
+         I=1
+         Do
+            Read(ptf%ifn)ch
+            If (ch == char(0)) Exit
+            newr%info(I:I) = ch
+            I=I+1
+         End Do
+!         Write(*,*)'info: ', I, Trim(newr%info)
+      End If
+      Read(ptf%ifn,Pos=iend)
+      
       If (Associated(ptf%first)) Then
          aux => ptf%last
 
@@ -1034,6 +1196,7 @@ CONTAINS
       End If
       ptf%hcnt = ptf%hcnt + 1
       ptf%tcnt = ptf%tcnt + 1
+      ptf%lasthdr => newr
 
 20    Continue
 
@@ -1090,20 +1253,28 @@ CONTAINS
          p => p%next
       End Do
 
-!!$      p => ptf%last
-!!$      Do 
-!!$         If (.not.Associated(p)) Exit
-!!$         If (p%ishdr) Then
-!!$            Write(*,*)'HDR', p%rid, p%rlen, p%rpos, p%rend
-!!$         Else
-!!$            Write(*,*)'RCD', p%rid, p%rlen, p%rpos, p%rend
-!!$         End If
-!!$         p => p%prev
-!!$      End Do
-
-
       Return
     End Subroutine BDIO_show
+
+! ********************************
+! *
+    Subroutine Rewrite_hdrinfo(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+
+      Integer (kind=8) :: actual
+      Type (BDIO_record), pointer :: ph
+
+      Inquire(fbd%ifn,Pos=actual)
+      ph => fbd%lasthdr
+      Write(fbd%ifn,Pos=ph%hmd)UnixTime()
+
+      Read(fbd%ifn,Pos=actual)
+
+      Return
+    End Subroutine Rewrite_hdrinfo
 
 ! ********************************
 ! *
@@ -1118,12 +1289,15 @@ CONTAINS
       Integer (kind=8) :: jl
       Type (BDIO_record), pointer :: p
 
+      i4 = 0
       p => fbd%current
       If (p%islong) Then
-         CALL MVBits(iln, 0, 20, jl, 0)
+         Read(fbd%ifn,Pos=p%rpos-8)i4(1:2)
+         CALL MVBits(iln+4, 0, 20, jl, 0)
          j = Int(jl,kind=4)
          CALL MVBits(j,0,20,i4(1),12)
-         CALL MVBits(iln, 21, 32, jl, 0)
+         jl = 0
+         CALL MVBits(iln+4, 20, 32, jl, 0)
          j = Int(jl,kind=4)
          CALL MVBits(j,0,32,i4(2),0)
          Write(fbd%ifn,Pos=p%rpos-8)i4(1:2)
@@ -1401,6 +1575,124 @@ CONTAINS
 
       Return
     End Subroutine byteswap_ZV
+
+! ********************************
+! *
+    Subroutine BDIO_setuser(fbd, suser)
+! *
+! ********************************
+      
+      Type (BDIO), Intent (inout) :: fbd
+      Character (len=*), Intent (in) :: suser
+      Integer :: I
+
+      fbd%user = ''
+      Do I = 1, Min(len(Trim(suser)),BDIO_SHORT_LEN-1)
+         fbd%user(I:I) = suser(I:I)
+      End Do
+      fbd%user(I:I) = achar(0)
+
+      Return
+    End Subroutine BDIO_setuser
+
+! ********************************
+! *
+    Subroutine BDIO_sethost(fbd,shost)
+! *
+! ********************************
+      
+      Type (BDIO), Intent (inout) :: fbd
+      Character (len=*), Intent (in) :: shost
+      Integer :: I
+
+      fbd%host = ''
+      Do I = 1, Min(len(Trim(shost)),BDIO_SHORT_LEN-1)
+         fbd%host(I:I) = shost(I:I)
+      End Do
+      fbd%host(I:I) = achar(0)
+
+      Return
+    End Subroutine BDIO_sethost
+
+! ********************************
+! *
+    Subroutine BDIO_sethashing(ok)
+! *
+! ********************************
+      
+      Logical, Intent (in) :: ok
+      
+      DEFAULT_HASH_CHECK = ok
+
+      Return
+    End Subroutine BDIO_sethashing
+
+
+!!$! ********************************
+!!$! *
+!!$    Subroutine unix2date(utime, asctime)
+!!$! *
+!!$! ********************************
+!!$
+!!$      Integer, Intent (in) ::  utime
+!!$      Character (len=24), Intent (out) :: asctime
+!!$      Integer :: idate(6)
+!!$      
+!!$      !*utime  input  Unix system time, seconds since 1970.0
+!!$      !*idate  output Array: 1=year, 2=month, 3=date, 4=hour, 5=minute, 6=secs
+!!$      !*-Author  Clive Page, Leicester University, UK.   1995-MAY-2
+!!$      Integer :: mjday, nsecs
+!!$      Real (kind=4) :: day
+!!$      
+!!$      !*Note the MJD algorithm only works from years 1901 to 2099.
+!!$      
+!!$      mjday    = int(utime/86400 + 40587)
+!!$      idate(1) = 1858 + int( (mjday + 321.51) / 365.25)
+!!$      day      = aint( mod(mjday + 262.25, 365.25) ) + 0.5
+!!$      idate(2) = 1 + int(mod(day / 30.6 + 2.0, 12.0) )
+!!$      idate(3) = 1 + int(mod(day,30.6))
+!!$      nsecs    = mod(utime, 86400)
+!!$      idate(6) = mod(nsecs, 60)
+!!$      nsecs    = nsecs / 60
+!!$      idate(5) = mod(nsecs, 60)
+!!$      idate(4) = nsecs / 60
+!!$
+!!$      Write(asctime,10)NAMES_OF_DAYS(t%wday), ' ', &
+!!$           & NAMES_OF_MONTHS(idate(2)), ' ', t%mday,' ', &
+!!$           & t%hour, ':', t%min, ':', t%sec, ' ', idate(1)
+!!$
+!!$10  FORMAT((4A,1I2,1A,1I2,1A1,1I2.2,1A1,1I2.2,1A1,1I4))
+!!$
+!!$      Return
+!!$    End Subroutine unix2date
+
+Function UnixTime()
+
+  Integer :: UnixTime
+
+  Character (len=8)  :: Datestr
+  Character (len=10) :: Timestr
+
+  Character (len=1) :: ch
+  Integer :: year,mon,mday,hour,min,sec,msec
+  Integer, Parameter :: monadd(12) = &
+       & (/0,31,59,90,120,151,181,212,242,273,303,334/)
+
+  
+  CALL Date_and_Time(Datestr, Timestr)
+  
+  Read(Datestr,'(1I4,1I2,1I2)')year, mon, mday
+  Read(Timestr,'(1I2,1I2,1I2,1A1,1I3)')hour, min, sec, &
+       & ch, msec
+    
+  year = year - 1970
+  mday = mday + monadd(mon) - 1
+  hour = hour-2
+  UnixTime = ((((year * 365 + year/4 - year/100 + year/400 &
+       & + mday)) * 24 + hour) * 60 + min) * 60 + sec 
+
+  Return
+End Function UnixTime
 
 
 End MODULE ModBDio
