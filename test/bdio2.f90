@@ -23,7 +23,7 @@ Program AA
 
   Real (kind=DP) :: da(Ns), db(Ns)
   Complex (kind=DPC) :: zarr(Ns)
-
+  Character (len=1) :: c(1)
 
   If (.not.GetOpt('-i', fn)) Stop
 
@@ -39,17 +39,55 @@ Program AA
 
 
   bb = BDIO_open(fn, 'a')!, 'Test file with complex numbers')
-!  CALL BDIO_show(bb)   alberto
-  CALL BDIO_start_record(bb,BDIO_BIN_F64LE,2,.true.)
-  CALL Normal(db)
-  CALL Normal(da)
-  zarr = Cmplx(da, db)
-  Write(*,*)BDIO_write(bb,zarr), ' Complex written'
+  j=0
+  
+  fn = ''
+  If (GetOpt('-a', fn)) Then
+     CALL BDIO_start_record(bb,BDIO_ASC_GENERIC,3,.true.)
+     Open (Unit=33,file=Trim(fn),ACCESS='STREAM',FORM='UNFORMATTED',ACTION="READ")
+     Do 
+        Read(33,END=10)c
+        j=j+BDIO_write(bb,c)
+     End Do
+  End If
 
-  CALL BDIO_start_record(bb,BDIO_BIN_INT32LE,2,.false.)
-  Write(*,*)BDIO_write(bb,I)
-  CALL BDIO_start_record(bb,BDIO_BIN_INT32LE,2,.true.)
-  Write(*,*)BDIO_write(bb,I)
+10   Continue
+
+  fn = ''
+  If (GetOpt('-x', fn)) Then
+     CALL BDIO_start_record(bb,BDIO_BIN_GENERIC,3,.true.)
+     Open (Unit=33,file=Trim(fn),ACCESS='STREAM',FORM='UNFORMATTED',ACTION="READ")
+     Do 
+        Read(33,END=20)c
+        j=j+BDIO_write(bb,c)
+     End Do
+  End If
+
+20   Continue
+
+  Write(*,*)'Total Wrote ', j, ' bytes'
+
+  fn = ''
+  If (GetOpt('-r', isw)) Then
+     CALL BDIO_Seek(bb,isw)
+     Do 
+        If (BDIO_read(bb,c) < 0) Exit
+        Write(*,'(1A1)',ADVANCE="NO")c(1)
+     End Do
+  End If
+
+  fn = ''
+  If (GetOpt('-ir', isw)) Then
+     CALL BDIO_Seek(bb,isw)
+     Allocate(ibuf(bb%current%rlen/4))
+     write(*,*)'Read: ', BDIO_Read(bb, ibuf, .true.)
+     Write(*,*)'Hash on the fly: ', bb%current%hash
+     ibuf(34) = ibuf(34) + 1
+     Write(*,*)'Recomputed:      ', Hash(ibuf)
+  End If
+
+
+  Write(*,*)'Total Wrote ', j, ' bytes'
 
   Stop
   zarr = Cmplx(0.0_DP,0.0_DP)

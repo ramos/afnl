@@ -55,7 +55,7 @@ MODULE ModBDio
      Integer :: ifn, rcnt=0, hcnt=0, tcnt=0
      Integer :: imode ! r/w/a
      Integer (kind=8) :: startfile=-1, endfile=-1, rwpos=-1
-     Logical :: lendian, opened
+     Logical :: lendian, opened = .False.
 
      Character (len=BDIO_SHORT_LEN) :: user='alberto', host='desy.de'
      
@@ -88,13 +88,13 @@ MODULE ModBDio
   Interface BDIO_write
      Module Procedure BDIO_write_i32, BDIO_write_i64, &
           & BDIO_write_f32, BDIO_write_f64, BDIO_write_z32, &
-          & BDIO_write_z64
+          & BDIO_write_z64, BDIO_write_bin
   End Interface BDIO_write
   
   Interface BDIO_read
      Module Procedure BDIO_read_i32, BDIO_read_i64, &
           & BDIO_read_f32, BDIO_read_f64, BDIO_read_z32, &
-          & BDIO_read_z64
+          & BDIO_read_z64, BDIO_read_bin
   End Interface BDIO_read
   
 
@@ -103,8 +103,8 @@ MODULE ModBDio
        & byteswap_DZV, byteswap_ZV, byteswap_Z, byteswap_int64, &
        & byteswap_int64V, Rewrite_rlen, BDIO_read_f32, BDIO_read_f64, &
        & BDIO_read_i32, BDIO_read_i64, BDIO_read_z32, BDIO_read_z64, &
-       & BDIO_write_i32, BDIO_write_i64, BDIO_write_f32, &
-       & BDIO_write_f64, BDIO_write_z32, BDIO_write_z64
+       & BDIO_write_i32, BDIO_write_i64, BDIO_write_f32, BDIO_write_bin, &
+       & BDIO_write_f64, BDIO_write_z32, BDIO_write_z64, BDIO_read_bin
 
 CONTAINS
 
@@ -125,6 +125,7 @@ CONTAINS
          p => n
       End Do
       Close(fbd%ifn)
+      fbd%opened = .False.
 
       Return
     End Subroutine BDIO_close
@@ -149,21 +150,93 @@ CONTAINS
 
 ! ********************************
 ! *
-    Function BDIO_write_i32(fbd,ibuf)
+    Function BDIO_write_bin(fbd,cbuf,do_chk)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Character, Intent (in) :: cbuf(:)
+      Logical, Optional :: do_chk
+      Integer :: BDIO_write_bin, ios
+
+      Integer (kind=8) :: iln, nmax, is, ie, i
+      Type (BDIO_record), pointer :: p
+      logical :: chk
+      Integer :: ibf(128)
+
+      BDIO_write_bin = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Write_bin', &
+           & 'Not in write mode') 
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = .False. ! Do not checksum binary data
+      End If
+      fbd%current => fbd%last
+      fbd%rwpos = fbd%last%rend
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_ASC_GENERIC).and.&
+           &(p%rfmt /= BDIO_ASC_XML).and.&
+           &(p%rfmt /= BDIO_BIN_GENERIC).and.&
+           &(p%rfmt /= BDIO_ASC_EXEC  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Write_bin', &
+              & 'Incorrect data type') 
+      End If
+
+      Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)cbuf
+      
+      iln = fbd%current%rlen + Size(cbuf)
+      CALL Rewrite_rlen(fbd, iln)
+      CALL Rewrite_hdrinfo(fbd)
+
+      nmax = size(cbuf)
+      If (chk) Then
+         If (mod(nmax,4_8) /= 0) Call BDIO_error(fbd,'BDIO_Write_bin', &
+              & 'Binary data needs be multiple of 4bytes to checksum') 
+         I = 0
+         Do
+            is = 1+512*I
+            ie = is+512
+            If (ie > nmax) ie=nmax 
+            ibf = Transfer(cbuf(is:ie), ibf)
+            p%hash = Hash(ibf(:(ie-is)/4), p%hash)
+            If (ie == nmax) Exit
+            I = I+1
+         End Do
+      End If
+
+      If (ios == 0) BDIO_write_bin = Size(cbuf)
+
+      Return
+    End Function BDIO_write_bin
+
+! ********************************
+! *
+    Function BDIO_write_i32(fbd,ibuf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Integer (kind=4), Intent (inout) :: ibuf(:)
+      Logical, Optional :: do_chk
       Integer :: BDIO_write_i32, ios
 
       Integer (kind=8) :: iln
       Type (BDIO_record), pointer :: p
+      logical :: chk
 
       BDIO_write_i32 = -1
       If (fbd%imode == BDIO_R_MODE) &
-           & Call BDIO_error(fbd,'BDIO_Read_i32', &
+           & Call BDIO_error(fbd,'BDIO_Write_i32', &
            & 'Not in write mode') 
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
 
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
@@ -185,6 +258,7 @@ CONTAINS
          Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
       End If
       
+      If (chk) p%hash = Hash(ibuf, p%hash)
       iln = fbd%current%rlen + 4_8*Size(ibuf)
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
@@ -196,22 +270,29 @@ CONTAINS
 
 ! ********************************
 ! *
-    Function BDIO_write_f32(fbd,buf)
+    Function BDIO_write_f32(fbd,buf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Real (kind=4), Intent (inout) :: buf(:)
+      Logical, Optional :: do_chk
       Integer :: BDIO_write_f32, ios
 
       Integer (kind=8) :: iln
       Type (BDIO_record), pointer :: p
+      logical :: chk
 
       BDIO_write_f32 = -1
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_f32', &
            & 'Not in write mode') 
 
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -236,6 +317,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
+      If (chk) p%hash = Hash(buf, p%hash)
       If (ios == 0) BDIO_write_f32 = Size(buf)
 
       Return
@@ -243,22 +325,29 @@ CONTAINS
 
 ! ********************************
 ! *
-    Function BDIO_write_i64(fbd,ibuf)
+    Function BDIO_write_i64(fbd,ibuf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Integer (kind=8), Intent (inout) :: ibuf(:)
+      Logical, Optional :: do_chk
       Integer :: BDIO_write_i64, ios
 
       Integer (kind=8) :: iln
       Type (BDIO_record), pointer :: p
+      logical :: chk
 
       BDIO_write_i64 = -1
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_i64', &
            & 'Not in write mode') 
 
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -283,6 +372,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
+      If (chk) p%hash = Hash(ibuf, p%hash)
       If (ios == 0) BDIO_write_i64 = Size(ibuf)
 
       Return
@@ -290,22 +380,29 @@ CONTAINS
 
 ! ********************************
 ! *
-    Function BDIO_write_f64(fbd,ibuf)
+    Function BDIO_write_f64(fbd,ibuf, do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Real (kind=8), Intent (inout) :: ibuf(:)
+      Logical, Optional :: do_chk
       Integer :: BDIO_write_f64, ios
 
       Integer (kind=8) :: iln
       Type (BDIO_record), pointer :: p
+      logical :: chk
 
       BDIO_write_f64 = -1
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_if64', &
            & 'Not in write mode') 
 
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -330,6 +427,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
+      If (do_chk) p%hash = Hash(ibuf, p%hash)
       If (ios == 0) BDIO_write_f64 = Size(ibuf)
 
       Return
@@ -337,22 +435,29 @@ CONTAINS
     
 ! ********************************
 ! *
-    Function BDIO_write_z64(fbd,buf)
+    Function BDIO_write_z64(fbd,buf,do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Complex (kind=8), Intent (inout) :: buf(:)
+      Logical, Optional :: do_chk
       Integer :: BDIO_write_z64, ios
 
       Integer (kind=8) :: iln
       Type (BDIO_record), pointer :: p
+      logical :: chk
 
       BDIO_write_z64 = -1
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_z64', &
            & 'Not in write mode') 
 
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -377,6 +482,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
+      If (chk) p%hash = Hash(buf, p%hash)
       If (ios == 0) BDIO_write_z64 = Size(buf)
 
       Return
@@ -384,22 +490,29 @@ CONTAINS
     
 ! ********************************
 ! *
-    Function BDIO_write_z32(fbd,buf)
+    Function BDIO_write_z32(fbd,buf,do_chk)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Complex (kind=4), Intent (inout) :: buf(:)
+      Logical, Optional :: do_chk
       Integer :: BDIO_write_z32, ios
 
       Integer (kind=8) :: iln
       Type (BDIO_record), pointer :: p
+      logical :: chk
 
       BDIO_write_z32 = -1
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_z32', &
            & 'Not in write mode') 
 
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
       fbd%current => fbd%last
       fbd%rwpos = fbd%last%rend
       p => fbd%current
@@ -424,6 +537,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
+      If (do_chk) p%hash = Hash(buf, p%hash)
       If (ios == 0) BDIO_write_z32 = Size(buf)
 
       Return
@@ -614,6 +728,68 @@ CONTAINS
 
       Return
     End Subroutine BDIO_start_record
+
+! ********************************
+! *
+    Function BDIO_read_bin(fbd, cbuf, do_chk)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Character (len=1), Intent (inout) :: cbuf(:)
+      Logical, Optional :: do_chk
+      Integer :: BDIO_read_bin, ios
+
+      Type (BDIO_record), pointer :: p
+      Integer (kind=8) :: nmax, is, ie, i
+      logical :: chk
+      Integer :: ibf(128)
+
+      BDIO_read_bin = -1
+
+      If (fbd%imode == BDIO_W_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Read_bin', &
+           & 'Not in read mode') 
+
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = .False. ! Do not checksum binary data
+      End If
+      p => fbd%current
+      If (  (p%rfmt /= BDIO_ASC_GENERIC).and.&
+           &(p%rfmt /= BDIO_ASC_XML).and.&
+           &(p%rfmt /= BDIO_BIN_GENERIC).and.&
+           &(p%rfmt /= BDIO_ASC_EXEC  ) ) Then
+         Call BDIO_error(fbd,'BDIO_Read_bin', &
+              & 'Incorrect data type') 
+      End If
+
+      nmax = size(cbuf)
+      If (size(cbuf) > (p%rend-fbd%rwpos)) nmax = (p%rend-fbd%rwpos)
+      If (nmax .le. 0) Return
+      Read(fbd%ifn,Pos=fbd%rwpos,iostat=ios)cbuf(:nmax)
+      
+      If (chk) Then
+         If (mod(nmax,4_8) /= 0) Call BDIO_error(fbd,'BDIO_Write_bin', &
+              & 'Binary data needs be multiple of 4bytes to checksum') 
+         I = 0
+         Do
+            is = 1+512*I
+            ie = is+512
+            If (ie > nmax) ie=nmax 
+            ibf = Transfer(cbuf(is:ie), ibf)
+            p%hash = Hash(ibf(:(ie-is)/4), p%hash)
+            If (ie == nmax) Exit
+            I = I+1
+         End Do
+      End If
+
+      fbd%rwpos = fbd%rwpos + nmax
+      If (ios == 0) BDIO_read_bin = Int(nmax,kind=4)
+      
+      Return
+    End Function BDIO_read_bin
 
 ! ********************************
 ! *
@@ -926,6 +1102,9 @@ CONTAINS
       Type (BDIO) :: fbd
 
       Logical :: is_used
+
+      If (fbd%opened) Call BDIO_error(fbd,'BDIO_Open', &
+              & 'BDIO already in use') 
 
       Select Case (mode)
       Case ('r')
