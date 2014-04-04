@@ -6,7 +6,7 @@ Program AA
   USE ModBDIO
   USE Statistics
 
-  Integer, Parameter :: Ns=58754
+  Integer, Parameter :: Ns=504550
 
   Type (BDIO) :: bb
   Character (len=200) :: fn, type
@@ -16,14 +16,14 @@ Program AA
   Real (kind=4) :: dd(10)
   Integer, Allocatable :: ibuf(:)
   Real (kind=DP), Allocatable :: buf(:)
-  Integer :: Ia = 805306416!805306368
+  Integer :: Ia = 805306416, i4
   Real (kind=4) :: r4
   Real (kind=8) :: r8
   Complex (kind=DPC) :: z16
 
   Real (kind=DP) :: da(Ns), db(Ns)
   Complex (kind=DPC) :: zarr(Ns)
-  Character (len=1) :: c(1)
+  Character (len=1) :: c(4)
 
   If (.not.GetOpt('-i', fn)) Stop
 
@@ -39,20 +39,24 @@ Program AA
 
 
   bb = BDIO_open(fn, 'a')!, 'Test file with complex numbers')
-  j=0
-  
-  fn = ''
-  If (GetOpt('-a', fn)) Then
-     CALL BDIO_start_record(bb,BDIO_ASC_GENERIC,3,.true.)
-     Open (Unit=33,file=Trim(fn),ACCESS='STREAM',FORM='UNFORMATTED',ACTION="READ")
-     Do 
-        Read(33,END=10)c
-        j=j+BDIO_write(bb,c)
-     End Do
-  End If
+  CALL Normal(da)
+  CALL Normal(db)
+  zarr = Cmplx(da,db)
 
-10   Continue
+  CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
+  Write(*,*)'Writting complex numbers'
+  j = BDIO_write(bb, da, .true.)
+  Write(*,*)'Written ', j, ' complex numbers'
+  CALL BDIO_write_hash(bb)
 
+  Stop
+  CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
+  j = BDIO_write(bb, zarr, .true.)
+  CALL BDIO_write_hash(bb)
+
+
+
+  Stop
   fn = ''
   If (GetOpt('-x', fn)) Then
      CALL BDIO_start_record(bb,BDIO_BIN_GENERIC,3,.true.)
@@ -81,9 +85,9 @@ Program AA
      CALL BDIO_Seek(bb,isw)
      Allocate(ibuf(bb%current%rlen/4))
      write(*,*)'Read: ', BDIO_Read(bb, ibuf, .true.)
-     Write(*,*)'Hash on the fly: ', bb%current%hash
+     Write(*,'(1A,B32)')'Hash on the fly: ', bb%current%hash
      ibuf(34) = ibuf(34) + 1
-     Write(*,*)'Recomputed:      ', Hash(ibuf)
+     Write(*,'(1A,B32)')'Recomputed:      ', Hash(ibuf)
   End If
 
 

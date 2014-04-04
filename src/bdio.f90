@@ -21,7 +21,7 @@
 
 ! ***************************************************
 ! *
-MODULE ModBDio
+MODULE ModBDIO
 ! *
 ! ***************************************************
 ! *
@@ -37,8 +37,8 @@ MODULE ModBDio
 
   Integer, Parameter, Private :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2, &
        & MAXFNAME = 4096, BDIO_SHORT_LEN = 256, BDIO_LONG_LEN = 4096, &
-       & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1
-
+       & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1, CHK_MAGIC = 2054847098
+                                                                
   Integer, Parameter :: BDIO_BIN_GENERIC = 0, BDIO_ASC_EXEC = 1, &
        & BDIO_BIN_INT32BE = 2, BDIO_BIN_INT32LE = 3, &
        & BDIO_BIN_INT64BE = 4, BDIO_BIN_INT64LE = 5, &
@@ -47,14 +47,14 @@ MODULE ModBDio
        & BDIO_ASC_GENERIC =10, BDIO_ASC_XML     =11, &
        & BDIO_BIN_INT32 = 240, BDIO_BIN_INT64 = 241, &
        & BDIO_BIN_F32   = 242, BDIO_BIN_F64   = 243
-
+       
 
   Logical :: DEFAULT_HASH_CHECK = .False.
 
   Type :: BDIO
      Integer :: ifn, rcnt=0, hcnt=0, tcnt=0
      Integer :: imode ! r/w/a
-     Integer (kind=8) :: startfile=-1, endfile=-1, rwpos=-1
+     Integer (kind=8) :: rwpos=-1
      Logical :: lendian, opened = .False.
 
      Character (len=BDIO_SHORT_LEN) :: user='alberto', host='desy.de'
@@ -147,6 +147,28 @@ CONTAINS
       
       Return
     End Subroutine BDIO_error
+
+! ********************************
+! *
+    Subroutine BDIO_write_hash(fbd)
+! *
+! ********************************
+      Type (BDIO), Intent (inout) :: fbd
+
+      Integer (kind=4) :: i4(2)
+
+      i4(1) = CHK_MAGIC
+      i4(2) = fbd%last%hash
+      
+      CALL BDIO_start_record(fbd,BDIO_BIN_INT32LE,7)
+
+      If (BDIO_write(fbd,i4) /= 2) Then
+         Call BDIO_error(fbd,'BDIO_Write_hash', &
+              & 'I/O error') 
+      End If
+
+      Return
+    End Subroutine BDIO_write_hash
 
 ! ********************************
 ! *
@@ -695,6 +717,7 @@ CONTAINS
       CALL MVBits(ilong,0,1,i4,3)
       CALL MVBits(ifmt,0,4,i4,4)
       CALL MVBits(iuinfo,0,4,i4,8)
+      If (.not.fbd%lendian) CALL Byteswap(i4)
       Write(fbd%ifn)i4
       i4 = 0
       If (lrec) Write(fbd%ifn)i4
@@ -1311,10 +1334,15 @@ CONTAINS
       Read(ptf%ifn,Pos=ipos)
       If (iln>0) Then
          Read(ptf%ifn)i4
+         if (.not.ptf%lendian) CALL ByteSwap(i4)
          Inquire(ptf%ifn,Pos=newr%hcr)
+         
          Read(ptf%ifn)newr%created
+         if (.not.ptf%lendian) CALL ByteSwap(newr%created)
          Inquire(ptf%ifn,Pos=newr%hmd)
+         
          Read(ptf%ifn)newr%modified
+         if (.not.ptf%lendian) CALL ByteSwap(newr%modified)
          I=1
          Do
             Read(ptf%ifn)ch
@@ -1444,11 +1472,15 @@ CONTAINS
       Type (BDIO), Intent (inout) :: fbd
 
       Integer (kind=8) :: actual
+      Integer (kind=4) :: i4
       Type (BDIO_record), pointer :: ph
 
       Inquire(fbd%ifn,Pos=actual)
       ph => fbd%lasthdr
-      Write(fbd%ifn,Pos=ph%hmd)UnixTime()
+      i4 = UnixTime()
+
+      if (.not.fbd%lendian) CALL ByteSwap(i4)
+      Write(fbd%ifn,Pos=ph%hmd)i4
 
       Read(fbd%ifn,Pos=actual)
 
@@ -1472,6 +1504,8 @@ CONTAINS
       p => fbd%current
       If (p%islong) Then
          Read(fbd%ifn,Pos=p%rpos-8)i4(1:2)
+         if (.not.fbd%lendian) CALL ByteSwap(i4)
+
          CALL MVBits(iln+4, 0, 20, jl, 0)
          j = Int(jl,kind=4)
          CALL MVBits(j,0,20,i4(1),12)
@@ -1479,12 +1513,18 @@ CONTAINS
          CALL MVBits(iln+4, 20, 32, jl, 0)
          j = Int(jl,kind=4)
          CALL MVBits(j,0,32,i4(2),0)
+         
+         if (.not.fbd%lendian) CALL ByteSwap(i4)
          Write(fbd%ifn,Pos=p%rpos-8)i4(1:2)
       Else
          Read(fbd%ifn,Pos=p%rpos-4)i4(1)
+         if (.not.fbd%lendian) CALL ByteSwap(i4)
+      
          CALL MVBits(iln, 0, 20, jl, 0)
          j = Int(jl,kind=4)
          CALL MVBits(j,0,20,i4(1),12)
+
+         if (.not.fbd%lendian) CALL ByteSwap(i4)
          Write(fbd%ifn,Pos=fbd%current%rpos-4)i4(1)
       End If
 
