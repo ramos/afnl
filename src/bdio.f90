@@ -54,7 +54,7 @@ MODULE ModBDIO
 
   Type :: BDIO
      Integer :: ifn, rcnt=0, hcnt=0, tcnt=0
-     Integer :: imode, istate 
+     Integer :: imode, istate=-1
      Integer (kind=8) :: rwpos=-1
      Logical :: lendian, opened = .False.
 
@@ -490,7 +490,7 @@ CONTAINS
 
       BDIO_write_f64 = -1
       If (fbd%imode == BDIO_R_MODE) &
-           & Call BDIO_error(fbd,'BDIO_Read_if64', &
+           & Call BDIO_error(fbd,'BDIO_Read_f64', &
            & 'Not in write mode') 
 
       If (fbd%istate /= BDIO_W_STATE) &
