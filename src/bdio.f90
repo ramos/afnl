@@ -37,7 +37,8 @@ MODULE ModBDIO
 
   Integer, Parameter, Private :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2, &
        & MAXFNAME = 4096, BDIO_SHORT_LEN = 256, BDIO_LONG_LEN = 4096, &
-       & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1, CHK_MAGIC = 2054847098
+       & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1, &
+       & CHK_MAGIC = 2054847098, BDIO_R_STATE=0, BDIO_W_STATE=1
                                                                 
   Integer, Parameter :: BDIO_BIN_GENERIC = 0, BDIO_ASC_EXEC = 1, &
        & BDIO_BIN_INT32BE = 2, BDIO_BIN_INT32LE = 3, &
@@ -53,7 +54,7 @@ MODULE ModBDIO
 
   Type :: BDIO
      Integer :: ifn, rcnt=0, hcnt=0, tcnt=0
-     Integer :: imode ! r/w/a
+     Integer :: imode, istate 
      Integer (kind=8) :: rwpos=-1
      Logical :: lendian, opened = .False.
 
@@ -172,6 +173,62 @@ CONTAINS
 
 ! ********************************
 ! *
+    Function BDIO_write_ASCIIfile(fbd,fcopy,do_chk) Result (iw)
+! *
+! ********************************
+      Type (BDIO), Intent (inout) :: fbd
+      Character (len=*), Intent (in) :: fcopy
+      Logical, Optional :: do_chk
+
+      Integer :: ifcopy, iw, ios
+      logical :: is_used, chk
+      Character (len=1) :: ch(1)
+
+      iw = -1
+      If (fbd%imode == BDIO_R_MODE) &
+           & Call BDIO_error(fbd,'BDIO_Write_ASCIIfile', &
+           & 'File not opened for write') 
+      
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_ASCIIfile', &
+           & 'Not in write state. Start a record first') 
+      
+      If (Present(do_chk)) Then
+         chk = do_chk
+      Else
+         chk = DEFAULT_HASH_CHECK
+      End If
+
+      ifcopy = 6745
+      Do 
+         Inquire(ifcopy, Opened=is_used)
+         If (is_used) Then
+            ifcopy = ifcopy + 1
+         Else
+            Exit
+         End If
+      End Do
+
+      Open (File=Trim(fcopy), unit=ifcopy, ACTION="READ", &
+           & Form='UNFORMATTED', Access='STREAM', Iostat=ios)
+
+      If (ios /= 0) &
+           & Call BDIO_error(fbd,'BDIO_Write_ASCIIfile', &
+           & 'Error openning file '//Trim(fcopy)//' . File in use?')
+ 
+      CALL BDIO_start_record(fbd,BDIO_ASC_GENERIC,2)
+      Do
+         Read(ifcopy, END=10)ch
+         iw = iw + BDIO_Write(fbd,ch,chk)
+      End Do
+10    Continue
+      Close(ifcopy)
+      
+      Return
+    End Function BDIO_write_ASCIIfile
+
+! ********************************
+! *
     Function BDIO_write_bin(fbd,cbuf,do_chk)
 ! *
 ! ********************************
@@ -189,7 +246,11 @@ CONTAINS
       BDIO_write_bin = -1
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Write_bin', &
-           & 'Not in write mode') 
+           & 'File not opened for write') 
+
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_bin', &
+           & 'Not in write state. Start a record first') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -254,6 +315,10 @@ CONTAINS
            & Call BDIO_error(fbd,'BDIO_Write_i32', &
            & 'Not in write mode') 
 
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_i32', &
+           & 'Not in write state. Start a record first') 
+
       If (Present(do_chk)) Then
          chk = do_chk
       Else
@@ -310,6 +375,10 @@ CONTAINS
            & Call BDIO_error(fbd,'BDIO_Read_f32', &
            & 'Not in write mode') 
 
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_f32', &
+           & 'Not in write state. Start a record first') 
+
       If (Present(do_chk)) Then
          chk = do_chk
       Else
@@ -364,6 +433,10 @@ CONTAINS
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_i64', &
            & 'Not in write mode') 
+
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_i64', &
+           & 'Not in write state. Start a record first') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -420,6 +493,10 @@ CONTAINS
            & Call BDIO_error(fbd,'BDIO_Read_if64', &
            & 'Not in write mode') 
 
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_f64', &
+           & 'Not in write state. Start a record first') 
+
       If (Present(do_chk)) Then
          chk = do_chk
       Else
@@ -449,7 +526,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
-      If (do_chk) p%hash = Hash(ibuf, p%hash)
+      If (chk) p%hash = Hash(ibuf, p%hash)
       If (ios == 0) BDIO_write_f64 = Size(ibuf)
 
       Return
@@ -474,6 +551,10 @@ CONTAINS
       If (fbd%imode == BDIO_R_MODE) &
            & Call BDIO_error(fbd,'BDIO_Read_z64', &
            & 'Not in write mode') 
+
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_z64', &
+           & 'Not in write state. Start a record first') 
 
       If (Present(do_chk)) Then
          chk = do_chk
@@ -530,6 +611,10 @@ CONTAINS
            & Call BDIO_error(fbd,'BDIO_Read_z32', &
            & 'Not in write mode') 
 
+      If (fbd%istate /= BDIO_W_STATE) &
+           & Call BDIO_error(fbd,'BDIO_Write_z32', &
+           & 'Not in write state. Start a record first') 
+
       If (Present(do_chk)) Then
          chk = do_chk
       Else
@@ -559,7 +644,7 @@ CONTAINS
       CALL Rewrite_rlen(fbd, iln)
       CALL Rewrite_hdrinfo(fbd)
 
-      If (do_chk) p%hash = Hash(buf, p%hash)
+      If (chk) p%hash = Hash(buf, p%hash)
       If (ios == 0) BDIO_write_z32 = Size(buf)
 
       Return
@@ -575,19 +660,30 @@ CONTAINS
       Integer, Intent (in), Optional :: nrec
 
       Type (BDIO_record), pointer :: p
+      Integer :: I
 
+      p => fbd%current
       If (Present(nrec)) Then
-         p => fbd%first
-         Do 
-            If (p%rid == nrec) Exit
-            p => p%next
-         End Do
+         If (nrec > 0) Then
+            Do I = 1, nrec
+               If (.not.associated(p%next)) Exit
+               p => p%next
+            End Do
+         Else if (nrec < 0) Then
+            Do I = 1, -nrec
+               If (.not.associated(p%prev)) Exit
+               p => p%prev
+            End Do
+         Else If (nrec == 0) Then
+            p => fbd%first
+         End If
       Else
-         p => fbd%current%next
+         p => p%next
       End If
       
       fbd%current => p
       fbd%rwpos = fbd%current%rpos
+      fbd%istate = BDIO_R_STATE
 
       Return
     End Subroutine BDIO_seek
@@ -660,6 +756,8 @@ CONTAINS
       If (.not.fbd%lendian) CALL ByteSwap(i4)
       Write(fbd%ifn,Pos=ipos-4)i4
       Read(fbd%ifn, Pos=iend)
+      fbd%rwpos  = iend
+      fbd%istate = BDIO_W_MODE
 
 
       newr%ishdr = .True.
@@ -682,6 +780,7 @@ CONTAINS
       fbd%hcnt = fbd%hcnt + 1
       fbd%tcnt = fbd%tcnt + 1
       fbd%lasthdr => newr
+
 
       Return
     End Subroutine BDIO_start_header
@@ -723,6 +822,7 @@ CONTAINS
       If (lrec) Write(fbd%ifn)i4
       Inquire(fbd%ifn,Pos=ipos)
       fbd%rwpos = ipos
+      fbd%istate = BDIO_W_MODE
 
       iln = 0
       Allocate(newr)
