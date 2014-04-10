@@ -1105,7 +1105,7 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
            & CALL ByteSwap(buf)
       
-      If (do_chk) p%hash = Hash(buf(:nmax), p%hash)
+      If (chk) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
       If (ios == 0) BDIO_read_f64 = Int(nmax,kind=4)
@@ -1155,7 +1155,7 @@ CONTAINS
            & CALL ByteSwap(buf)
 
       
-      If (do_chk) p%hash = Hash(buf(:nmax), p%hash)
+      If (chk) p%hash = Hash(buf(:nmax), p%hash)
       fbd%rwpos = fbd%rwpos + 8*nmax
 
       If (ios == 0) BDIO_read_z32 = Int(nmax,kind=4)
