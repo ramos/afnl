@@ -38,7 +38,7 @@ MODULE ModBDIO
   Integer, Parameter, Private :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2, &
        & MAXFNAME = 4096, BDIO_SHORT_LEN = 256, BDIO_LONG_LEN = 4096, &
        & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1, &
-       & CHK_MAGIC = 2054847098, BDIO_R_STATE=0, BDIO_W_STATE=1
+       & BDIO_R_STATE=0, BDIO_W_STATE=1
                                                                 
   Integer, Parameter :: BDIO_BIN_GENERIC = 0, BDIO_ASC_EXEC = 1, &
        & BDIO_BIN_INT32BE = 2, BDIO_BIN_INT32LE = 3, &
@@ -47,7 +47,8 @@ MODULE ModBDIO
        & BDIO_BIN_F64BE   = 8, BDIO_BIN_F64LE   = 9, &
        & BDIO_ASC_GENERIC =10, BDIO_ASC_XML     =11, &
        & BDIO_BIN_INT32 = 240, BDIO_BIN_INT64 = 241, &
-       & BDIO_BIN_F32   = 242, BDIO_BIN_F64   = 243
+       & BDIO_BIN_F32   = 242, BDIO_BIN_F64   = 243, &
+       & CHK_MAGIC = 2054847098
        
 
   Logical :: DEFAULT_HASH_CHECK = .False.
@@ -133,6 +134,180 @@ CONTAINS
 
 ! ********************************
 ! *
+    Function BDIO_is_bin(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Logical :: BDIO_is_bin
+      
+      BDIO_is_bin = .False.
+      If (.not.Associated(fbd%current)) Return
+      If (  (fbd%current%rfmt == BDIO_ASC_GENERIC).or.&
+           &(fbd%current%rfmt == BDIO_ASC_XML)    .or.&
+           &(fbd%current%rfmt == BDIO_BIN_GENERIC).or.&
+           &(fbd%current%rfmt == BDIO_ASC_EXEC  ) ) &
+           & BDIO_is_bin = .True.
+      
+      Return
+    End Function BDIO_is_bin
+
+! ********************************
+! *
+    Function BDIO_is_f64(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Logical :: BDIO_is_f64
+
+      BDIO_is_f64 = .False.
+      If (.not.Associated(fbd%current)) Return
+      If (  (fbd%current%rfmt == BDIO_BIN_F64LE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_F64BE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_F64  ) ) &
+           & BDIO_is_f64 = .True.
+      
+
+      Return
+    End Function BDIO_is_f64
+
+! ********************************
+! *
+    Function BDIO_is_f32(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Logical :: BDIO_is_f32
+
+      BDIO_is_f32 = .False.
+      If (.not.Associated(fbd%current)) Return
+      If (  (fbd%current%rfmt == BDIO_BIN_F32LE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_F32BE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_F32  ) ) &
+           & BDIO_is_f32 = .True.
+      
+
+      Return
+    End Function BDIO_is_f32
+
+! ********************************
+! *
+    Function BDIO_is_int32(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Logical :: BDIO_is_int32
+      
+      BDIO_is_int32 = .False.
+      If (.not.Associated(fbd%current)) Return
+      If (  (fbd%current%rfmt == BDIO_BIN_INT32LE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_INT32BE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_INT32  ) ) &
+           & BDIO_is_int32 = .True.
+
+      Return
+    End Function BDIO_is_int32
+
+! ********************************
+! *
+    Function BDIO_is_int64(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Logical :: BDIO_is_int64
+      
+      BDIO_is_int64 = .False.
+      If (.not.Associated(fbd%current)) Return
+      If (  (fbd%current%rfmt == BDIO_BIN_INT64LE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_INT64BE).or.&
+           &(fbd%current%rfmt == BDIO_BIN_INT64  ) ) &
+           & BDIO_is_int64 = .True.
+
+      Return
+    End Function BDIO_is_int64
+
+! ********************************
+! *
+    Function BDIO_get_hash(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer :: BDIO_get_hash
+
+      BDIO_get_hash = -1
+      If (Associated(fbd%current)) BDIO_get_hash = fbd%current%hash
+
+
+      Return
+    End Function BDIO_get_hash
+
+! ********************************
+! *
+    Function BDIO_get_len(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer (kind=8) :: BDIO_get_len
+
+      BDIO_get_len = -1
+      If (Associated(fbd%current)) BDIO_get_len = fbd%current%rlen
+
+      Return
+    End Function BDIO_get_len
+
+! ********************************
+! *
+    Function BDIO_get_id(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer :: BDIO_get_id
+
+      BDIO_get_id = -1
+      If (Associated(fbd%current)) BDIO_get_id = fbd%current%rid
+
+      Return
+    End Function BDIO_get_id
+
+! ********************************
+! *
+    Function BDIO_get_fmt(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer :: BDIO_get_fmt
+      
+      BDIO_get_fmt = -1
+      If (Associated(fbd%current)) BDIO_get_fmt = fbd%current%rfmt
+
+      Return
+    End Function BDIO_get_fmt
+
+! ********************************
+! *
+    Function BDIO_get_uinfo(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer :: BDIO_get_uinfo
+      
+      BDIO_get_uinfo = -1
+      If (Associated(fbd%current)) BDIO_get_uinfo = fbd%current%ruinfo
+
+      Return
+    End Function BDIO_get_uinfo
+
+! ********************************
+! *
     Subroutine BDIO_error(fbd, routine, msg)
 ! *
 ! ********************************
@@ -143,7 +318,7 @@ CONTAINS
       Write(0,*)'In '//Trim(routine)// ' :'
       Write(0,'(5X,1A)')Trim(msg)
       Write(0,*)
-      Write(0,*)'Current Record: ', fbd%current%rid
+      If (associated(fbd%current)) Write(0,*)'Current Record: ', fbd%current%rid
       Stop
       
       Return
@@ -284,7 +459,7 @@ CONTAINS
             ie = is+512
             If (ie > nmax) ie=nmax 
             ibf = Transfer(cbuf(is:ie), ibf)
-            p%hash = Hash(ibf(:(ie-is)/4), p%hash)
+            p%hash = Hash(ibf(1:(ie-is+1)/4), p%hash)
             If (ie == nmax) Exit
             I = I+1
          End Do
@@ -652,16 +827,18 @@ CONTAINS
 
 ! ********************************
 ! *
-    Subroutine BDIO_seek(fbd, nrec)
+    Function BDIO_seek(fbd, nrec)
 ! *
 ! ********************************
 
       Type (BDIO), Intent (inout) :: fbd
       Integer, Intent (in), Optional :: nrec
+      Logical :: BDIO_seek
 
       Type (BDIO_record), pointer :: p
       Integer :: I
 
+      BDIO_seek = .False.
       p => fbd%current
       If (Present(nrec)) Then
          If (nrec > 0) Then
@@ -669,16 +846,22 @@ CONTAINS
                If (.not.associated(p%next)) Exit
                p => p%next
             End Do
+            BDIO_seek = .True.
          Else if (nrec < 0) Then
             Do I = 1, -nrec
                If (.not.associated(p%prev)) Exit
                p => p%prev
             End Do
+            BDIO_seek = .True.
          Else If (nrec == 0) Then
             p => fbd%first
+            BDIO_seek = .True.
          End If
       Else
-         p => p%next
+         If (associated(p%next)) Then
+            p => p%next
+            BDIO_seek = .True.
+         End If
       End If
       
       fbd%current => p
@@ -686,8 +869,8 @@ CONTAINS
       fbd%istate = BDIO_R_STATE
 
       Return
-    End Subroutine BDIO_seek
-
+    End Function BDIO_seek
+    
 ! ********************************
 ! *
     Subroutine BDIO_start_header(fbd, info)
@@ -902,7 +1085,7 @@ CONTAINS
             ie = is+512
             If (ie > nmax) ie=nmax 
             ibf = Transfer(cbuf(is:ie), ibf)
-            p%hash = Hash(ibf(:(ie-is)/4), p%hash)
+            p%hash = Hash(ibf(1:(ie-is+1)/4), p%hash)
             If (ie == nmax) Exit
             I = I+1
          End Do
