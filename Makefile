@@ -1,6 +1,6 @@
 
 #F90=ifort -warn all -std03
-F90=gfortran46 -std=f2003 -Wall -pedantic -march=native -ffast-math -funroll-loops -O3 -finline-limit=600 -fwhole-program -flto
+F90=gfortran46 -std=f2008 -Wall -pedantic -march=native -funroll-loops -O3 -finline-limit=600 -fwhole-program -flto
 F90OPT=
 
 VPATH=src
@@ -57,9 +57,12 @@ lapackAPI.o: numtypes.o lapackAPI.f90
 bdio.o: bdio.f90
 	$(F90) -c $^ -o $@
 
+mixmax.o: mixmax.f90
+	$(F90) -c $^ -o $@
+
 lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
 	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o \
-	minuitAPI.o lapackAPI.o bdio.o
+	minuitAPI.o lapackAPI.o bdio.o mixmax.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o
