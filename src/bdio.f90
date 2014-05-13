@@ -308,6 +308,111 @@ CONTAINS
 
 ! ********************************
 ! *
+    Function BDIO_get_info(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Character (len=BDIO_LONG_LEN) :: BDIO_get_info
+
+      BDIO_get_info = ''
+      If (Associated(fbd%current)) BDIO_get_info = fbd%current%info
+
+      Return
+    End Function BDIO_get_info
+
+! ********************************
+! *
+    Function BDIO_get_cuser(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Character (len=BDIO_SHORT_LEN) :: BDIO_get_cuser
+
+      BDIO_get_cuser = ''
+      If (Associated(fbd%current)) BDIO_get_cuser = fbd%current%cuser
+
+      Return
+    End Function BDIO_get_cuser
+
+! ********************************
+! *
+    Function BDIO_get_luser(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Character (len=BDIO_SHORT_LEN) :: BDIO_get_luser
+
+      BDIO_get_luser = ''
+      If (Associated(fbd%current)) BDIO_get_luser = fbd%current%luser
+
+      Return
+    End Function BDIO_get_luser
+
+! ********************************
+! *
+    Function BDIO_get_chost(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Character (len=BDIO_SHORT_LEN) :: BDIO_get_chost
+
+      BDIO_get_chost = ''
+      If (Associated(fbd%current)) BDIO_get_chost = fbd%current%chost
+
+      Return
+    End Function BDIO_get_chost
+
+! ********************************
+! *
+    Function BDIO_get_lhost(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Character (len=BDIO_SHORT_LEN) :: BDIO_get_lhost
+
+      BDIO_get_lhost = ''
+      If (Associated(fbd%current)) BDIO_get_lhost = fbd%current%lhost
+
+      Return
+    End Function BDIO_get_lhost
+
+! ********************************
+! *
+    Function BDIO_get_created(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer :: BDIO_get_created
+
+      BDIO_get_created = -1
+      If (Associated(fbd%current)) BDIO_get_created = fbd%current%created
+
+      Return
+    End Function BDIO_get_created
+
+! ********************************
+! *
+    Function BDIO_get_modified(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (in) :: fbd
+      Integer :: BDIO_get_modified
+
+      BDIO_get_modified = -1
+      If (Associated(fbd%current)) BDIO_get_modified = fbd%current%modified
+
+      Return
+    End Function BDIO_get_modified
+
+! ********************************
+! *
     Subroutine BDIO_error(fbd, routine, msg)
 ! *
 ! ********************************
@@ -1533,7 +1638,8 @@ CONTAINS
          CALL MVBits(i4,0,32,j,0)
          jlong=Int(j,kind=8)
          CALL MVBits(jlong,0,32,iln,20)
-         iln = iln - 4
+!         iln = iln - 4
+         iln = iln
       End If
       Inquire(fbd%ifn, Pos=ipos)
       Read(fbd%ifn, Pos=ipos+iln)
@@ -1789,7 +1895,8 @@ CONTAINS
          Read(fbd%ifn,Pos=p%rpos-8)i4(1:2)
          if (.not.fbd%lendian) CALL ByteSwap(i4)
 
-         CALL MVBits(iln+4, 0, 20, jl, 0)
+!         CALL MVBits(iln+4, 0, 20, jl, 0)
+         CALL MVBits(iln, 0, 20, jl, 0)
          j = Int(jl,kind=4)
          CALL MVBits(j,0,20,i4(1),12)
          jl = 0

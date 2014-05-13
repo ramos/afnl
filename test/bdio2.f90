@@ -6,7 +6,9 @@ Program AA
   USE ModBDIO
   USE Statistics
 
-  Integer, Parameter :: Ns=5045507
+  USE MIXMAX
+
+  Integer, Parameter :: Ns=500
 
   Type (BDIO) :: bb
   Character (len=200) :: fn, type
@@ -27,27 +29,19 @@ Program AA
 
   If (.not.GetOpt('-i', fn)) Stop
 
+  CALL mxmx_init()
+  CALL mxmx_seed_spbox(3443_8)
+  
 
-  CALL SetLuxLevel(5)
-  CALL Putluxseed()
-  I(1) = LUXrandomize()
-  CALL Random_Number(dd)
-
-
-
-  Forall (j=1:100) I(j) = j
-
-
-  bb = BDIO_open(fn, 'w')!, 'Test file with complex numbers')
-  CALL Normal(da)
-  CALL Normal(db)
-  zarr = Cmplx(da,db)
-
-  CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
-  Write(*,*)'Writting complex numbers'
-  j = BDIO_write(bb, da, .true.)
-  Write(*,*)'Written ', j, ' complex numbers'
-  CALL BDIO_write_hash(bb)
+  bb = BDIO_open(fn, 'w', 'Test file with MIXMAX random ')
+  Do i4 = 1, 20
+     CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
+     Do Isw = 1, 50
+        CALL mxmx(da)
+        j = BDIO_write(bb, da,.true.)
+     End Do
+     CALL BDIO_write_hash(bb)
+  End Do
 
   Stop
   CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
