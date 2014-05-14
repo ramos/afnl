@@ -36,6 +36,11 @@ MODULE MixMax
 ! *
 ! ***************************************************
 
+  ! For openMP. If this gives any problem/error (i.e. your compiler
+  ! does not support openMP), simply comment this line. Non
+  ! openMP and mpi programs should work.
+!  USE omp_lib
+
   USE ISO_FORTRAN_ENV, Only : error_unit, output_unit
   IMPLICIT NONE
 
@@ -62,7 +67,8 @@ MODULE MixMax
           & mxmx_int_v
   End Interface mxmx
 
-  Type (State), Private        :: rnd
+  Type (State), private, save :: rnd
+
   Procedure (Mulspec), Pointer, Private :: Mod_Mulspec => null()!noinit
 
   Integer (kind=8), Parameter, Private :: &
@@ -70,7 +76,7 @@ MODULE MixMax
   Integer (kind=8), Private :: SPECIAL
   
   Integer (kind=8), Allocatable, Private :: skip(:,:)
-  Real (kind=8) :: DINV_MERSBASE=0.433680868994201773791060216479542685926876E-18_8
+  Real (kind=8), Parameter :: DINV_MERSBASE=0.433680868994201773791060216479542685926876E-18_8
 
   Logical, Private :: is_skip_loaded = .False., is_init = .False.
 
@@ -81,6 +87,9 @@ MODULE MixMax
        & Mod_Mulspec_direct, Mod_Mulspec_default, Mod_Mulspec_zero, &
        & Mod_Mulspec_one, mxmx_error, mxmx_f64_v, mxmx_f32, mxmx_int_v, &
        & mxmx_f32_v, mxmx_z64, mxmx_z32, mxmx_z64_v, mxmx_z32_v
+
+
+  !$OMP THREADPRIVATE(rnd,is_init)
 
 CONTAINS
 
@@ -149,6 +158,11 @@ CONTAINS
     End Select
     rnd%cnt=1
     is_init = .True.
+
+    If (nmat < 88) Then
+       Write(error_unit,'(1A,1I4)')'**WARNING** MIXMAX Working with a matrix size that is known not to pass all statistical tests '
+       Write(error_unit,'(1A,1I6)')'MIXMAX Matrix size: ', rnd%N
+    End If
 
     Return
   End Subroutine mxmx_init
@@ -625,21 +639,20 @@ CONTAINS
 ! *
 ! ***************************************************
 
-    Integer (kind=8) :: tmpV, tmpP, oldsumtot, I, tmp2
+    Integer (kind=8) :: tmpP, I, tmp2
     
     rnd%cnt = 1_8
-    If (SPECIAL /= 0_8) tmp2 = rnd%V(2)
+    tmp2 = rnd%V(2)
 
-    oldsumtot  = rnd%sumtot
-    rnd%sumtot = 0_8 
-    tmpV = Mod_Mersenne(rnd%V(1) + oldsumtot)
-    tmpP = 0
-    rnd%V(1) = tmpV
-    Do I = 2, rnd%N
+    rnd%V(1) = Mod_Mersenne(rnd%V(1) + rnd%sumtot)
+    tmpP = rnd%V(2)
+    rnd%V(2) = Mod_Mersenne(rnd%V(1)+rnd%V(2))
+    rnd%sumtot = rnd%V(2)
+    Do I = 3, rnd%N
        tmpP = Mod_Mersenne(rnd%V(I) + tmpP)
-       tmpV = Mod_Mersenne(tmpV + tmpP)
-       rnd%V(I) = tmpV
-       rnd%sumtot = Mod_Mersenne(rnd%sumtot + tmpV)
+       rnd%V(I) = Mod_Mersenne(rnd%V(I-1) + tmpP)
+
+       rnd%sumtot = Mod_Mersenne(rnd%sumtot + rnd%V(I))
     End Do
 
     If (SPECIAL /= 0_8) Then
