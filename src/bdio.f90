@@ -51,7 +51,7 @@ MODULE ModBDIO
        & CHK_MAGIC = 2054847098
        
 
-  Logical :: DEFAULT_HASH_CHECK = .False.
+  Logical, Protected :: DEFAULT_HASH_CHECK = .False.
 
   Type :: BDIO
      Integer :: ifn, rcnt=0, hcnt=0, tcnt=0
