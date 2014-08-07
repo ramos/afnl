@@ -144,10 +144,10 @@ CONTAINS
       BDIO_is_bin = .False.
       If (.not.Associated(fbd%current)) Return
       If (  (fbd%current%rfmt == BDIO_ASC_GENERIC).or.&
-           &(fbd%current%rfmt == BDIO_ASC_XML)    .or.&
-           &(fbd%current%rfmt == BDIO_BIN_GENERIC).or.&
-           &(fbd%current%rfmt == BDIO_ASC_EXEC  ) ) &
-           & BDIO_is_bin = .True.
+            (fbd%current%rfmt == BDIO_ASC_XML)    .or.&
+            (fbd%current%rfmt == BDIO_BIN_GENERIC).or.&
+            (fbd%current%rfmt == BDIO_ASC_EXEC  ) ) &
+             BDIO_is_bin = .True.
       
       Return
     End Function BDIO_is_bin

@@ -1,6 +1,6 @@
 
 #F90=ifort -warn all -std03
-F90=gfortran46 -std=f2008 -Wall -pedantic -march=native -funroll-loops -O3 -finline-limit=600 -fwhole-program -flto
+F90=gfortran47 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -march=native -ffast-math -funroll-loops -O3 -finline-limit=600 -fwhole-program -flto -fall-intrinsics
 F90OPT=
 
 VPATH=src
