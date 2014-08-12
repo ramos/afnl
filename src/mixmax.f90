@@ -73,7 +73,7 @@ MODULE MixMax
 
   Integer (kind=8), Parameter, Private :: &
        & MULT=1073217536_8, BITS = 61_8, MERSBASE = 2305843009213693951_8
-  Integer (kind=8), Private :: SPECIAL
+  Integer (kind=8), Private :: SPECIAL, NLUX = 0
   
   Integer (kind=8), Allocatable, Private :: skip(:,:)
   Real (kind=8), Parameter :: DINV_MERSBASE=0.433680868994201773791060216479542685926876E-18_8
@@ -113,30 +113,43 @@ CONTAINS
     Select Case (nmat)
     Case (1260)
        SPECIAL = 15_8
+       NLUX    = 5
     Case (3150)
        SPECIAL = -11_8
+       NLUX    = 4 
     Case (1000)
        SPECIAL = 0_8
+       NLUX    = 5
     Case (720)
        SPECIAL = 1_8
+       NLUX    = 5
     Case (508)
        SPECIAL = 5_8
+       NLUX    = 5
     Case (256)
        SPECIAL = -1_8
+       NLUX    = 6
     Case (88)
        SPECIAL = 1_8
+       NLUX    = 7
     Case (64)
        SPECIAL = 6_8
+       NLUX    = 8
     Case (44)
        SPECIAL = 0_8
+       NLUX    = 9
     Case (40)
        SPECIAL = 1_8
+       NLUX    = 9
     Case (30)
        SPECIAL = 3_8
+       NLUX    = 10
     Case (16)
        SPECIAL = 6_8
+       NLUX    = 12
     Case (10)
        SPECIAL = -1_8
+       NLUX    = 14 
     Case Default
        CALL mxmx_error('mxmx_init', 'Possible values for N are: '//&
             &'3150 1260 1000 720 508 256 (default) 88 64 44 40 30 16 10')
@@ -158,11 +171,6 @@ CONTAINS
     End Select
     rnd%cnt=1
     is_init = .True.
-
-    If (nmat < 88) Then
-       Write(error_unit,'(1A,1I4)')'**WARNING** MIXMAX Working with a matrix size that is known not to pass all statistical tests '
-       Write(error_unit,'(1A,1I6)')'MIXMAX Matrix size: ', rnd%N
-    End If
 
     Return
   End Subroutine mxmx_init
@@ -375,7 +383,12 @@ CONTAINS
     if (present(ifn)) iout = ifn
 
     Write(iout,'(1A,1I4)')'MIXMAX Working in the Galois field with modulus 2^61-1'
-    Write(iout,'(1A,1I6)')'MIXMAX Matrix size: ', rnd%N
+    Write(iout,'(1A,1I6)')'MIXMAX Matrix size:  ', rnd%N
+    if (NLUX > 1) Then
+       Write(iout,'(1A,1I6)')'MIXMAX Luxury level: ', NLUX
+    else
+       Write(iout,'(1A,1I6)')'MIXMAX without Luxury'
+    end if
     Write(iout,'(1A)', ADVANCE="NO")'MIXMAX seeded with method: '
 
     Select Case (rnd%SEED_TYPE)
@@ -396,6 +409,12 @@ CONTAINS
          & Max( Int(rnd%N,kind=8)*rnd%cyc + &
          &      Modulo(int(rnd%cnt,kind=8),Int(rnd%N,kind=8))-1,0_8), &
          & ' random numbers' 
+
+!!$    Write(*,*)'** state **'
+!!$    Write(*,*)rnd%V(:)
+!!$    Write(*,*)'sum: ', rnd%sumtot
+!!$    Write(*,*)'cnt: ', rnd%cnt
+
 
     Return
   End Subroutine mxmx_print_info
@@ -639,27 +658,29 @@ CONTAINS
 ! *
 ! ***************************************************
 
-    Integer (kind=8) :: tmpP, I, tmp2
+    Integer (kind=8) :: tmpP, I, tmp2, j
     
     rnd%cnt = 1_8
-    tmp2 = rnd%V(2)
-
-    rnd%V(1) = Mod_Mersenne(rnd%V(1) + rnd%sumtot)
-    tmpP = rnd%V(2)
-    rnd%V(2) = Mod_Mersenne(rnd%V(1)+rnd%V(2))
-    rnd%sumtot = rnd%V(2)
-    Do I = 3, rnd%N
-       tmpP = Mod_Mersenne(rnd%V(I) + tmpP)
-       rnd%V(I) = Mod_Mersenne(rnd%V(I-1) + tmpP)
-
-       rnd%sumtot = Mod_Mersenne(rnd%sumtot + rnd%V(I))
-    End Do
-
-    If (SPECIAL /= 0_8) Then
-       tmp2 = Mod_MulSpec(tmp2)
-       rnd%V(3) = Mod_Mersenne(rnd%V(3) + tmp2)
-       rnd%sumtot = Mod_Mersenne(rnd%sumtot + tmp2)
-    End If
+    do j = 1, nlux
+       tmp2 = rnd%V(2)
+       
+       rnd%V(1) = Mod_Mersenne(rnd%V(1) + rnd%sumtot)
+       tmpP = rnd%V(2)
+       rnd%V(2) = Mod_Mersenne(rnd%V(1)+rnd%V(2))
+       rnd%sumtot = rnd%V(2)
+       Do I = 3, rnd%N
+          tmpP = Mod_Mersenne(rnd%V(I) + tmpP)
+          rnd%V(I) = Mod_Mersenne(rnd%V(I-1) + tmpP)
+          
+          rnd%sumtot = Mod_Mersenne(rnd%sumtot + rnd%V(I))
+       End Do
+       
+       If (SPECIAL /= 0_8) Then
+          tmp2 = Mod_MulSpec(tmp2)
+          rnd%V(3) = Mod_Mersenne(rnd%V(3) + tmp2)
+          rnd%sumtot = Mod_Mersenne(rnd%sumtot + tmp2)
+       End If
+    end do
     rnd%cyc = rnd%cyc + 1
 
     Return
@@ -822,5 +843,45 @@ CONTAINS
 
     Return
   End Function modmulM61
+
+! ***************************************************
+! *
+  Subroutine mxmx_bitswap(npos,nbit)
+! *
+! ***************************************************
+    
+    Integer, Intent (in) :: npos, nbit
+    Integer (kind=8) :: i
+
+
+    If ( (npos<1).or.(npos>rnd%N).or.(nbit>64)) CALL mxmx_error('mxmx_bitswap', &
+         & 'Error in parameters')
+
+    i = 0_8
+    i = ibset(I, nbit)
+    rnd%V(npos) = ieor(rnd%V(npos),i)
+
+    rnd%sumtot = 0_8
+    Do I = 2, rnd%N
+       rnd%sumtot = Mod_Mersenne(rnd%V(I)+rnd%sumtot)
+    End Do
+    rnd%cnt = 1
+
+    Return
+  End Subroutine mxmx_bitswap
+
+! ***************************************************
+! *
+  Subroutine mxmx_nolux()
+! *
+! ***************************************************
+
+    Write(error_unit,'(1A)')'**WARNING** MIXMAX Working without LUXURY. '
+    Write(error_unit,'(1A)')'            This is known to produce numbers with some correlations.'
+
+    NLUX = 1
+
+    return
+  end Subroutine mxmx_nolux
 
 End MODULE MixMax
