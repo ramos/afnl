@@ -4072,9 +4072,12 @@ CONTAINS
 
 
   I = 0
+  write(*,*)'dentro: ', lux_pos, lux_is, lux_ir,njump
+  write(*,*)'dentro: ', LUX_Seed(:)/LUX_lastbit
   Do While (.True.)
      Do J = LUX_Pos, 24
         Delta = LUX_Seed(LUX_is) - LUX_Seed(LUX_ir) - LUX_carry
+        write(*,*)'positions: ', J, lux_is, lux_ir
         If (Delta < 0.0_SP) Then
            Delta = Delta + 1.0_SP
            LUX_carry = LUX_lastbit
@@ -4181,7 +4184,8 @@ Function LUXRandomize(Nsd)
      If (jseed < 0) jseed = jseed + 2147483563
      LUX_Seed(I) = Real(Mod(jseed,it24),kind=SP) * LUX_lastbit
   End Do
-  
+  LUX_FirstCall = .False.
+
   Return
 End Function LUXRandomize
 

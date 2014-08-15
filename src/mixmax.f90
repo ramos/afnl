@@ -95,6 +95,76 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Function mxmx_size()
+! *
+! ***************************************************
+    integer :: mxmx_size
+
+    mxmx_size = rnd%N+11
+
+    return
+  end Function mxmx_size
+
+! ***************************************************
+! *
+  Subroutine mxmx_get(state)
+! *
+! ***************************************************
+    
+    Integer (kind=8), intent (out) :: state(:)
+
+    if (size(state)<mxmx_size()) call mxmx_error('mxmx_get', &
+         'Array too small to store the state of MIXMAX')
+    
+    state(1)       = int(rnd%N          ,kind=8)
+    state(2)       = int(rnd%cnt        ,kind=8)
+    state(3)       = int(rnd%sumtot     ,kind=8)
+    state(4)       = int(rnd%cyc        ,kind=8)
+    state(5)       = int(rnd%SEED_TYPE  ,kind=8)
+    state(6)       = int(rnd%otherseed  ,kind=8)
+    state(7:10)    = int(rnd%skipsd(1:4),kind=8)
+    if (is_init) then
+       state(11) = 1
+    else
+       state(11) = 0
+    end if
+
+    state(12:rnd%N+11) = int(rnd%V(:)   ,kind=8)
+
+    Return
+  End Subroutine mxmx_get
+
+! ***************************************************
+! *
+  Subroutine mxmx_reset(state)
+! *
+! ***************************************************
+    
+    Integer (kind=8), intent (in) :: state(:)
+
+    if (size(state)<mxmx_size()) call mxmx_error('mxmx_reset', &
+         'Array too small to store the state of MIXMAX')
+    
+    rnd%N           = int(state(1)   ,kind=4)
+    rnd%cnt         = int(state(2)   ,kind=4)
+    rnd%sumtot      = int(state(3)   ,kind=8)
+    rnd%cyc         = int(state(4)   ,kind=8)
+    rnd%SEED_TYPE   = int(state(5)   ,kind=4)
+    rnd%otherseed   = int(state(6)   ,kind=8)
+    rnd%skipsd(1:4) = int(state(7:10),kind=4)
+    if (state(11)==1_8) then
+       is_init = .true.
+    else
+       is_init = .false.
+    end if
+
+    rnd%V(:) = int(state(12:rnd%N+11),kind=8)
+
+    Return
+  End Subroutine mxmx_reset
+
+! ***************************************************
+! *
   Subroutine mxmx_init(nin)
 ! *
 ! ***************************************************
@@ -195,7 +265,7 @@ CONTAINS
        rnd%V(I) = modmulM61(rnd%V(I-1), MULT)
        rnd%sumtot = Mod_Mersenne(rnd%V(I)+rnd%sumtot)
     End Do
-    rnd%cnt = 1
+    rnd%cnt = rnd%N+1
 
     rnd%SEED_TYPE = SEED_LCG
     rnd%otherseed = nseed
@@ -227,7 +297,7 @@ CONTAINS
        rnd%V(I) = iand(l, MERSBASE)
        rnd%sumtot = Mod_Mersenne(rnd%V(I)+rnd%sumtot)
     End Do
-    rnd%cnt = 1
+    rnd%cnt = rnd%N+1
 
     rnd%SEED_TYPE = SEED_SPBOX
     rnd%otherseed = nseed
@@ -258,7 +328,7 @@ CONTAINS
     End If
     rnd%cnt    = rnd%N+1
     rnd%sumtot = 0_8
-    rnd%cyc    = -1_8
+    rnd%cyc    = 0_8
 
     rnd%SEED_TYPE = SEED_VI
     rnd%skipsd    = -1 
@@ -280,7 +350,7 @@ CONTAINS
     CALL mxmx_seed_vielbein()
     CALL mxmx_big_skip(ids)
     rnd%cnt = rnd%N+1
-    rnd%cyc = -1_8
+    rnd%cyc = 0_8
 
     rnd%SEED_TYPE = SEED_SKIP
     rnd%skipsd = ids
@@ -378,6 +448,7 @@ CONTAINS
 
     Integer, Intent (in), Optional :: ifn
     Integer :: iout     
+    integer (kind=8) :: nnumbers
     
     iout = output_unit
     if (present(ifn)) iout = ifn
@@ -405,16 +476,12 @@ CONTAINS
        Write(iout,'(1A)', ADVANCE="NO")'seed skip ('
        Write(iout,'(4I11,1A)')rnd%skipsd(:), ' )'
     End Select
+
+    nnumbers = 0_8
+    if (rnd%cyc > 0_8) nnumbers = 96_8*(rnd%cyc-1_8)
+    if (rnd%cnt <= 96) nnumbers = nnumbers + rnd%cnt - 1_8
     Write(iout,'(1A,1I22,1A)')'MIXMAX since seeded generated: ', &
-         & Max( Int(rnd%N,kind=8)*rnd%cyc + &
-         &      Modulo(int(rnd%cnt,kind=8),Int(rnd%N,kind=8))-1,0_8), &
-         & ' random numbers' 
-
-!!$    Write(*,*)'** state **'
-!!$    Write(*,*)rnd%V(:)
-!!$    Write(*,*)'sum: ', rnd%sumtot
-!!$    Write(*,*)'cnt: ', rnd%cnt
-
+         & nnumbers*61_8,  ' bits' 
 
     Return
   End Subroutine mxmx_print_info
@@ -454,9 +521,11 @@ CONTAINS
        n(1:nleft) = rnd%V(rnd%cnt:rnd%cnt+nleft-1) 
        rnd%cnt = rnd%cnt+nleft
        Return
-    Else
+    Else if (nst>0) then
        n(1:nst) = rnd%V(rnd%cnt:rnd%cnt+nst-1)
        nleft = nleft - nst
+    else 
+       nst = 0
     End If
     CALL fill_rnd() 
     
@@ -540,10 +609,12 @@ CONTAINS
             & * DINV_MERSBASE
        rnd%cnt = rnd%cnt+nleft
        Return
-    Else
+    Else if (nst>0) then
        d(1:nst) = Real(rnd%V(rnd%cnt:rnd%cnt+nst-1),kind=8) &
             & * DINV_MERSBASE
        nleft = nleft - nst
+    else 
+       nst = 0
     End If
     CALL fill_rnd() 
     
@@ -611,10 +682,12 @@ CONTAINS
             & * Real(DINV_MERSBASE,kind=4)
        rnd%cnt = rnd%cnt+nleft
        Return
-    Else
+    Else if (nst > 0) then
        d(1:nst) = Real(rnd%V(rnd%cnt:rnd%cnt+nst-1),kind=4) &
             & * Real(DINV_MERSBASE,kind=4)
        nleft = nleft - nst
+    else 
+       nst = 0
     End If
     CALL fill_rnd() 
     

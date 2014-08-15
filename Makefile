@@ -60,9 +60,12 @@ bdio.o: bdio.f90
 mixmax.o: mixmax.f90
 	$(F90) -c $^ -o $@
 
+ranlux.o: ranlux.f90
+	$(F90) -c $^ -o $@
+
 lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
 	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o \
-	minuitAPI.o lapackAPI.o bdio.o mixmax.o
+	minuitAPI.o lapackAPI.o bdio.o mixmax.o ranlux.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o
