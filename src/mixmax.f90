@@ -83,11 +83,9 @@ MODULE MixMax
   Integer, Parameter, Private :: SEED_LCG=0, SEED_SKIP=1, &
        & SEED_VI=2, SEED_SPBOX=3
 
-  Private :: noinit, mxmx_int, mxmx_f64, fill_rnd, Mod_Mersenne, &
+  Private :: noinit, fill_rnd, Mod_Mersenne, &
        & Mod_Mulspec_direct, Mod_Mulspec_default, Mod_Mulspec_zero, &
-       & Mod_Mulspec_one, mxmx_error, mxmx_f64_v, mxmx_f32, mxmx_int_v, &
-       & mxmx_f32_v, mxmx_z64, mxmx_z32, mxmx_z64_v, mxmx_z32_v
-
+       & Mod_Mulspec_one, mxmx_error, mxmx_int, mxmx_int_v
 
   !$OMP THREADPRIVATE(rnd,is_init)
 
@@ -145,6 +143,7 @@ CONTAINS
     if (size(state)<mxmx_size()) call mxmx_error('mxmx_reset', &
          'Array too small to store the state of MIXMAX')
     
+    if (.not.is_init) call mxmx_init(int(state(1),kind=4))
     rnd%N           = int(state(1)   ,kind=4)
     rnd%cnt         = int(state(2)   ,kind=4)
     rnd%sumtot      = int(state(3)   ,kind=8)
@@ -478,8 +477,8 @@ CONTAINS
     End Select
 
     nnumbers = 0_8
-    if (rnd%cyc > 0_8) nnumbers = 96_8*(rnd%cyc-1_8)
-    if (rnd%cnt <= 96) nnumbers = nnumbers + rnd%cnt - 1_8
+    if (rnd%cyc > 0_8) nnumbers = int(rnd%N,kind=8)*(rnd%cyc-1_8)
+    if (rnd%cnt <= rnd%N) nnumbers = nnumbers + rnd%cnt - 1_8
     Write(iout,'(1A,1I22,1A)')'MIXMAX since seeded generated: ', &
          & nnumbers*61_8,  ' bits' 
 
