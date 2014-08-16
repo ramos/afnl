@@ -44,7 +44,7 @@ MODULE RanLux
   integer, parameter :: BASE = 16777216
   real (kind=8), parameter :: DINV = 5.9604644775390625E-8_8
 
-  type (state) :: rnd
+  type (state), save :: rnd
   integer :: next(1:24) = (/24,1,2,3,4,5,6,7,8,9,10,11,12,13,14, &
        15,16,17,18,19,20,21,22,23/)
 
@@ -55,8 +55,6 @@ MODULE RanLux
      module procedure :: rnlx_f64, rnlx_f64_v, rnlx_f32, rnlx_f32_v, &
           rnlx_z32, rnlx_z32_v, rnlx_z64, rnlx_z64_v
   end interface rnlx
-
-  public :: rnd, fill_rnd, BASE
 
   public :: rnlx_init, rnlx, rnlx_seed_lcg, rnlx_seed_v3, &
        rnlx_seed_mine, rnlx_print_info, rnlx_size, rnlx_get, rnlx_reset, &
