@@ -30,6 +30,7 @@ MODULE ModBDIO
 ! *
 ! ***************************************************
 
+  USE ISO_FORTRAN_ENV, Only : error_unit, output_unit, iostat_end
   USE NonNumeric
 
   IMPLICIT NONE
@@ -985,7 +986,7 @@ CONTAINS
       Type (BDIO), Intent (inout) :: fbd
       Character (len=*), Intent (in) :: info
       
-      Integer (kind=4) :: i4, I, iln, iv
+      Integer (kind=4) :: i4, I, iln, iv, ist
       Integer (kind=8) :: ipos, iend
       Type (BDIO_Record), pointer :: newr, aux
 
@@ -1043,7 +1044,7 @@ CONTAINS
       CALL MVBits(iln,0,12,i4,0)
       If (.not.fbd%lendian) CALL ByteSwap(i4)
       Write(fbd%ifn,Pos=ipos-4)i4
-      Read(fbd%ifn, Pos=iend)
+      Read(fbd%ifn, Pos=iend, iostat=ist)
       fbd%rwpos  = iend
       fbd%istate = BDIO_W_MODE
 
@@ -1069,7 +1070,6 @@ CONTAINS
       fbd%tcnt = fbd%tcnt + 1
       fbd%lasthdr => newr
 
-
       Return
     End Subroutine BDIO_start_header
 
@@ -1084,12 +1084,12 @@ CONTAINS
       Logical, Intent (in), Optional :: long
 
       Type (BDIO_record), pointer :: newr, aux
-      Integer :: irc, i4, ilong
+      Integer :: irc, i4, ilong, ist
       Integer (kind=8) :: ipos, iln
       logical :: lrec
 
       fbd%current => fbd%last
-      Read(fbd%ifn,Pos=fbd%current%rend)
+      Read(fbd%ifn,Pos=fbd%current%rend,iostat=ist)
       ilong = 0
       If (Present(long)) Then
          lrec = long
@@ -1577,14 +1577,15 @@ CONTAINS
 
       Type (BDIO), Intent (inout) :: fbd
 
-      Integer (kind=4) :: i4, irc
+      Integer (kind=4) :: i4, irc, ist
       Integer (kind=8) :: ipos
       Character (len=32) :: ai
       
       Rewind(fbd%ifn)
       Do 
          Inquire(fbd%ifn, Pos=ipos)
-         Read(fbd%ifn,END=20)i4
+         Read(fbd%ifn, iostat=ist)i4
+         if (ist == iostat_end) exit
          irc = 0
          CALL MVbits(i4,0,1,irc,0)
 
@@ -1600,8 +1601,6 @@ CONTAINS
          End If
       End Do
          
-20    Continue
-
       Return
     End Subroutine BDIO_parse
 
@@ -1614,7 +1613,7 @@ CONTAINS
       Type (BDIO), Intent (inout) :: fbd
 
       Integer (kind=4) :: i4, ilong, irc, j, ifmt, iuinfo
-      Integer (kind=8) :: ipos, iend, iln
+      Integer (kind=8) :: ipos, iend, iln, ist
       Integer (kind=8) :: jlong
 
       Type (BDIO_Record), pointer :: newr, aux
@@ -1642,8 +1641,8 @@ CONTAINS
          iln = iln
       End If
       Inquire(fbd%ifn, Pos=ipos)
-      Read(fbd%ifn, Pos=ipos+iln)
-      Inquire(fbd%ifn, Pos=iend)
+      iend = ipos + iln
+      Read(fbd%ifn, Pos=ipos+iln, iostat=ist)
       
       Allocate(newr)
       newr%ishdr = .False.
@@ -1685,7 +1684,7 @@ CONTAINS
 
       Type (BDIO), Intent (inout) :: ptf
 
-      Integer (kind=4) :: i4, isp, iv, iln
+      Integer (kind=4) :: i4, isp, iv, iln, ist
       Character (kind=1) :: ch
       Integer (kind=8) :: ipos, iend
 
@@ -1709,7 +1708,7 @@ CONTAINS
       CALL MVbits(i4,12,4,isp,0)
       CALL MVbits(i4,16,16,iv,0)
       Inquire(ptf%ifn, pos=ipos)
-      Read(ptf%ifn,Pos=ipos+iln)
+      Read(ptf%ifn,Pos=ipos+iln, iostat=ist)
       Inquire(ptf%ifn, pos=iend)
       
       Allocate(newr)
