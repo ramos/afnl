@@ -452,7 +452,6 @@ CONTAINS
     iout = output_unit
     if (present(ifn)) iout = ifn
 
-    Write(iout,'(1A,1I4)')'MIXMAX Working in the Galois field with modulus 2^61-1'
     Write(iout,'(1A,1I6)')'MIXMAX Matrix size:  ', rnd%N
     if (NLUX > 1) Then
        Write(iout,'(1A,1I6)')'MIXMAX Luxury level: ', NLUX

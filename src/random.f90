@@ -247,7 +247,7 @@ CONTAINS
     call rndm(u1)
     call rndm(u2)
 
-    x = sqrt(-2.0_dp*log(u1)) * cos(twopi_dp*u2)
+    x = sqrt(-2.0_dp*log(1.0_DP-u1)) * cos(twopi_dp*u2)
 
     return
   end subroutine  normals
@@ -269,7 +269,7 @@ CONTAINS
        CALL Rndm(U1)
        CALL Rndm(U2)
 
-       r = Sqrt(-2.0_DP*Log(U1))
+       r = Sqrt(-2.0_DP*Log(1.0_DP-U1))
        z = exp(cmplx(0.0_DP,TWOPI_DP)*U2)
        X(2*i-1) = r*Real(z)
        X(2*i)   = r*Aimag(z)
@@ -292,7 +292,7 @@ CONTAINS
     CALL Rndm(U1)
     CALL Rndm(U2)
 
-    X = Rsig * Sqrt(-2.0_DP*Log(U1)) * Cos(TWOPI_DP*U2) + Rmed 
+    X = Rsig * Sqrt(-2.0_DP*Log(1.0_DP-U1)) * Cos(TWOPI_DP*U2) + Rmed 
 
     Return
   End Subroutine  NormalS2
@@ -315,7 +315,7 @@ CONTAINS
        CALL Rndm(U1)
        CALL Rndm(U2)
 
-       r = Sqrt(-2.0_DP*Log(U1))
+       r = Sqrt(-2.0_DP*Log(1.0_DP-U1))
        z = exp(cmplx(0.0_DP,TWOPI_DP)*U2)
        X(2*i-1) = r*Real(z)
        X(2*i)   = r*Aimag(z)
@@ -339,7 +339,7 @@ CONTAINS
     call rndm(u1)
     call rndm(u2)
 
-    x = sqrt(-2.0_SP*log(u1)) * cos(twopi_SP*u2)
+    x = sqrt(-2.0_SP*log(1.0_SP-u1)) * cos(twopi_SP*u2)
 
     return
   end subroutine  normals_SP
@@ -361,7 +361,7 @@ CONTAINS
        CALL Rndm(U1)
        CALL Rndm(U2)
 
-       r = Sqrt(-2.0_SP*Log(U1))
+       r = Sqrt(-2.0_SP*Log(1.0_SP-U1))
        z = exp(cmplx(0.0_SP,TWOPI_SP)*U2)
        X(2*i-1) = r*Real(z)
        X(2*i)   = r*Aimag(z)
@@ -384,7 +384,7 @@ CONTAINS
     CALL Rndm(U1)
     CALL Rndm(U2)
 
-    X = Rsig * Sqrt(-2.0_SP*Log(U1)) * Cos(TWOPI_SP*U2) + Rmed 
+    X = Rsig * Sqrt(-2.0_SP*Log(1.0_SP-U1)) * Cos(TWOPI_SP*U2) + Rmed 
 
     Return
   End Subroutine  Normals2_SP
@@ -407,7 +407,7 @@ CONTAINS
        CALL Rndm(U1)
        CALL Rndm(U2)
 
-       r = Sqrt(-2.0_SP*Log(U1))
+       r = Sqrt(-2.0_SP*Log(1.0_SP-U1))
        z = exp(cmplx(0.0_SP,TWOPI_SP)*U2)
        X(2*i-1) = r*Real(z)
        X(2*i)   = r*Aimag(z)
@@ -526,7 +526,7 @@ CONTAINS
     CALL rndm(U1)
     CALL rndm(U2)
     
-    w = -Log(U1)
+    w = -Log(1.0_DP-U1)
     phi = PI_DP * (U2 - 0.5_DP)
     z = b*Tan(a*HALFPI_DP)
     ainv = 1.0_DP/a
@@ -576,7 +576,7 @@ CONTAINS
        CALL rndm(U1)
        CALL rndm(U2)
        
-       w = -Log(U1)
+       w = -Log(1.0_DP-U1)
        phi = PI_DP * (U2 - 0.5_DP)
        
        X(I) = (Sin(a*phi) + z*Cos(a*phi))/Cos(phi) * &
@@ -623,7 +623,7 @@ CONTAINS
     CALL rndm(U1)
     CALL rndm(U2)
     
-    w = -Log(U1)
+    w = -Log(1.0_SP-U1)
     phi = PI_SP * (U2 - 0.5_SP)
     z = b*Tan(a*HALFPI_SP)
     ainv = 1.0_SP/a
@@ -673,7 +673,7 @@ CONTAINS
        CALL rndm(U1)
        CALL rndm(U2)
        
-       w = -Log(U1)
+       w = -Log(1.0_SP-U1)
        phi = PI_SP * (U2 - 0.5_SP)
        
        X(I) = (Sin(a*phi) + z*Cos(a*phi))/Cos(phi) * &
@@ -719,7 +719,7 @@ CONTAINS
     CALL rndm(U1)
     CALL rndm(U2)
     
-    w = -Log(U1)
+    w = -Log(1.0_DP-U1)
     phi = PI_DP * (U2 - 0.5_DP)
 
     X = 1.0_DP/HALFPI_DP * ( (HALFPI_DP+b*phi)*Tan(phi) - &
@@ -764,7 +764,7 @@ CONTAINS
        CALL rndm(U1)
        CALL rndm(U2)
        
-       w = -Log(U1)
+       w = -Log(1.0_DP-U1)
        phi = PI_DP * (U2 - 0.5_DP)
        
        X(I) = 1.0_DP/HALFPI_DP * ( (HALFPI_DP+b*phi)*Tan(phi) - &
@@ -808,7 +808,7 @@ CONTAINS
     CALL rndm(U1)
     CALL rndm(U2)
     
-    w = -Log(U1)
+    w = -Log(1.0_SP-U1)
     phi = PI_SP * (U2 - 0.5_SP)
 
     X = 1.0_SP/HALFPI_SP * ( (HALFPI_SP+b*phi)*Tan(phi) - &
@@ -853,7 +853,7 @@ CONTAINS
        CALL rndm(U1)
        CALL rndm(U2)
        
-       w = -Log(U1)
+       w = -Log(1.0_SP-U1)
        phi = PI_SP * (U2 - 0.5_SP)
        
        X(I) = 1.0_SP/HALFPI_SP * ( (HALFPI_SP+b*phi)*Tan(phi) - &
@@ -962,7 +962,7 @@ CONTAINS
     
     CALL rndm(U)
 
-    X = Rmu - Rb * Log(-Log(U))
+    X = Rmu - Rb * Log(-Log(1.0_SP-U))
 
     Return
   End Subroutine  FishTipp_SP
@@ -978,7 +978,7 @@ CONTAINS
     
     CALL rndm(U)
 
-    X = Rmu - Rb * Log(-Log(U))
+    X = Rmu - Rb * Log(-Log(1.0_DP-U))
 
     Return
   End Subroutine  FishTipp_DP
@@ -996,7 +996,7 @@ CONTAINS
 
     do i = 1, size(X)
        CALL rndm(U)
-       X(i) = Rmu - Rb * Log(-Log(U))
+       X(i) = Rmu - Rb * Log(-Log(1.0_SP-U))
     end do
 
     Return
@@ -1015,7 +1015,7 @@ CONTAINS
 
     do i = 1, size(X)
        CALL rndm(U)
-       X(i) = Rmu - Rb * Log(-Log(U))
+       X(i) = Rmu - Rb * Log(-Log(1.0_DP-U))
     end do
 
     Return
