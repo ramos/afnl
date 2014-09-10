@@ -24,11 +24,6 @@
 MODULE ModBDIO
 ! *
 ! ***************************************************
-! *
-! * NonNumeric routines for sorting and locating
-! * data.
-! *
-! ***************************************************
 
   USE ISO_FORTRAN_ENV, Only : error_unit, output_unit, iostat_end
   USE NonNumeric

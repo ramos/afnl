@@ -1,5 +1,4 @@
-!
-! A MODULE for non numerical routines (sorting and locate)
+! MODULE for non numerical routines (sorting and locate)
 !
 ! Copyright (C) 2005  Alberto Ramos <alberto@martin.ft.uam.es>
 !
@@ -31,8 +30,8 @@ MODULE NonNumeric
 ! ***************************************************
 
 
+  USE ISO_FORTRAN_ENV, Only : error_unit, output_unit, iostat_end
   USE NumTypes
-  USE Error
   USE Time
 
   IMPLICIT NONE
@@ -148,7 +147,7 @@ MODULE NonNumeric
        & Swap_SP, Swap_DP, NewQsort_IN, NewQsort_SP, NewQsort_DP, &
        & Partition_SP, Partition_IN, Partition_DP, Partition, HDR, &
        & MAXLN, Start_Hash, table, AddBufferS, AddbufferR, &
-       & AddbufferD, AddbufferRV, AddbufferDV
+       & AddbufferD, AddbufferRV, AddbufferDV, aabort, pperror
 
 CONTAINS
 
@@ -1568,11 +1567,11 @@ CONTAINS
          & Access='STREAM', Action="READ")
     
     Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
 
     Do
        Read(69,'(1A1)', IOSTAT=Is)RD
-       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
     Inquire(69,POS=Npos)
@@ -1582,12 +1581,12 @@ CONTAINS
          & Access='STREAM', Action="READ")
 
     Read(69, POS=NPOS, IOSTAT=Is)Nsz
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
 
     If (Allocated(buf)) Deallocate(buf)
     Allocate(buf(Nsz))
     Read(69, IOSTAT=Is)buf
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     
     Read(69)CHKSum
     Close(69)
@@ -1629,7 +1628,7 @@ CONTAINS
     
     Do
        Read(OpenBuffer,'(1A1)', IOSTAT=Is)RD
-       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
     Inquire(OpenBuffer,POS=Npos)
@@ -1639,7 +1638,7 @@ CONTAINS
          & Access='STREAM', Action="READ")
 
     Read(OpenBuffer, POS=NPOS, IOSTAT=Is)Nsz
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
 
     If (Present(nnsz)) nnsz = Nsz
 
@@ -1676,7 +1675,7 @@ CONTAINS
     
     Do
        Read(ifn,'(1A1)', IOSTAT=Is)RD
-       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
     Inquire(ifn,POS=Npos)
@@ -1686,7 +1685,7 @@ CONTAINS
          & Access='STREAM', Action="READ")
 
     Read(ifn, POS=NPOS, IOSTAT=Is)Nsz
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     Close(ifn)
 
     Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
@@ -1824,7 +1823,7 @@ CONTAINS
     
     Do
        Read(ifn,'(1A1)', IOSTAT=Is)RD
-       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
     Inquire(ifn,POS=Npos)
@@ -1834,7 +1833,7 @@ CONTAINS
          & Access='STREAM', Action="READ")
 
     Read(ifn, POS=NPOS, IOSTAT=Is)Nsz
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     Close(ifn)
 
     Open (File=Trim(fn), Unit=ifn, Form='UNFORMATTED', &
@@ -1871,7 +1870,7 @@ CONTAINS
     
     Do
        Read(69,'(1A1)', IOSTAT=Is)RD
-       If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+       If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
        If (RD == HDR) Exit
     End Do
     Inquire(69,POS=Npos)
@@ -1881,7 +1880,7 @@ CONTAINS
          & Access='STREAM', Action="READ")
 
     Read(69, POS=NPOS, IOSTAT=Is)Nsz
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     Do I = 1, Nsz
        Read(69)Is
     End Do
@@ -1933,10 +1932,10 @@ CONTAINS
          & Access='STREAM', Action="READ")
     
     Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
 
     Read(69,'(1X,1A,1A24)', IOSTAT=Is)foo, GetDT
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     Close(69)
 
     Return
@@ -1958,12 +1957,12 @@ CONTAINS
          & Access='STREAM', Action="READ")
     
     Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     Read(69,*, IOSTAT=Is)
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
 
     Read(69,'(1X,1A,1A)', IOSTAT=Is)foo, cm
-    If (Is /= 0) CALL Abort('[ReadBuffer]', 'Error reading buffer')
+    If (Is /= 0) CALL Aabort('[ReadBuffer]', 'Error reading buffer')
     Close(69)
 
     Return
@@ -1995,7 +1994,7 @@ CONTAINS
        If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, val, STATUS=Ist)
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Fail retriving the argument '//Trim(opt))
           GetOpt = .True.
           Return
@@ -2035,11 +2034,11 @@ CONTAINS
        If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, foo, STATUS=Ist)
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Fail retriving the argument '//Trim(opt))
 
           Read(foo,*,IOSTAT=Ist)Ival
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Argument error '//Trim(opt))
 
           GetOpt = .True.
@@ -2080,11 +2079,11 @@ CONTAINS
        If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, foo, STATUS=Ist)
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Fail retriving the argument '//Trim(opt))
 
           Read(foo,*,IOSTAT=Ist)val
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Argument error '//Trim(opt))
 
           GetOpt = .True.
@@ -2125,11 +2124,11 @@ CONTAINS
        If ( (arg == opt).and.(len(Trim(arg))==len(Trim(opt)))) Then
           I = I+1
           Call Get_command_argument(I, foo, STATUS=Ist)
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Fail retriving the argument '//Trim(opt))
 
           Read(foo,*,IOSTAT=Ist)val
-          If (Ist /= 0) CALL Abort('GetOptCh', &
+          If (Ist /= 0) CALL Aabort('GetOptCh', &
                & 'Argument error '//Trim(opt))
 
           GetOpt = .True.
@@ -2176,6 +2175,44 @@ CONTAINS
 
     Return
   End Function GetOptTest
+
+! ***************************************************
+! *
+  Subroutine aAbort(Routine, Msg)
+! *
+! ***************************************************
+  
+    Character (len=*), Intent (in), Optional :: Routine
+    Character (len=*), Intent (in) :: Msg
+    
+    If (Present(Routine)) Then
+       Write(error_unit, *)'  Abort: IN ', Trim(Routine),': ',Msg
+    Else
+       Write(error_unit, *)'  Abort: ', Msg
+    End If
+
+    Stop
+    
+    Return
+  End Subroutine AAbort
+
+! ***************************************************
+! *
+  Subroutine pPerror(Routine, Msg)
+! *
+! ***************************************************
+  
+    Character (len=*), Intent (in), Optional :: Routine
+    Character (len=*), Intent (in) :: Msg
+    
+    If (Present(Routine)) Then
+       Write(error_unit, *)'  Error: IN ', Trim(Routine),': ',Msg
+    Else
+       Write(error_unit, *)'  Error: ', Msg
+    End If
+
+    Return
+  End Subroutine PPerror
 
 End MODULE NonNumeric
 

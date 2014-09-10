@@ -24,7 +24,7 @@
 MODULE Time
 
   USE NumTypes
-  USE Error
+!  USE Error
 
   IMPLICIT NONE
 
