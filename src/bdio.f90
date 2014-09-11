@@ -35,6 +35,9 @@ MODULE ModBDIO
        & MAXFNAME = 4096, BDIO_SHORT_LEN = 256, BDIO_LONG_LEN = 4096, &
        & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1, &
        & BDIO_R_STATE=0, BDIO_W_STATE=1
+
+  character (len=BDIO_SHORT_LEN) :: defaultuser='alberto', &
+       defaulthost='desy.de'
                                                                 
   Integer, Parameter :: BDIO_BIN_GENERIC = 0, BDIO_ASC_EXEC = 1, &
        & BDIO_BIN_INT32BE = 2, BDIO_BIN_INT32LE = 3, &
@@ -55,7 +58,7 @@ MODULE ModBDIO
      Integer (kind=8) :: rwpos=-1
      Logical :: lendian, opened = .False.
 
-     Character (len=BDIO_SHORT_LEN) :: user='alberto', host='desy.de'
+     Character (len=BDIO_SHORT_LEN) :: user, host
      
      Type (BDIO_record), pointer :: first => null(), last => null(), &
           & current => null(), lasthdr => null()
@@ -97,12 +100,13 @@ MODULE ModBDIO
   
 
   Private :: byteswap_int32, byteswap_int32V, &
-       & byteswap_R, byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
-       & byteswap_DZV, byteswap_ZV, byteswap_Z, byteswap_int64, &
-       & byteswap_int64V, Rewrite_rlen, BDIO_read_f32, BDIO_read_f64, &
-       & BDIO_read_i32, BDIO_read_i64, BDIO_read_z32, BDIO_read_z64, &
-       & BDIO_write_i32, BDIO_write_i64, BDIO_write_f32, BDIO_write_bin, &
-       & BDIO_write_f64, BDIO_write_z32, BDIO_write_z64, BDIO_read_bin
+       byteswap_R, byteswap_RV, byteswap_DV, byteswap_D, byteswap_DZ, &
+       byteswap_DZV, byteswap_ZV, byteswap_Z, byteswap_int64, &
+       byteswap_int64V, Rewrite_rlen, BDIO_read_f32, BDIO_read_f64, &
+       BDIO_read_i32, BDIO_read_i64, BDIO_read_z32, BDIO_read_z64, &
+       BDIO_write_i32, BDIO_write_i64, BDIO_write_f32, BDIO_write_bin, &
+       BDIO_write_f64, BDIO_write_z32, BDIO_write_z64, BDIO_read_bin, &
+       defaultuser, defaulthost
 
 CONTAINS
 
@@ -1534,7 +1538,10 @@ CONTAINS
             Exit
          End If
       End Do
-
+      
+      
+      fbd%user = defaultuser
+      fbd%host = defaulthost
       Select Case (fbd%imode)
       Case (BDIO_R_MODE) 
          Open (File=Trim(fname), unit=fbd%ifn, ACTION="READ", &
@@ -2181,38 +2188,34 @@ CONTAINS
 
 ! ********************************
 ! *
-    Subroutine BDIO_setuser(fbd, suser)
+    Subroutine BDIO_setuser(suser)
 ! *
 ! ********************************
-      
-      Type (BDIO), Intent (inout) :: fbd
       Character (len=*), Intent (in) :: suser
       Integer :: I
 
-      fbd%user = ''
+      defaultuser = ''
       Do I = 1, Min(len(Trim(suser)),BDIO_SHORT_LEN-1)
-         fbd%user(I:I) = suser(I:I)
+         defaultuser(I:I) = suser(I:I)
       End Do
-      fbd%user(I:I) = achar(0)
+!      defaultuser(I:I) = achar(0)
 
       Return
     End Subroutine BDIO_setuser
 
 ! ********************************
 ! *
-    Subroutine BDIO_sethost(fbd,shost)
+    Subroutine BDIO_sethost(shost)
 ! *
 ! ********************************
-      
-      Type (BDIO), Intent (inout) :: fbd
       Character (len=*), Intent (in) :: shost
       Integer :: I
 
-      fbd%host = ''
+      defaulthost = ''
       Do I = 1, Min(len(Trim(shost)),BDIO_SHORT_LEN-1)
-         fbd%host(I:I) = shost(I:I)
+         defaulthost(I:I) = shost(I:I)
       End Do
-      fbd%host(I:I) = achar(0)
+!      defaulthost(I:I) = achar(0)
 
       Return
     End Subroutine BDIO_sethost

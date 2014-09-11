@@ -8,7 +8,7 @@ Program AA
 
   USE MIXMAX
 
-  Integer, Parameter :: Ns=500
+  Integer, Parameter :: Ns=5
 
   Type (BDIO) :: bb
   Character (len=200) :: fn, type
@@ -32,9 +32,11 @@ Program AA
   CALL mxmx_init()
   CALL mxmx_seed_spbox(3443_8)
   
+  call BDIO_setuser('perico')
+  call BDIO_sethost('casa.pepe')
 
   bb = BDIO_open(fn, 'w', 'Test file with MIXMAX random ')
-  Do i4 = 1, 20
+  Do i4 = 1, 2
      CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
      Do Isw = 1, 50
         CALL mxmx(da)
