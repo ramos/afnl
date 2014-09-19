@@ -1,23 +1,22 @@
 !
-! A MODULE for non numerical routines (sorting and locate)
+! A MODULE for BDIO file format compatibility.
 !
-! Copyright (C) 2005  Alberto Ramos <alberto@martin.ft.uam.es>
+! This module implements the BDIO standard of Hubert&Tomasz in 
+! standard fortran 2008. 
+
+! This module includes the possibility of including checksums 
+! for the records. Checksums will be stored as BDIO records with 
+! uid 7 and will always consists of two 4 Byte integers of which 
+! the first one will always be 2054847098. A checksum record is 
+! assumed to always contain the checksum of the inmediately 
+! previous record.
 !
-! This program is free software; you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation; either version 2 of the License, or
-! (at your option) any later version.
+! "THE BEER-WARE LICENSE":
+! Alberto Ramos wrote this file. As long as you retain this 
+! notice you can do whatever you want with this stuff. If we meet some 
+! day, and you think this stuff is worth it, you can buy me a beer in 
+! return. <alberto.ramos@desy.de>
 !
-! This program is distributed in the hope that it will be useful,
-! but WITHOUT ANY WARRANTY; without even the implied warranty of
-! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
-!
-! You should have received a copy of the GNU General Public License
-! along with this program; if not, write to the Free Software
-! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-! USA
-! 
 
 ! ***************************************************
 ! *
