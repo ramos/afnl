@@ -275,7 +275,7 @@ CONTAINS
        X(2*i)   = r*Aimag(z)
     end do
     
-    if (mod(isz,2) == 1) call normals(X(isz))
+    if (mod(size(X),2) == 1) call normals(X(size(X)))
 
     Return
   End Subroutine  NormalV
@@ -321,7 +321,7 @@ CONTAINS
        X(2*i)   = r*Aimag(z)
     end do
     
-    if (mod(isz,2) == 1) call normals(X(isz))
+    if (mod(size(X),2) == 1) call normals(X(size(X)))
 
     X = rsig*X + Rmed
 
@@ -367,7 +367,7 @@ CONTAINS
        X(2*i)   = r*Aimag(z)
     end do
     
-    if (mod(isz,2) == 1) call normals_SP(X(isz))
+    if (mod(size(X),2) == 1) call normals_SP(X(size(X)))
 
     Return
   End Subroutine  Normalv_SP
@@ -413,7 +413,7 @@ CONTAINS
        X(2*i)   = r*Aimag(z)
     end do
     
-    if (mod(isz,2) == 1) call normals_SP(X(isz))
+    if (mod(size(X),2) == 1) call normals_SP(X(size(X)))
     X = rsig*X + Rmed
 
     return

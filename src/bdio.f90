@@ -1060,7 +1060,7 @@ CONTAINS
          newr%prev => aux
          fbd%last => newr
       Else
-         Allocate(fbd%first)
+!         Allocate(fbd%first)
          fbd%first => newr
          fbd%last  => newr
       End If
@@ -1127,7 +1127,7 @@ CONTAINS
          newr%prev => aux
          fbd%last => newr
       Else
-         Allocate(fbd%first)
+!         Allocate(fbd%first)
          fbd%first => newr
          fbd%last  => newr
       End If
@@ -1665,7 +1665,7 @@ CONTAINS
          newr%prev => aux
          fbd%last => newr
       Else
-         Allocate(fbd%first)
+!         Allocate(fbd%first)
          fbd%first => newr
          fbd%last  => newr
       End If
@@ -1786,7 +1786,7 @@ CONTAINS
          newr%prev => aux
          ptf%last => newr
       Else
-         Allocate(ptf%first)
+!         Allocate(ptf%first)
          ptf%first => newr
          ptf%last  => newr
       End If
@@ -1891,6 +1891,7 @@ CONTAINS
 
       i4 = 0
       p => fbd%current
+      jl = 0
       If (p%islong) Then
          Read(fbd%ifn,Pos=p%rpos-8)i4(1:2)
          if (.not.fbd%lendian) CALL ByteSwap(i4)

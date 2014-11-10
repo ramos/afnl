@@ -36,7 +36,7 @@ Program AA
   call BDIO_sethost('casa.pepe')
 
   bb = BDIO_open(fn, 'w', 'Test file with MIXMAX random ')
-  Do i4 = 1, 2
+  Do i4 = 1, 20
      CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
      Do Isw = 1, 50
         CALL mxmx(da)
@@ -45,12 +45,7 @@ Program AA
      CALL BDIO_write_hash(bb)
   End Do
 
-  Stop
-  CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
-  j = BDIO_write(bb, zarr, .true.)
-  CALL BDIO_write_hash(bb)
-
-
+  call BDIO_close(bb)
 
   Stop
 End Program AA
