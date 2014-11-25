@@ -32,6 +32,7 @@ MODULE Statistics
   USE Linear
   USE SpecialFunc
   USE Time
+  USE Random
 
   IMPLICIT NONE
 

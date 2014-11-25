@@ -270,7 +270,7 @@ CONTAINS
        CALL Rndm(U2)
 
        r = Sqrt(-2.0_DP*Log(1.0_DP-U1))
-       z = exp(cmplx(0.0_DP,TWOPI_DP)*U2)
+       z = exp(cmplx(0.0_DP,TWOPI_DP,kind=DP)*U2)
        X(2*i-1) = r*Real(z)
        X(2*i)   = r*Aimag(z)
     end do
@@ -316,7 +316,7 @@ CONTAINS
        CALL Rndm(U2)
 
        r = Sqrt(-2.0_DP*Log(1.0_DP-U1))
-       z = exp(cmplx(0.0_DP,TWOPI_DP)*U2)
+       z = exp(cmplx(0.0_DP,TWOPI_DP,kind=DP)*U2)
        X(2*i-1) = r*Real(z)
        X(2*i)   = r*Aimag(z)
     end do
