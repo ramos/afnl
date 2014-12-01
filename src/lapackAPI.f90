@@ -24,10 +24,12 @@ MODULE LapackAPI
   End Interface Diag
 
   Interface expM
-     Module Procedure expM_C
+     Module Procedure expM_pade
   End Interface ExpM
 
-  Private GEVP_D, GEVP_C, expM_C
+  Private GEVP_D, GEVP_C, expM_C, expM_pade, pade3exp, pade5exp, &
+       pade7exp, pade9exp, pade13exp, ludec
+  
 
 CONTAINS
 
@@ -309,7 +311,7 @@ CONTAINS
     CALL Diag(Aexp, S, U)
     S(1:N) = exp(tf*S(1:N))
     
-    Aexp = Cmplx(0.0_DP)
+    Aexp = Cmplx(0.0_DP,kind=DPC)
     Do I = 1, N
        Aexp(I,:) = S(I)*Conjg(U(:,I))
     End Do
@@ -345,6 +347,384 @@ CONTAINS
 
     Return
   End Subroutine Diag_DPC
+
+
+! ***********************************************
+! *
+  Function expM_pade(A, t) Result(Aexp)
+! *
+! ***********************************************
+! *
+! * Computes the exponential of matrix A(:,:)
+! * 
+! ***********************************************
+
+    Complex (kind=DPC), Intent (in) :: A(:,:)
+    Real (kind=DP), Intent (in), Optional :: t
+    Complex (kind=DPC) :: Aexp(Size(A,1),Size(A,2))
+
+    Complex (kind=DP) :: X(Size(A,1),Size(A,2))
+    Real (kind=DP) :: fac
+    integer :: ns, k, ip
+    Real (kind=DP), parameter :: th(5) = &
+         (/1.495585217958292e-2_DP, 2.539398330063230e-1_DP, &
+         9.504178996162932e-1_DP, 2.097847961257068e0_DP, &
+         5.371920351148152e0_DP /), &
+         log2 = 0.693147180559945309417232_DP
+
+    if (present(t)) then
+       X = t*A
+    else
+       X = A
+    end if
+
+    ns = size(A,1)
+    fac = Sum(Abs(X(:,1)))
+    do k = 2, ns
+       fac = max(fac,Sum(Abs(X(:,k))))
+    end do
+    
+    if (fac < th(1)) then
+       call pade3exp(X,Aexp)
+    else if (fac < th(2)) then
+       call pade5exp(X,Aexp)
+    else if (fac < th(3)) then
+       call pade7exp(X,Aexp)
+    else if (fac < th(4)) then
+       call pade9exp(X,Aexp)
+    else if (fac < th(5)) then
+       call pade13exp(X,Aexp)
+    else
+       ip = int(log(fac/th(5))/log2)+1
+       X = X/2.0_DP**ip
+
+       call pade13exp(X,Aexp)
+       do k = 1, ip
+          Aexp = Matmul(Aexp,Aexp)
+       end do
+    end if
+
+    Return
+  End Function expM_pade
+
+! *******************************************
+! *
+ Pure Subroutine pade3exp(X, M)
+! *
+! *******************************************
+    
+    Complex (kind=DP), Intent (in)  :: X(:,:)
+    Complex (kind=DP), Intent (out) :: M(Size(X,1),Size(X,2))
+    
+    Real (kind=DP), parameter :: b(0:3) = &
+         & (/120.0_DP, 60.0_DP, 12.0_DP, 1.0_DP/)
+    Complex (kind=DP) :: Xpow(1,Size(X,1),Size(X,2)), &
+         U(Size(X,1),Size(X,2)), V(Size(X,1),Size(X,2)), &
+         Q(Size(X,1),Size(X,2))
+    integer :: i, j, idim
+
+    idim = Size(X,1)
+
+    U = (0.0_DP,0.0_DP)
+    V = (0.0_DP,0.0_DP)
+    forall (i=1:idim) 
+       U(i,i) = Cmplx(b(1),kind=DP)
+       V(i,i) = Cmplx(b(0),kind=DP)
+    end forall
+
+    Xpow(1,:,:) = Matmul(X,X)
+    U = Matmul(X,U + b(3)*Xpow(1,:,:))
+    V = V + b(2)*Xpow(1,:,:)
+
+    M = U + V
+    Q = V - U
+    CALL ludec(Q)
+
+    Do j = 1, idim
+       M(1,j) = M(1,j)
+       Do I = 2, idim
+          M(I,j) = M(I,j) - Sum(Q(I,1:I-1)*M(1:I-1,j))
+       End Do
+       
+       M(idim,j) = M(idim,j) / Q(idim, idim)
+       Do I = idim - 1, 1, -1
+          M(I,j) = M(I,j) - Sum(Q(I, I+1:Idim)*M(I+1:Idim,j))
+          M(I,j) = M(I,j) / Q(I,I)
+       End Do
+    End Do
+    
+    Return
+  End Subroutine pade3exp
+  
+
+! *******************************************
+! *
+  Pure Subroutine pade5exp(X, M)
+! *
+! *******************************************
+    
+    Complex (kind=DP), Intent (in)  :: X(:,:)
+    Complex (kind=DP), Intent (out) :: M(Size(X,1),Size(X,2))
+    
+    Real (kind=DP), parameter :: b(0:5) = &
+         (/ 30240.0_DP, 15120.0_DP, 3360.0_DP, 420.0_DP, &
+         30.0_DP, 1.0_DP /)
+
+    Complex (kind=DP) :: Xpow(2,Size(X,1),Size(X,2)), &
+         U(Size(X,1),Size(X,2)), V(Size(X,1),Size(X,2)), &
+         Q(Size(X,1),Size(X,2))
+    integer :: i, j, idim
+
+    idim = Size(X,1)
+
+    U = (0.0_DP,0.0_DP)
+    V = (0.0_DP,0.0_DP)
+    forall (i=1:idim) 
+       U(i,i) = Cmplx(b(1),kind=DP)
+       V(i,i) = Cmplx(b(0),kind=DP)
+    end forall
+
+    Xpow(1,:,:) = Matmul(X,X)
+    Xpow(2,:,:) = Matmul(Xpow(1,:,:),Xpow(1,:,:))
+
+    do i = 1,2
+       V = V + b(2*i)*Xpow(i,:,:)
+       U = U + b(2*i+1)*Xpow(i,:,:)
+    end do
+    U = Matmul(X,U)
+
+    M = U + V
+    Q = V - U
+    CALL ludec(Q)
+
+    Do j = 1, idim
+       M(1,j) = M(1,j)
+       Do I = 2, idim
+          M(I,j) = M(I,j) - Sum(Q(I,1:I-1)*M(1:I-1,j))
+       End Do
+       
+       M(idim,j) = M(idim,j) / Q(idim, idim)
+       Do I = idim - 1, 1, -1
+          M(I,j) = M(I,j) - Sum(Q(I, I+1:Idim)*M(I+1:Idim,j))
+          M(I,j) = M(I,j) / Q(I,I)
+       End Do
+    End Do
+    
+    Return
+  End Subroutine pade5exp
+  
+! *******************************************
+! *
+  Pure Subroutine pade7exp(X, M)
+! *
+! *******************************************
+    
+    Complex (kind=DP), Intent (in)  :: X(:,:)
+    Complex (kind=DP), Intent (out) :: M(Size(X,1),Size(X,2))
+    
+    Real (kind=DP), parameter :: b(0:7) = &
+         (/ 17297280.0_DP, 8648640.0_DP, 1995840.0_DP, 277200.0_DP, &
+         25200.0_DP, 1512.0_DP, 56.0_DP, 1.0_DP/)
+
+    Complex (kind=DP) :: Xpow(3,Size(X,1),Size(X,2)), &
+         U(Size(X,1),Size(X,2)), V(Size(X,1),Size(X,2)), &
+         Q(Size(X,1),Size(X,2))
+    integer :: i, j, idim
+
+    idim = Size(X,1)
+
+    U = (0.0_DP,0.0_DP)
+    V = (0.0_DP,0.0_DP)
+    forall (i=1:idim) 
+       U(i,i) = Cmplx(b(1),kind=DP)
+       V(i,i) = Cmplx(b(0),kind=DP)
+    end forall
+
+    Xpow(1,:,:) = Matmul(X,X)
+    Xpow(2,:,:) = Matmul(Xpow(1,:,:),Xpow(1,:,:))
+    Xpow(3,:,:) = Matmul(Xpow(2,:,:),Xpow(1,:,:))
+
+    do i = 1,3
+       V = V + b(2*i)*Xpow(i,:,:)
+       U = U + b(2*i+1)*Xpow(i,:,:)
+    end do
+    U = Matmul(X,U)
+
+    M = U + V
+    Q = V - U
+    CALL ludec(Q)
+
+    Do j = 1, idim
+       M(1,j) = M(1,j)
+       Do I = 2, idim
+          M(I,j) = M(I,j) - Sum(Q(I,1:I-1)*M(1:I-1,j))
+       End Do
+       
+       M(idim,j) = M(idim,j) / Q(idim, idim)
+       Do I = idim - 1, 1, -1
+          M(I,j) = M(I,j) - Sum(Q(I, I+1:Idim)*M(I+1:Idim,j))
+          M(I,j) = M(I,j) / Q(I,I)
+       End Do
+    End Do
+    
+    Return
+  End Subroutine pade7exp
+  
+! *******************************************
+! *
+  Pure Subroutine pade9exp(X, M)
+! *
+! *******************************************
+    
+    Complex (kind=DP), Intent (in)  :: X(:,:)
+    Complex (kind=DP), Intent (out) :: M(Size(X,1),Size(X,2))
+    
+    Real (kind=DP), parameter :: b(0:9) = &
+         (/17643225600.0_DP, 8821612800.0_DP, 2075673600.0_DP, &
+         302702400.0_DP, 30270240.0_DP, 2162160.0_DP, 110880.0_DP, &
+         3960.0_DP, 90.0_DP, 1.0_DP/)
+
+    Complex (kind=DP) :: Xpow(4,Size(X,1),Size(X,2)), &
+         U(Size(X,1),Size(X,2)), V(Size(X,1),Size(X,2)), &
+         Q(Size(X,1),Size(X,2))
+    integer :: i, j, idim
+
+    idim = Size(X,1)
+
+    U = (0.0_DP,0.0_DP)
+    V = (0.0_DP,0.0_DP)
+    forall (i=1:idim) 
+       U(i,i) = Cmplx(b(1),kind=DP)
+       V(i,i) = Cmplx(b(0),kind=DP)
+    end forall
+
+    Xpow(1,:,:) = Matmul(X,X)
+    Xpow(2,:,:) = Matmul(Xpow(1,:,:),Xpow(1,:,:))
+    Xpow(3,:,:) = Matmul(Xpow(2,:,:),Xpow(1,:,:))
+    Xpow(4,:,:) = Matmul(Xpow(3,:,:),Xpow(1,:,:))
+
+    do i = 1,4
+       V = V + b(2*i)*Xpow(i,:,:)
+       U = U + b(2*i+1)*Xpow(i,:,:)
+    end do
+    U = Matmul(X,U)
+
+    M = U + V
+    Q = V - U
+    CALL ludec(Q)
+
+    Do j = 1, idim
+       M(1,j) = M(1,j)
+       Do I = 2, idim
+          M(I,j) = M(I,j) - Sum(Q(I,1:I-1)*M(1:I-1,j))
+       End Do
+       
+       M(idim,j) = M(idim,j) / Q(idim, idim)
+       Do I = idim - 1, 1, -1
+          M(I,j) = M(I,j) - Sum(Q(I, I+1:Idim)*M(I+1:Idim,j))
+          M(I,j) = M(I,j) / Q(I,I)
+       End Do
+    End Do
+    
+    Return
+  End Subroutine pade9exp
+  
+! *******************************************
+! *
+  Pure Subroutine pade13exp(X, M)
+! *
+! *******************************************
+    
+    Complex (kind=DP), Intent (in)  :: X(:,:)
+    Complex (kind=DP), Intent (out) :: M(Size(X,1),Size(X,2))
+    
+    Real (kind=DP), parameter :: b(0:13) = &
+         (/ 64764752532480000.0_DP, 32382376266240000.0_DP, &
+         7771770303897600.0_DP, 1187353796428800.0_DP, &
+         129060195264000.0_DP, 10559470521600.0_DP, & 
+         670442572800.0_DP, 33522128640.0_DP, 1323241920.0_DP, &
+         40840800.0_DP, 960960.0_DP, 16380.0_DP, 182.0_DP, 1.0_DP /)
+
+    Complex (kind=DP) :: Xpow(3,Size(X,1),Size(X,2)), &
+         U(Size(X,1),Size(X,2)), V(Size(X,1),Size(X,2)), &
+         Q(Size(X,1),Size(X,2))
+    integer :: i, j, idim
+
+    idim = Size(X,1)
+
+    U = (0.0_DP,0.0_DP)
+    V = (0.0_DP,0.0_DP)
+    Xpow(1,:,:) = Matmul(X,X)
+    do i=2, 3
+       Xpow(i,:,:) = Matmul(Xpow(1,:,:),Xpow(i-1,:,:))
+    end do
+
+    do i = 1, 3
+       V = V + b(2*i+6)*Xpow(i,:,:)
+       U = U + b(2*i+7)*Xpow(i,:,:)
+    end do
+    V = Matmul(Xpow(3,:,:),V)
+    U = Matmul(Xpow(3,:,:),U)
+    do i = 1, 3
+       V = V + b(2*i)*Xpow(i,:,:)
+       U = U + b(2*i+1)*Xpow(i,:,:)
+    end do
+    do i = 1, idim
+       V(i,i) = V(i,i) + b(0)
+       U(i,i) = U(i,i) + b(1)
+    end do
+    U = Matmul(X,U)
+    
+    M = U + V
+    Q = V - U
+    CALL ludec(Q)
+
+    Do j = 1, idim
+       M(1,j) = M(1,j)
+       Do I = 2, idim
+          M(I,j) = M(I,j) - Sum(Q(I,1:I-1)*M(1:I-1,j))
+       End Do
+       
+       M(idim,j) = M(idim,j) / Q(idim, idim)
+       Do I = idim - 1, 1, -1
+          M(I,j) = M(I,j) - Sum(Q(I,I+1:Idim)*M(I+1:Idim,j))
+          M(I,j) = M(I,j) / Q(I,I)
+       End Do
+    End Do
+    
+    Return
+  End Subroutine pade13exp
+  
+!  *********************************************
+!  *                                           *
+  Pure Subroutine ludec(M)
+!  *                                           *
+!  *********************************************
+!  * Makes LU decomposition of Matrix M
+!  *********************************************
+
+    Complex (kind=DP), Intent (inout) :: M(:,:)
+
+    Integer :: I, J, idim
+
+    idim = Size(M,1)
+    Do J = 2, Idim
+       M(J, 1) = M(J, 1) / M(1, 1)
+    End Do
+
+    Do I = 2, Idim
+       M(I, I) = M(I, I) - Sum(M(I,1:I-1)*M(1:I-1, I)) 
+       Do J = i+1, Idim
+          M(I, J) = M(I, J) - Sum(M(I, 1:I-1)*M(1:I-1, J))
+          M(J, I) = M(J, I) - Sum(M(J, 1:I-1)*M(1:I-1, I))
+          M(J, I) = M(J, I) / M(I, I)
+       End Do
+    End Do
+
+    Return
+  End Subroutine ludec
+
+
   
 END MODULE LapackAPI
   
