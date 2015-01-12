@@ -1,40 +1,22 @@
 ! MODULE for non numerical routines (sorting and locate)
 !
-! Copyright (C) 2005  Alberto Ramos <alberto@martin.ft.uam.es>
-!
-! This program is free software; you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation; either version 2 of the License, or
-! (at your option) any later version.
-!
-! This program is distributed in the hope that it will be useful,
-! but WITHOUT ANY WARRANTY; without even the implied warranty of
-! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
-!
-! You should have received a copy of the GNU General Public License
-! along with this program; if not, write to the Free Software
-! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-! USA
-! 
+! "THE BEER-WARE LICENSE":
+! Alberto Ramos wrote this file. As long as you retain this 
+! notice you can do whatever you want with this stuff. If we meet some 
+! day, and you think this stuff is worth it, you can buy me a beer in 
+! return. <alberto.ramos@cern.ch>
 
-! ***************************************************
-! *
 MODULE NonNumeric
-! *
-! ***************************************************
-! *
-! * NonNumeric routines for sorting and locating
-! * data.
-! *
-! ***************************************************
-
 
   USE ISO_FORTRAN_ENV, Only : error_unit, output_unit, iostat_end
   USE NumTypes
   USE Time
 
   IMPLICIT NONE
+
+  interface realloc
+     module procedure realloc_D, realloc_I
+  end interface realloc
 
   Interface Swap
      Module Procedure Swap_IN, Swap_SP, Swap_DP
@@ -151,6 +133,95 @@ MODULE NonNumeric
 
 CONTAINS
 
+! ****************************************
+! *
+  subroutine realloc_Z(d, n)
+! *
+! ****************************************
+    complex (kind=DPC), intent (inout), allocatable :: d(:)
+    integer, intent (in) :: n
+    integer :: nold
+    complex (kind=DPC), allocatable :: dcp(:)
+    
+    nold = size(d)
+    if (allocated(d)) then
+       allocate(dcp(nold))
+       dcp = d
+       
+       deallocate(d)
+       allocate(d(n))
+       if (n > nold) then
+          d(1:nold)  = dcp(1:nold)
+          d(nold+1:) = (0.0_DP, 0.0_DP)
+       else
+          d(1:n)  = dcp(1:n)
+       end if
+    else
+       allocate(d(n))
+    end if
+
+    return
+  end subroutine realloc_Z
+
+! ****************************************
+! *
+  subroutine realloc_D(d, n)
+! *
+! ****************************************
+    real (kind=DP), intent (inout), allocatable :: d(:)
+    integer, intent (in) :: n
+    integer :: nold
+    real (kind=DP), allocatable :: dcp(:)
+    
+    nold = size(d)
+    if (allocated(d)) then
+       allocate(dcp(nold))
+       dcp = d
+       
+       deallocate(d)
+       allocate(d(n))
+       if (n > nold) then
+          d(1:nold)  = dcp(1:nold)
+          d(nold+1:) = 0.0_DP
+       else
+          d(1:n)  = dcp(1:n)
+       end if
+    else
+       allocate(d(n))
+    end if
+
+    return
+  end subroutine realloc_D
+
+! ****************************************
+! *
+  subroutine realloc_I(d, n)
+! *
+! ****************************************
+    integer, intent (inout), allocatable :: d(:)
+    integer, intent (in) :: n
+    integer :: nold
+    integer, allocatable :: dcp(:)
+    
+    nold = size(d)
+    if (allocated(d)) then
+       allocate(dcp(nold))
+       dcp = d
+       
+       deallocate(d)
+       allocate(d(n))
+       if (n > nold) then
+          d(1:nold)  = dcp(1:nold)
+          d(nold+1:) = 0
+       else
+          d(1:n)  = dcp(1:n)
+       end if
+    else
+       allocate(d(n))
+    end if
+
+    return
+  end subroutine realloc_I
 
 ! ***********************************
 ! *
