@@ -1207,15 +1207,14 @@ CONTAINS
 ! ***************************************************
     integer, intent (in) :: ilv
 
-    Write(error_unit,'(1A)')'**WARNING** MIXMAX Working without LUXURY. '
-    Write(error_unit,'(1A)')'            This is known to produce numbers with some correlations.'
-
     if (ilv == 1)   then
        NLUX = mxmx_maxlux(rnd%N) / 2
     else if (ilv == 2) then
        NLUX = mxmx_maxlux(rnd%N)
     else if (ilv == 0) then
        NLUX = 1
+       Write(error_unit,'(1A)')'**WARNING** MIXMAX Working without LUXURY. '
+       Write(error_unit,'(1A)')'            This is known to produce numbers with some correlations.'
     end if
 
     return

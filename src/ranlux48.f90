@@ -219,7 +219,6 @@ CONTAINS
     ns(1) = nseed(1)
 
     call checkseed()
-    write(*,*)isz, ns
     rnd%SEED_TYPE = SEED_MINE
     rnd%sd(:) = ns(:) 
 

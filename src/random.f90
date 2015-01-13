@@ -225,7 +225,7 @@ CONTAINS
 
     iseed(0) = IRNDM
     if (iseed(0)==IS_RNLX) then
-       call rnlx_get(iseed(1:))
+       call rnlx48_get(iseed(1:))
     else if (iseed(0)==IS_MXMX) then
        call mxmx_get(iseed(1:))
     end if
@@ -241,7 +241,7 @@ CONTAINS
     integer (kind=8), intent (in) :: iseed(0:)
 
     if (iseed(0)==IS_RNLX) then
-       call rnlx_reset(iseed(1:))
+       call rnlx48_reset(iseed(1:))
     else if (iseed(0)==IS_MXMX) then
        call mxmx_reset(iseed(1:))
     end if
