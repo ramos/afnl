@@ -1,7 +1,7 @@
 
 #F90=ifort -warn all -std03
 F90=gfortran5 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -fbounds-check
-#F90=gfortran48 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -fbounds-check
+#~F90=gfortran48 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -fbounds-check
 F90OPT=
 
 VPATH=src
@@ -64,12 +64,15 @@ mixmax.o: mixmax.f90
 ranlux.o: ranlux.f90
 	$(F90) -c $^ -o $@
 
+ranlux48.o: ranlux48.f90
+	$(F90) -c $^ -o $@
+
 random.o: numtypes.o ranlux.o mixmax.o random.f90 
 	$(F90) -c $^ -o $@
 
 lib: numtypes.o error.o constants.o specialfunc.o statistics.o \
 	nonnum.o linear.o int.o min.o time.o root.o poly.o fourier.o \
-	minuitAPI.o lapackAPI.o bdio.o mixmax.o ranlux.o random.o
+	minuitAPI.o lapackAPI.o bdio.o mixmax.o ranlux.o random.o ranlux48.o
 #	mv $(SRCDIR)/*.o .
 #	mv $(SRCDIR)/*.mod .
 	ar rcs libafnl.a *.o

@@ -17,7 +17,7 @@ MODULE random
   USE ISO_FORTRAN_ENV, Only : error_unit, output_unit
   USE NumTypes
   USE Constants
-  USE RANLUX
+  USE RANLUX48
   USE MIXMAX
 
   IMPLICIT NONE
@@ -140,7 +140,7 @@ CONTAINS
 ! ***************************************************
 
     Integer, Intent (in), Optional :: nin
-    Integer :: nmat
+    Integer :: nmat, ilv
 
     If (Present(nin)) Then
        nmat = nin
@@ -148,15 +148,28 @@ CONTAINS
        nmat = 256
     End If
 
+    ilv = 1
     call mxmx_init(nmat)
-    rndm_f32   => mxmx_f32
-    rndm_f32_v => mxmx_f32_v
-    rndm_f64   => mxmx_f64
-    rndm_f64_v => mxmx_f64_v
-    rndm_z32   => mxmx_z32
-    rndm_z32_v => mxmx_z32_v
-    rndm_z64   => mxmx_z64
-    rndm_z64_v => mxmx_z64_v
+    call mxmx_setlux(ilv)
+    if (ilv > 0) then
+       rndm_f32   => mxmx2_f32
+       rndm_f32_v => mxmx2_f32_v
+       rndm_f64   => mxmx2_f64
+       rndm_f64_v => mxmx2_f64_v
+       rndm_z32   => mxmx2_z32
+       rndm_z32_v => mxmx2_z32_v
+       rndm_z64   => mxmx2_z64
+       rndm_z64_v => mxmx2_z64_v
+    else
+       rndm_f32   => mxmx_f32
+       rndm_f32_v => mxmx_f32_v
+       rndm_f64   => mxmx_f64
+       rndm_f64_v => mxmx_f64_v
+       rndm_z32   => mxmx_z32
+       rndm_z32_v => mxmx_z32_v
+       rndm_z64   => mxmx_z64
+       rndm_z64_v => mxmx_z64_v
+    end if
 
     rndm_seed  => mxmx_seed_skip
     rndm_size  => mxmx_size
@@ -180,23 +193,23 @@ CONTAINS
     If (Present(nin)) Then
        nmat = nin
     Else
-       nmat = 2
+       nmat = 1
     End If
 
-    call rnlx_init(nmat)
-    rndm_f32   => rnlx_f32
-    rndm_f32_v => rnlx_f32_v
-    rndm_f64   => rnlx_f64
-    rndm_f64_v => rnlx_f64_v
-    rndm_z32   => rnlx_z32
-    rndm_z32_v => rnlx_z32_v
-    rndm_z64   => rnlx_z64
-    rndm_z64_v => rnlx_z64_v
+    call rnlx48_init(nmat)
+    rndm_f32   => rnlx48_f32
+    rndm_f32_v => rnlx48_f32_v
+    rndm_f64   => rnlx48_f64
+    rndm_f64_v => rnlx48_f64_v
+    rndm_z32   => rnlx48_z32
+    rndm_z32_v => rnlx48_z32_v
+    rndm_z64   => rnlx48_z64
+    rndm_z64_v => rnlx48_z64_v
 
-    rndm_seed  => rnlx_seed_mine
-    rndm_size  => rnlx_size
+    rndm_seed  => rnlx48_seed_mine
+    rndm_size  => rnlx48_size
 
-    rndm_print_info => rnlx_print_info
+    rndm_print_info => rnlx48_print_info
 
     IRNDM = IS_RNLX
 
@@ -882,7 +895,6 @@ CONTAINS
     If (Present(gamma)) X = gamma * X 
     If (Present(mu))    X = X + mu
 
-
     Return
   End Subroutine Lorentz_DP
 
@@ -1042,7 +1054,6 @@ CONTAINS
           return
        end if
     end if
-
     metropolis = .false.
 
     return

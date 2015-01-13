@@ -1538,7 +1538,6 @@ CONTAINS
          End If
       End Do
       
-      
       fbd%user = defaultuser
       fbd%host = defaulthost
       Select Case (fbd%imode)

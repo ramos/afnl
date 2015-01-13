@@ -67,6 +67,12 @@ MODULE MixMax
           & mxmx_int_v
   End Interface mxmx
 
+  Interface mxmx2
+     Module Procedure mxmx2_int, mxmx2_f64, mxmx2_f32, mxmx2_f64_v, &
+          & mxmx2_f32_v, mxmx2_z64, mxmx2_z32, mxmx2_z64_v, mxmx2_z32_v, &
+          & mxmx2_int_v
+  End Interface mxmx2
+
   Type (State), private, save :: rnd
 
   Procedure (Mulspec), Pointer, Private :: Mod_Mulspec => null()!noinit
@@ -506,6 +512,26 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_int(n)
+! *
+! ***************************************************
+
+    Integer (kind=8), Intent (out) :: n
+    Integer (kind=4) :: ipos
+    
+    ipos = rnd%cnt
+    If (ipos > rnd%N) Then
+       ipos = 1
+       CALL fill_rnd()
+    End If
+    rnd%cnt = rnd%cnt + 2
+    n = rnd%V(ipos)
+
+    Return
+  End Subroutine mxmx2_int
+
+! ***************************************************
+! *
   Subroutine mxmx_int_v(n)
 ! *
 ! ***************************************************
@@ -541,6 +567,41 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_int_v(n)
+! *
+! ***************************************************
+
+    Integer (kind=8), Intent (out) :: n(:)
+    Integer (kind=4) :: i, nleft, nst, ncyc
+    
+    nleft = Size(n)
+    nst   = int(rnd%N-rnd%cnt+1)/2
+    If (nst > nleft) Then
+       n(1:nleft) = rnd%V(rnd%cnt:rnd%cnt+2*nleft-1:2) 
+       rnd%cnt = rnd%cnt+2*nleft
+       Return
+    Else if (nst>0) then
+       n(1:nst) = rnd%V(rnd%cnt:rnd%cnt+2*nst-1:2)
+       nleft = nleft - nst
+    else 
+       nst = 0
+    End If
+    CALL fill_rnd() 
+    
+    ncyc = int(2*nleft/rnd%N)
+    Do I = 1, ncyc
+       n(nst+1+(I-1)*int(rnd%N/2):nst+I*int(rnd%N/2)) = rnd%V(1:rnd%N:2)
+       CALL fill_rnd()
+    End Do
+    nleft = Modulo(nleft,int(rnd%N/2))
+    n(nst+1+ncyc*rnd%N/2:Size(n)) = rnd%V(1:2*nleft:2)
+    rnd%cnt = 2*nleft+1
+
+    Return
+  End Subroutine mxmx2_int_v
+
+! ***************************************************
+! *
   Subroutine mxmx_f64(d)
 ! *
 ! ***************************************************
@@ -561,6 +622,26 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_f64(d)
+! *
+! ***************************************************
+
+    Real (kind=8), Intent (out) :: d
+    Integer (kind=4) :: ipos
+    
+    ipos = rnd%cnt
+    If (ipos > rnd%N) Then
+       ipos = 1
+       CALL fill_rnd()
+    End If
+    rnd%cnt = rnd%cnt + 2
+    d = Real(rnd%V(ipos),kind=8)*DINV_MERSBASE
+
+    Return
+  End Subroutine mxmx2_f64
+
+! ***************************************************
+! *
   Subroutine mxmx_z64(d)
 ! *
 ! ***************************************************
@@ -577,6 +658,22 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_z64(d)
+! *
+! ***************************************************
+
+    Complex (kind=8), Intent (out) :: d
+    Real (kind=8) :: x, y
+
+    CALL mxmx2(x)
+    CALL mxmx2(y)
+    d = Cmplx(x,y,kind=8)
+    
+    Return
+  End Subroutine mxmx2_z64
+
+! ***************************************************
+! *
   Subroutine mxmx_z32(d)
 ! *
 ! ***************************************************
@@ -590,6 +687,22 @@ CONTAINS
     
     Return
   End Subroutine mxmx_z32
+
+! ***************************************************
+! *
+  Subroutine mxmx2_z32(d)
+! *
+! ***************************************************
+
+    Complex (kind=4), Intent (out) :: d
+    Real (kind=4) :: x, y
+
+    CALL mxmx2(x)
+    CALL mxmx2(y)
+    d = Cmplx(x,y)
+    
+    Return
+  End Subroutine mxmx2_z32
 
 ! ***************************************************
 ! *
@@ -632,6 +745,45 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_f64_v(d)
+! *
+! ***************************************************
+
+    Real (kind=8), Intent (out) :: d(:)
+    Integer (kind=4) :: i, nleft, nst, ncyc
+    
+    nleft = Size(d)
+    nst = int(rnd%N-rnd%cnt+1)/2
+    If (nst > nleft) Then
+       d(1:nleft) = Real(rnd%V(rnd%cnt:rnd%cnt+2*nleft-1:2),kind=8)&
+            & * DINV_MERSBASE
+       rnd%cnt = rnd%cnt+2*nleft
+       Return
+    Else if (nst>0) then
+       d(1:nst) = Real(rnd%V(rnd%cnt:rnd%cnt+2*nst-1:2),kind=8) &
+            & * DINV_MERSBASE
+       nleft = nleft - nst
+    else 
+       nst = 0
+    End If
+    CALL fill_rnd() 
+    
+    ncyc = Int(2*nleft/rnd%N)
+    Do I = 1, ncyc
+       d(nst+1+(I-1)*int(rnd%N/2):nst+I*int(rnd%N/2)) = &
+            & Real(rnd%V(1:rnd%N:2),kind=8)*DINV_MERSBASE
+       CALL fill_rnd()
+    End Do
+    nleft = Modulo(nleft,int(rnd%N/2))
+    d(nst+1+ncyc*rnd%N/2:Size(d)) = &
+         & Real(rnd%V(1:2*nleft:2),kind=8)*DINV_MERSBASE
+    rnd%cnt = 2*nleft+1
+
+    Return
+  End Subroutine mxmx2_f64_v
+
+! ***************************************************
+! *
   Subroutine mxmx_z64_v(d)
 ! *
 ! ***************************************************
@@ -649,6 +801,23 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_z64_v(d)
+! *
+! ***************************************************
+
+    Complex (kind=8), Intent (out) :: d(:)
+    Real (kind=8) :: x(Size(d))
+    
+    CALL mxmx2(x)
+    d = Cmplx(x,0.0_8,kind=8)
+    CALL mxmx2(x)
+    d = d + Cmplx(0.0_8,x,kind=8)
+
+    Return
+  End Subroutine mxmx2_z64_v
+
+! ***************************************************
+! *
   Subroutine mxmx_z32_v(d)
 ! *
 ! ***************************************************
@@ -663,6 +832,23 @@ CONTAINS
 
     Return
   End Subroutine mxmx_z32_v
+
+! ***************************************************
+! *
+  Subroutine mxmx2_z32_v(d)
+! *
+! ***************************************************
+
+    Complex (kind=4), Intent (out) :: d(:)
+    Real (kind=4) :: x(Size(d))
+    
+    CALL mxmx2(x)
+    d = Cmplx(x,0.0_4)
+    CALL mxmx2(x)
+    d = d + Cmplx(0.0_4,x)
+
+    Return
+  End Subroutine mxmx2_z32_v
 
 ! ***************************************************
 ! *
@@ -705,6 +891,45 @@ CONTAINS
 
 ! ***************************************************
 ! *
+  Subroutine mxmx2_f32_v(d)
+! *
+! ***************************************************
+
+    Real (kind=4), Intent (out) :: d(:)
+    Integer (kind=4) :: i, nleft, nst, ncyc
+    
+    nleft = Size(d)
+    nst = int(rnd%N-rnd%cnt+1)/2
+    If (nst > nleft) Then
+       d(1:nleft) = Real(rnd%V(rnd%cnt:rnd%cnt+2*nleft-1:2),kind=4)&
+            & * Real(DINV_MERSBASE,kind=4)
+       rnd%cnt = rnd%cnt+2*nleft
+       Return
+    Else if (nst > 0) then
+       d(1:nst) = Real(rnd%V(rnd%cnt:rnd%cnt+2*nst-1:2),kind=4) &
+            & * Real(DINV_MERSBASE,kind=4)
+       nleft = nleft - nst
+    else 
+       nst = 0
+    End If
+    CALL fill_rnd() 
+    
+    ncyc = Int(2*nleft/rnd%N)
+    Do I = 1, ncyc
+       d(nst+1+(I-1)*rnd%N/2:nst+I*rnd%N/2) = &
+            & Real(rnd%V(1:rnd%N:2),kind=4)*Real(DINV_MERSBASE,kind=4)
+       CALL fill_rnd()
+    End Do
+    nleft = Modulo(nleft,int(rnd%N/2))
+    d(nst+1+ncyc*rnd%N/2:Size(d)) = &
+         & Real(rnd%V(1:2*nleft:2),kind=4)*Real(DINV_MERSBASE,kind=4)
+    rnd%cnt = 2*nleft+1
+
+    Return
+  End Subroutine mxmx2_f32_v
+
+! ***************************************************
+! *
   Subroutine mxmx_f32(d)
 ! *
 ! ***************************************************
@@ -722,6 +947,26 @@ CONTAINS
 
     Return
   End Subroutine mxmx_f32
+
+! ***************************************************
+! *
+  Subroutine mxmx2_f32(d)
+! *
+! ***************************************************
+
+    Real (kind=4), Intent (out) :: d
+    Integer (kind=4) :: ipos
+    
+    ipos = rnd%cnt
+    If (ipos > rnd%N) Then
+       ipos = 1
+       CALL fill_rnd()
+    End If
+    rnd%cnt = rnd%cnt + 2
+    d = Real(Real(rnd%V(ipos),kind=8)*DINV_MERSBASE,kind=4)
+
+    Return
+  End Subroutine mxmx2_f32
 
 ! ***************************************************
 ! *
@@ -954,5 +1199,68 @@ CONTAINS
 
     return
   end Subroutine mxmx_nolux
+
+! ***************************************************
+! *
+  Subroutine mxmx_setlux(ilv)
+! *
+! ***************************************************
+    integer, intent (in) :: ilv
+
+    Write(error_unit,'(1A)')'**WARNING** MIXMAX Working without LUXURY. '
+    Write(error_unit,'(1A)')'            This is known to produce numbers with some correlations.'
+
+    if (ilv == 1)   then
+       NLUX = mxmx_maxlux(rnd%N) / 2
+    else if (ilv == 2) then
+       NLUX = mxmx_maxlux(rnd%N)
+    else if (ilv == 0) then
+       NLUX = 1
+    end if
+
+    return
+  end Subroutine mxmx_setlux
+
+! ***************************************************
+! *
+  function mxmx_maxlux(n)
+! *
+! ***************************************************
+    integer, intent (in) :: n
+    integer :: mxmx_maxlux
+
+    select case (n)
+    Case (1260)
+       mxmx_maxlux = 5
+    Case (3150)
+       mxmx_maxlux = 4 
+    Case (1000)
+       mxmx_maxlux = 5
+    Case (720)
+       mxmx_maxlux = 5
+    Case (508)
+       mxmx_maxlux = 5
+    Case (256)
+       mxmx_maxlux = 6
+    Case (88)
+       mxmx_maxlux = 7
+    Case (64)
+       mxmx_maxlux = 8
+    Case (44)
+       mxmx_maxlux = 9
+    Case (40)
+       mxmx_maxlux = 9
+    Case (30)
+       mxmx_maxlux = 10
+    Case (16)
+       mxmx_maxlux = 12
+    Case (10)
+       mxmx_maxlux = 14 
+    end select
+
+    return
+  end function mxmx_maxlux
+
+
 
 End MODULE MixMax
