@@ -91,10 +91,6 @@ MODULE Statistics
      Module Procedure Histogram_SP, Histogram_DP
   End Interface
 
-  Interface Irand
-     Module Procedure Irand_S, Irand_V
-  End Interface
-
   Interface EstBstrp
      Module Procedure EstBstrp_H, EstBstrp
   End Interface
@@ -171,7 +167,7 @@ MODULE Statistics
        & Stddev_SP, Var_SP, Mean_SP, Moment_SP, ChiSqr_SP, &
        & ChiSqr_DP, LinearReg_DP, LinearReg_SP, LinearReg_Pol_DP, &
        & LinearReg_Pol_SP, MultiLinearReg_DP, MultiLinearReg_SP, &
-       & Irand_S, Irand_V, EstBstrp_H, NonLinearReg_DP, TOL, &
+       & EstBstrp_H, NonLinearReg_DP, TOL, &
        & Rlambda_DEF, Nconv, RFACTOR_DEF, NonLinearReg_SP, &
        & MultiNonLinearReg_SP, Median_SP, Median_DP, LUX_base, &
        & LUX_seed, LUX_carry, LUX_lastbit, LUX_FirstCall, &
@@ -2041,46 +2037,6 @@ CONTAINS
 
 ! ********************************************
 ! *
-  Subroutine Irand_S(Ir, I, J)
-! *
-! ********************************************
-! * Generates a Random integer number between
-! * I and J.
-! ********************************************
-
-    Integer, Intent (in) :: I, J
-    Integer, Intent (out) :: Ir
-    
-    Real (kind=DP) :: U
-    
-    CALL Random_Number(U)
-    Ir = Int((J-I+1)*U + I)
-
-    Return
-  End Subroutine Irand_S
-
-! ********************************************
-! *
-  Subroutine Irand_V(Ir, I, J)
-! *
-! ********************************************
-! * Fills Ir(:) with Random integers numbers
-! * between I and J.
-! ********************************************
-
-    Integer, Intent (in) :: I, J
-    Integer, Intent (out) :: Ir(:)
-    
-    Real (kind=DP) :: U(Size(Ir))
-    
-    CALL Random_Number(U)
-    Ir = Int((J-I+1)*U + I)
-
-    Return
-  End Subroutine Irand_V
-
-! ********************************************
-! *
   Subroutine Bootstrap(Ibt)
 ! *
 ! ********************************************
@@ -2098,7 +2054,7 @@ CONTAINS
 
     ForAll (I=1:N) Ibt(I,0) = I
     Do I = 1, Nb
-       CALL Irand_V(Ibt(:,I), 1, N) 
+       CALL Irand(Ibt(:,I), 1, N) 
     End Do
 
     Return

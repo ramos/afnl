@@ -24,7 +24,7 @@ MODULE random
 
   private
   
-  interface
+  abstract interface
      subroutine f32(r)
        USE Numtypes
        real (kind=SP), intent (out) :: r
@@ -41,7 +41,6 @@ MODULE random
        USE Numtypes
        real (kind=DP), intent (out) :: r(:)
      end subroutine f64_v
-
      subroutine z32(r)
        USE Numtypes
        complex (kind=SP), intent (out) :: r
@@ -92,13 +91,17 @@ MODULE random
   procedure (info),  pointer :: rndm_print_info => null()
 
   interface rndm
-     procedure rndm_f32, rndm_f32_v, rndm_f64, rndm_f64_v, &
-          rndm_z32, rndm_z32_v, rndm_z64, rndm_z64_v
+     procedure frndm_f32, frndm_f32_v, frndm_f64, frndm_f64_v, &
+          frndm_z32, frndm_z32_v, frndm_z64, frndm_z64_v
   end interface
 
   public :: rndm, rnlx_start, mxmx_start, rndm_seed, rndm_get, &
        rndm_reset, rndm_size, rndm_print_info
 
+  interface irand
+     Module Procedure irand_s, irand_v
+  end interface irand
+     
   interface normal 
      Module Procedure NormalS, NormalV, NormalS2, NormalV2, &
           & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP
@@ -128,7 +131,8 @@ MODULE random
   integer (kind=8), parameter :: IS_RNLX=0, IS_MXMX=1
   integer (kind=8) :: IRNDM
 
-  public :: normal, laplace, levy, cauchy, lorentz, fishtipp, metropolis
+  public :: normal, laplace, levy, cauchy, lorentz, fishtipp, &
+       metropolis, irand
 
 CONTAINS
 
@@ -215,6 +219,38 @@ CONTAINS
 
     return
   end Subroutine rnlx_start
+
+! ********************************************
+! *
+  subroutine irand_s(ir, i, j)
+! *
+! ********************************************
+    integer, intent (in) :: i, j
+    integer, intent (out) :: ir
+    
+    real (kind=DP) :: u
+    
+    call rndm(u)
+    ir = int((j-i+1)*u + i)
+
+    return
+  end subroutine irand_s
+
+! ********************************************
+! *
+  subroutine irand_v(ir, i, j)
+! *
+! ********************************************
+    integer, intent (in) :: i, j
+    integer, intent (out) :: ir(:)
+    
+    real (kind=dp) :: u(size(ir))
+    
+    call rndm(u)
+    ir = int((j-i+1)*u + i)
+
+    return
+  end subroutine irand_v
 
 ! ***************************************************
 ! *
@@ -1059,4 +1095,101 @@ CONTAINS
     return
   end function metropolis
 
+!  *********************************************
+!  *                                           *
+  subroutine frndm_f64_v(x)
+!  *                                           *
+!  *********************************************
+    real (kind=DP), intent (out) :: x(:)
+    
+    call rndm_f64_v(x)
+    
+    return
+  end subroutine frndm_f64_v
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_f64(x)
+!  *                                           *
+!  *********************************************
+    real (kind=DP), intent (out) :: x
+    
+    call rndm_f64(x)
+    
+    return
+  end subroutine frndm_f64
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_f32_v(x)
+!  *                                           *
+!  *********************************************
+    real (kind=SP), intent (out) :: x(:)
+    
+    call rndm_f32_v(x)
+    
+    return
+  end subroutine frndm_f32_v
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_f32(x)
+!  *                                           *
+!  *********************************************
+    real (kind=SP), intent (out) :: x
+    
+    call rndm_f32(x)
+    
+    return
+  end subroutine frndm_f32
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_z64_v(x)
+!  *                                           *
+!  *********************************************
+    complex (kind=DP), intent (out) :: x(:)
+    
+    call rndm_z64_v(x)
+    
+    return
+  end subroutine frndm_z64_v
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_z64(x)
+!  *                                           *
+!  *********************************************
+    complex (kind=DP), intent (out) :: x
+    
+    call rndm_z64(x)
+    
+    return
+  end subroutine frndm_z64
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_z32_v(x)
+!  *                                           *
+!  *********************************************
+    complex (kind=SP), intent (out) :: x(:)
+    
+    call rndm_z32_v(x)
+    
+    return
+  end subroutine frndm_z32_v
+
+!  *********************************************
+!  *                                           *
+  subroutine frndm_z32(x)
+!  *                                           *
+!  *********************************************
+    complex (kind=SP), intent (out) :: x
+    
+    call rndm_z32(x)
+    
+    return
+  end subroutine frndm_z32
+
+    
 end MODULE Random
