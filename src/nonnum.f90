@@ -2285,5 +2285,44 @@ CONTAINS
     Return
   End Subroutine PPerror
 
+! ***************************************************
+! *
+  Subroutine addtofile(orig, dest)
+! *
+! ***************************************************
+    character (len=*), intent (in) :: orig, dest
+
+    logical :: ok
+    integer :: iszo, iszd, ifnd, ifno, ios
+    character (len=1) :: c
+    
+    inquire(file=trim(orig), exist=ok)
+    if (.not.ok) call aabort('addtofile', 'file '//trim(orig)//' does not exist')
+    inquire(file=trim(dest), exist=ok)
+    if (.not.ok) call aabort('addtofile', 'file '//trim(dest)//' does not exist')
+
+    inquire(file=trim(orig), size=iszo)
+    inquire(file=trim(dest), size=iszd)
+    if (iszd>iszo) call aabort('addtofile', 'destination file larger than origin file')
+    
+    open(file=Trim(orig), newunit=ifno, ACTION="READ", &
+              & Form='UNFORMATTED', Access='STREAM')
+    open(file=Trim(dest), newunit=ifnd, ACTION="READWRITE", &
+              & Form='UNFORMATTED', Access='STREAM')
+
+    read(ifno, pos=iszd)
+    read(ifnd, pos=iszd)
+    do
+       read(ifno, iostat=ios)c
+       if (ios==iostat_end) exit
+       write(ifnd)c
+    end do
+    
+    close(ifno)
+    close(ifnd)
+
+    return
+  end Subroutine addtofile
+  
 End MODULE NonNumeric
 
