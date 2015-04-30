@@ -2054,7 +2054,7 @@ CONTAINS
 
     ForAll (I=1:N) Ibt(I,0) = I
     Do I = 1, Nb
-       CALL Irand(Ibt(:,I), 1, N) 
+       CALL intrand(Ibt(:,I), 1, N) 
     End Do
 
     Return
@@ -3440,7 +3440,7 @@ CONTAINS
 
     Forall (I=1:Ns) Idx(I) = I
     Do I = 1, Ns
-       CALL Irand(J, 1, Ns)
+       CALL Intrand(J, 1, Ns)
        If (I /= J) CALL Swap(Idx, I, J)
     End Do
 

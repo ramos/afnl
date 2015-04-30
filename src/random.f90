@@ -98,13 +98,14 @@ MODULE random
   public :: rndm, rnlx_start, mxmx_start, rndm_seed, rndm_get, &
        rndm_reset, rndm_size, rndm_print_info
 
-  interface irand
+  interface intrand
      Module Procedure irand_s, irand_v
-  end interface irand
+  end interface intrand
      
   interface normal 
      Module Procedure NormalS, NormalV, NormalS2, NormalV2, &
-          & NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP
+          NormalS_SP, NormalV_SP, NormalS2_SP, NormalV2_SP, &
+          Normalz_V, Normalz, Normalz_SP, Normalz_V_SP
   end interface
 
   interface laplace
@@ -132,7 +133,7 @@ MODULE random
   integer (kind=8) :: IRNDM
 
   public :: normal, laplace, levy, cauchy, lorentz, fishtipp, &
-       metropolis, irand
+       metropolis, intrand
 
 CONTAINS
 
@@ -229,6 +230,8 @@ CONTAINS
     integer, intent (out) :: ir
     
     real (kind=DP) :: u
+
+    write(*,*)'pericoooo'
     
     call rndm(u)
     ir = int((j-i+1)*u + i)
@@ -328,6 +331,90 @@ CONTAINS
 
     Return
   End Subroutine  NormalV
+
+!  *********************************************
+!  *                                           *
+  subroutine normalz(X)
+!  *                                           *
+!  *********************************************
+    complex (kind=DP), Intent(out) :: X
+    Real (kind=DP) :: U1, U2
+    
+    real (kind=DP) :: r
+
+    CALL Rndm(U1)
+    CALL Rndm(U2)
+    
+    r = Sqrt(-2.0_DP*Log(1.0_DP-U1))
+    X = r*exp(cmplx(0.0_DP,TWOPI_DP,kind=DP)*U2)
+
+    Return
+  End Subroutine  Normalz
+
+!  *********************************************
+!  *                                           *
+  subroutine normalz_v(X)
+!  *                                           *
+!  *********************************************
+    complex (kind=DP), Intent(out) :: X(:)
+    Real (kind=DP) :: U1, U2
+    
+    integer :: i, isz
+    real (kind=DP) :: r
+
+    isz = int(size(X))
+    do i = 1, isz
+       CALL Rndm(U1)
+       CALL Rndm(U2)
+       
+       r = Sqrt(-2.0_DP*Log(1.0_DP-U1))
+       X(i) = r*exp(cmplx(0.0_DP,TWOPI_DP,kind=DP)*U2)
+    end do
+       
+    Return
+  End Subroutine Normalz_V
+
+!  *********************************************
+!  *                                           *
+  subroutine normalz_sp(X)
+!  *                                           *
+!  *********************************************
+    complex (kind=SP), Intent(out) :: X
+    Real (kind=SP) :: U1, U2
+    
+    real (kind=SP) :: r
+
+    CALL Rndm(U1)
+    CALL Rndm(U2)
+    
+    r = Sqrt(-2.0_SP*Log(1.0_SP-U1))
+    X = r*exp(cmplx(0.0_DP,TWOPI_SP,kind=SP)*U2)
+
+    Return
+  End Subroutine  Normalz_Sp
+
+!  *********************************************
+!  *                                           *
+  subroutine normalz_v_SP(X)
+!  *                                           *
+!  *********************************************
+    complex (kind=SP), Intent(out) :: X(:)
+    Real (kind=SP) :: U1, U2
+    
+    integer :: i, isz
+    real (kind=SP) :: r
+
+    isz = int(size(X))
+    do i = 1, isz
+       CALL Rndm(U1)
+       CALL Rndm(U2)
+       
+       r = Sqrt(-2.0_SP*Log(1.0_SP-U1))
+       X(i) = r*exp(cmplx(0.0_DP,TWOPI_SP,kind=SP)*U2)
+    end do
+       
+    Return
+  End Subroutine Normalz_V_SP
 
 !  *********************************************
 !  *                                           *
