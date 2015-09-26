@@ -1372,7 +1372,7 @@ CONTAINS
     ForAll (I=1:Data%Nterm-1) Ipt(-Data%Nterm+I) = Data%Nterm+I
 
     Do I = -Data%Nterm, Data%Nterm
-       FFT%Coef(I) = Cmplx( Cdt(2*Ipt(I)), Cdt(2*Ipt(I)+1) )
+       FFT%Coef(I) = Cmplx( Cdt(2*Ipt(I)), Cdt(2*Ipt(I)+1), kind=DPC )
     End Do
 
     If (Is == -1) Then
@@ -1408,21 +1408,33 @@ CONTAINS
 
     ALLOCATE(Cdt(0:N-1))
     ALLOCATE(Ip(0:3+Int(Sqrt(Real(N)))), W(0:Int(N/2-1)))
-    Do I = 1, Size(Data)-1
-       Cdt(2*I)   = Real(Data(I))
-       Cdt(2*I+1) = Aimag(Data(I))
+!!$    Do I = 1, Size(Data)-1
+!!$       Cdt(2*I)   = Real(Data(I))
+!!$       Cdt(2*I+1) = Aimag(Data(I))
+!!$    End Do
+!!$    Cdt(0) = Real(Data(N/2))
+!!$    Cdt(1) = Aimag(Data(N/2))
+    Do I = 1, Size(Data)
+       Cdt(2*(I-1))   = Real(Data(I))
+       Cdt(2*I-1) = Aimag(Data(I))
     End Do
-    Cdt(0) = Real(Data(N/2))
-    Cdt(1) = Aimag(Data(N/2))
 
     Ip(0) = 0
+!!$    write(*,*)'datos: '
+!!$    write(*,'(1I4,2ES23.15)')(i, cdt(2*i), cdt(2*i+1), i=0,N/2-1)
+!!$    write(*,*)'fin datos: '
     CALL CDFT(N, Is, Cdt, Ip, w)
+!!$    write(*,*)'fourier: '
+!!$    write(*,'(1I4,2ES23.15)')(i, cdt(2*i), cdt(2*i+1), i=0,N/2-1)
+!!$    write(*,*)'fin fourier: '
 
-    
-    Do I = 1, Size(Data)-1
-       DData(I) = Cmplx(Cdt(2*I), Cdt(2*I+1))
+    Do I = 1, Size(Data)
+       DData(I) = Cmplx(Cdt(2*(I-1)), Cdt(2*I-1),kind=DPC)
     End Do
-    DData(Size(Data)) = Cmplx(Cdt(0), Cdt(1))
+!!$    Do I = 1, Size(Data)-1
+!!$       DData(I) = Cmplx(Cdt(2*I), Cdt(2*I+1),kind=DPC)
+!!$    End Do
+!!$    DData(Size(Data)) = Cmplx(Cdt(0), Cdt(1),kind=DPC)
     CALL Data2Fourier(DData, FFT)
 
     If (Is == -1) Then

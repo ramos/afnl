@@ -4,9 +4,9 @@ Program AA
   USE NumTypes
   USE NonNumeric
   USE ModBDIO
-  USE Statistics
+!  USE Statistics
 
-  USE MIXMAX
+  USE Random
 
   Integer, Parameter :: Ns=5
 
@@ -29,17 +29,17 @@ Program AA
 
   If (.not.GetOpt('-i', fn)) Stop
 
-  CALL mxmx_init()
-  CALL mxmx_seed_spbox(3443_8)
+  CALL rnlx_start()
+  CALL rndm_seed((/1,2,3,4/))
   
   call BDIO_setuser('perico')
   call BDIO_sethost('casa.pepe')
 
-  bb = BDIO_open(fn, 'w', 'Test file with MIXMAX random ')
+  bb = BDIO_open(fn, 'w', 'Test file with RANLUX random numbers')
   Do i4 = 1, 20
      CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
      Do Isw = 1, 50
-        CALL mxmx(da)
+        CALL rndm(da)
         j = BDIO_write(bb, da,.true.)
      End Do
      CALL BDIO_write_hash(bb)
@@ -47,5 +47,15 @@ Program AA
 
   call BDIO_close(bb)
 
+  bb = BDIO_open(fn, 'r')
+  do
+     if (BDIO_get_uinfo(bb)==2) then
+        j = BDIO_read(bb, da)
+        write(*,*)j, da
+        stop
+     end if
+     if (.not.BDIO_seek(bb)) stop
+  end do
+  
   Stop
 End Program AA

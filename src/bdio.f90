@@ -987,7 +987,7 @@ CONTAINS
       Integer (kind=4) :: i4, I, iln, iv, ist
       Integer (kind=8) :: ipos, iend
       Type (BDIO_Record), pointer :: newr, aux
-
+      
       If (isLittleEndian()) Then
          i4 = BDIO_MAGIC
          Write(fbd%ifn)i4
@@ -1510,11 +1510,6 @@ CONTAINS
       
       Type (BDIO) :: fbd
 
-      Logical :: is_used
-
-      If (fbd%opened) Call BDIO_error(fbd,'BDIO_Open', &
-              & 'BDIO already in use') 
-
       Select Case (mode)
       Case ('r')
          fbd%imode = BDIO_R_MODE
@@ -1528,21 +1523,11 @@ CONTAINS
       End Select
       
       fbd%lendian = isLittleEndian()
-      fbd%ifn = 69
-      Do 
-         Inquire(fbd%ifn, Opened=is_used)
-         If (is_used) Then
-            fbd%ifn = fbd%ifn + 1
-         Else
-            Exit
-         End If
-      End Do
-      
       fbd%user = defaultuser
       fbd%host = defaulthost
       Select Case (fbd%imode)
       Case (BDIO_R_MODE) 
-         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READ", &
+         Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READ", &
               & Form='UNFORMATTED', Access='STREAM')
          Inquire(fbd%ifn, Pos=ipos)
 
@@ -1550,7 +1535,7 @@ CONTAINS
          CALL BDIO_parse(fbd)
          fbd%current => fbd%first
       CASE (BDIO_A_MODE) 
-         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READWRITE", &
+         Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
               & Form='UNFORMATTED', Access='STREAM')
          Rewind(fbd%ifn)
 
@@ -1558,7 +1543,7 @@ CONTAINS
          CALL BDIO_parse(fbd)
          fbd%current => fbd%last
       CASE (BDIO_W_MODE)
-         Open (File=Trim(fname), unit=fbd%ifn, ACTION="READWRITE", &
+         Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
               & Form='UNFORMATTED', Access='STREAM', STATUS='NEW')
 
          fbd%opened=.True.
@@ -1642,7 +1627,7 @@ CONTAINS
       End If
       Inquire(fbd%ifn, Pos=ipos)
       iend = ipos + iln
-      Read(fbd%ifn, Pos=ipos+iln, iostat=ist)
+      Read(fbd%ifn, Pos=iend, iostat=ist)
       
       Allocate(newr)
       newr%ishdr = .False.
@@ -1684,7 +1669,7 @@ CONTAINS
 
       Type (BDIO), Intent (inout) :: ptf
 
-      Integer (kind=4) :: i4, isp, iv, iln, ist
+      Integer (kind=4) :: i4, isp, iv, iln
       Character (kind=1) :: ch
       Integer (kind=8) :: ipos, iend
 
@@ -1708,8 +1693,7 @@ CONTAINS
       CALL MVbits(i4,12,4,isp,0)
       CALL MVbits(i4,16,16,iv,0)
       Inquire(ptf%ifn, pos=ipos)
-      Read(ptf%ifn,Pos=ipos+iln, iostat=ist)
-      Inquire(ptf%ifn, pos=iend)
+      iend = ipos+iln
       
       Allocate(newr)
       newr%ishdr = .True.
