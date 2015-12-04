@@ -547,7 +547,8 @@ CONTAINS
               & 'Incorrect data type') 
       End If
 
-      Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)cbuf
+      read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+      Write(fbd%ifn,Iostat=ios)cbuf
       
       iln = fbd%current%rlen + Size(cbuf)
       CALL Rewrite_rlen(fbd, iln)
@@ -618,10 +619,12 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_INT32LE).and.(.not.fbd%lendian) ) ) &
            & Then
          CALL ByteSwap(ibuf)
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)ibuf
          CALL ByteSwap(ibuf)
       Else
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)ibuf
       End If
       
       If (chk) p%hash = Hash(ibuf, p%hash)
@@ -677,10 +680,12 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
            & Then
          CALL ByteSwap(buf)
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)buf
          CALL ByteSwap(buf)
       Else
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)buf
       End If
 
       iln = fbd%current%rlen + 4_8*Size(buf)
@@ -736,10 +741,12 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_INT64LE).and.(.not.fbd%lendian) ) ) &
            & Then
          CALL ByteSwap(ibuf)
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)ibuf
          CALL ByteSwap(ibuf)
       Else
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)ibuf
       End If
       
       iln = fbd%current%rlen + 8_8*Size(ibuf)
@@ -795,10 +802,12 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
            & Then
          CALL ByteSwap(ibuf)
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)ibuf
          CALL ByteSwap(ibuf)
       Else
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)ibuf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)ibuf
       End If
       
       iln = fbd%current%rlen + 8_8*Size(ibuf)
@@ -854,10 +863,12 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F64LE).and.(.not.fbd%lendian) ) ) &
            & Then
          CALL ByteSwap(buf)
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)buf
          CALL ByteSwap(buf)
       Else
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)buf
       End If
       
       iln = fbd%current%rlen + 16_8*Size(buf)
@@ -913,10 +924,12 @@ CONTAINS
            &( (p%rfmt == BDIO_BIN_F32LE).and.(.not.fbd%lendian) ) ) &
            & Then
          CALL ByteSwap(buf)
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)buf
          CALL ByteSwap(buf)
       Else
-         Write(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)buf
+         read(fbd%ifn,Pos=fbd%rwpos,Iostat=ios)
+         Write(fbd%ifn,Iostat=ios)buf
       End If
 
       iln = fbd%current%rlen + 8_8*Size(buf)
@@ -985,9 +998,14 @@ CONTAINS
       Character (len=*), Intent (in) :: info
       
       Integer (kind=4) :: i4, I, iln, iv, ist
-      Integer (kind=8) :: ipos, iend
+      Integer (kind=8) :: ipos, iend, ifoo
       Type (BDIO_Record), pointer :: newr, aux
       
+
+      if (associated(fbd%current)) then
+         fbd%current => fbd%last
+         Read(fbd%ifn,Pos=fbd%current%rend,iostat=ist)
+      end if
       If (isLittleEndian()) Then
          i4 = BDIO_MAGIC
          Write(fbd%ifn)i4
@@ -1037,11 +1055,14 @@ CONTAINS
       End If
 
       iln = Int(iend-ipos,kind=4)
-      Read(fbd%ifn,Pos=ipos-4)i4
+      ifoo = ipos - 4_8
+      Read(fbd%ifn,Pos=ifoo)i4
       If (.not.fbd%lendian) CALL ByteSwap(i4)
       CALL MVBits(iln,0,12,i4,0)
       If (.not.fbd%lendian) CALL ByteSwap(i4)
-      Write(fbd%ifn,Pos=ipos-4)i4
+      ifoo = ipos - 4_8
+      read(fbd%ifn,pos=ifoo)
+      Write(fbd%ifn)i4
       Read(fbd%ifn, Pos=iend, iostat=ist)
       fbd%rwpos  = iend
       fbd%istate = BDIO_W_MODE
@@ -1536,12 +1557,15 @@ CONTAINS
          fbd%current => fbd%first
       CASE (BDIO_A_MODE) 
          Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
-              & Form='UNFORMATTED', Access='STREAM')
+              & Form='UNFORMATTED', Access='STREAM', Position="APPEND", STATUS="OLD")
          Rewind(fbd%ifn)
 
          fbd%opened = .True.
          CALL BDIO_parse(fbd)
          fbd%current => fbd%last
+         close(fbd%ifn)
+         Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
+              & Form='UNFORMATTED', Access='STREAM', Position="APPEND", STATUS="OLD")
       CASE (BDIO_W_MODE)
          Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
               & Form='UNFORMATTED', Access='STREAM', STATUS='NEW')
@@ -1564,7 +1588,7 @@ CONTAINS
 
       Integer (kind=4) :: i4, irc, ist
       Integer (kind=8) :: ipos
-      Character (len=32) :: ai
+      Character (len=128) :: ai
       
       Rewind(fbd%ifn)
       Do 
@@ -1581,7 +1605,7 @@ CONTAINS
             Read(fbd%ifn, Pos=ipos)
             CALL BDIO_Read_record(fbd)
          Else
-            Write(ai,'(1I32)')ipos
+            Write(ai,'(3I32)')ipos,i4,irc
             CALL BDIO_error(fbd, 'BDIO_parse', 'Neither a record nor a header at position: '//Trim(ai))
          End If
       End Do
@@ -1693,7 +1717,7 @@ CONTAINS
       CALL MVbits(i4,12,4,isp,0)
       CALL MVbits(i4,16,16,iv,0)
       Inquire(ptf%ifn, pos=ipos)
-      iend = ipos+iln
+      iend = ipos+int(iln,kind=8)
       
       Allocate(newr)
       newr%ishdr = .True.
@@ -1852,7 +1876,8 @@ CONTAINS
       i4 = UnixTime()
 
       if (.not.fbd%lendian) CALL ByteSwap(i4)
-      Write(fbd%ifn,Pos=ph%hmd)i4
+      read(fbd%ifn,Pos=ph%hmd)
+      Write(fbd%ifn)i4
 
       Read(fbd%ifn,Pos=actual)
 
@@ -1869,14 +1894,15 @@ CONTAINS
       Integer (kind=8), Intent (in) :: iln
       
       Integer (kind=4) :: i4(2), j
-      Integer (kind=8) :: jl
+      Integer (kind=8) :: jl, ifoo
       Type (BDIO_record), pointer :: p
 
       i4 = 0
       p => fbd%current
       jl = 0
       If (p%islong) Then
-         Read(fbd%ifn,Pos=p%rpos-8)i4(1:2)
+         ifoo = p%rpos-8_8
+         Read(fbd%ifn,Pos=ifoo)i4(1:2)
          if (.not.fbd%lendian) CALL ByteSwap(i4)
 
 !         CALL MVBits(iln+4, 0, 20, jl, 0)
@@ -1889,9 +1915,12 @@ CONTAINS
          CALL MVBits(j,0,32,i4(2),0)
          
          if (.not.fbd%lendian) CALL ByteSwap(i4)
-         Write(fbd%ifn,Pos=p%rpos-8)i4(1:2)
+         ifoo = p%rpos-8_8
+         read(fbd%ifn,Pos=ifoo)
+         Write(fbd%ifn)i4(1:2)
       Else
-         Read(fbd%ifn,Pos=p%rpos-4)i4(1)
+         ifoo = p%rpos-4_8
+         Read(fbd%ifn,Pos=ifoo)i4(1)
          if (.not.fbd%lendian) CALL ByteSwap(i4)
       
          CALL MVBits(iln, 0, 20, jl, 0)
@@ -1899,7 +1928,9 @@ CONTAINS
          CALL MVBits(j,0,20,i4(1),12)
 
          if (.not.fbd%lendian) CALL ByteSwap(i4)
-         Write(fbd%ifn,Pos=fbd%current%rpos-4)i4(1)
+         ifoo=fbd%current%rpos-4_8
+         read(fbd%ifn,Pos=ifoo)
+         Write(fbd%ifn)i4(1)
       End If
 
       p%rlen = iln

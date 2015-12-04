@@ -47,6 +47,17 @@ Program AA
 
   call BDIO_close(bb)
 
+  bb = BDIO_open(fn, 'a')
+  CALL BDIO_start_record(bb,BDIO_BIN_F64LE, 2, .True.)
+  Do Isw = 1, 5000
+     CALL rndm(da)
+     j = BDIO_write(bb, da,.true.)
+  End Do
+  CALL BDIO_write_hash(bb)
+
+
+  call BDIO_close(bb)
+  
   bb = BDIO_open(fn, 'r')
   do
      if (BDIO_get_uinfo(bb)==2) then
