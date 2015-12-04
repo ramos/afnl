@@ -711,11 +711,11 @@ CONTAINS
     End If
     
 
+    Old2N = 0.0_DP
     CALL TrapInfDw(a, Func, Old2N, 1)
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter
-
        CALL TrapInfDw(a, Func, Old2N, I)
        SimpsonInfDw_DP = (9.0_DP * Old2N - OldN) / 8.0_DP
 

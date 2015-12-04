@@ -1,6 +1,6 @@
 
 #F90=ifort -warn all -std03
-F90=gfortran5 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -fbounds-check
+F90=gfortran5 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow,underflow
 #~F90=gfortran48 -std=f2008 -Wl,-rpath=/usr/local/lib/gcc4108 -Wall -pedantic -fbounds-check
 F90OPT=
 
