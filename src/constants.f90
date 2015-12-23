@@ -26,9 +26,14 @@ MODULE Constants
 ! *********************************************************** 
 
   USE NumTypes
+  USE iso_fortran_env
 
   IMPLICIT NONE
 
+  ! Compiler version/options
+  character (len=*), parameter :: compiler_ver = compiler_version(), &
+       compiler_opt = compiler_options()
+  
   ! Mathematical constants related to pi
 
   Complex (Kind=DPC), Parameter :: UNITIMAG_DPC = (0.0_DP, 1.0_DP)
