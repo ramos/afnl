@@ -30,7 +30,8 @@ MODULE ModBDIO
   IMPLICIT NONE
 
 
-  Integer, Parameter, Private :: BDIO_R_MODE=0, BDIO_W_MODE=1, BDIO_A_MODE=2, &
+  Integer, Parameter, Private :: BDIO_R_MODE=0, BDIO_W_MODE=1, &
+       BDIO_A_MODE=2, BDIO_D_MODE=3, &
        & MAXFNAME = 4096, BDIO_SHORT_LEN = 256, BDIO_LONG_LEN = 4096, &
        & BDIO_MAGIC = 2147209342, BDIO_VERSION  =1, &
        & BDIO_R_STATE=0, BDIO_W_STATE=1
@@ -944,6 +945,23 @@ CONTAINS
 
 ! ********************************
 ! *
+    subroutine BDIO_rewind(fbd)
+! *
+! ********************************
+
+      Type (BDIO), Intent (inout) :: fbd
+      Type (BDIO_record), pointer :: p
+
+      p => fbd%first
+      fbd%current => p
+      fbd%rwpos = fbd%current%rpos
+      fbd%istate = BDIO_R_STATE
+
+      return
+    end subroutine BDIO_rewind
+    
+! ********************************
+! *
     Function BDIO_seek(fbd, nrec)
 ! *
 ! ********************************
@@ -1538,6 +1556,8 @@ CONTAINS
          fbd%imode = BDIO_W_MODE
       Case ('a')
          fbd%imode = BDIO_A_MODE
+      Case ('d')
+         fbd%imode = BDIO_D_MODE
       Case Default
          Call BDIO_error(fbd,'BDIO_Open', &
               & 'Incorrect mode') 
@@ -1559,10 +1579,11 @@ CONTAINS
          Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
               & Form='UNFORMATTED', Access='STREAM', Position="APPEND", STATUS="OLD")
          Rewind(fbd%ifn)
-
+         
          fbd%opened = .True.
          CALL BDIO_parse(fbd)
          fbd%current => fbd%last
+         fbd%istate = BDIO_W_STATE
          close(fbd%ifn)
          Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
               & Form='UNFORMATTED', Access='STREAM', Position="APPEND", STATUS="OLD")
@@ -1571,6 +1592,13 @@ CONTAINS
               & Form='UNFORMATTED', Access='STREAM', STATUS='NEW')
 
          fbd%opened=.True.
+         CALL BDIO_start_header(fbd,protocol_info)
+         fbd%current => fbd%first
+      CASE (BDIO_D_MODE)
+         Open (File=Trim(fname), newunit=fbd%ifn, ACTION="READWRITE", &
+              & Form='UNFORMATTED', Access='STREAM', STATUS='REPLACE')
+
+         fbd%opened=.true.
          CALL BDIO_start_header(fbd,protocol_info)
          fbd%current => fbd%first
       End Select

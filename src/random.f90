@@ -231,8 +231,6 @@ CONTAINS
     
     real (kind=DP) :: u
 
-    write(*,*)'pericoooo'
-    
     call rndm(u)
     ir = int((j-i+1)*u + i)
 

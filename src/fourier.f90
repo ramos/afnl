@@ -418,6 +418,7 @@ CONTAINS
     
     ! Firs we need the binary decomposition of 
     ! Nex
+    Nmax = 0
     Do I = 1, Maxcfr
        Bin(I) = Int(Mod(Nex, 2**I)/(2**(I-1)))
        If (Bin(I) == 1) Nmax = I
@@ -471,6 +472,7 @@ CONTAINS
     
     ! Firs we need the binary decomposition of 
     ! Nex
+    Nmax = 0
     Do I = 1, Maxcfr
        Bin(I) = Int(Mod(Nex, 2**I)/(2**(I-1)))
        If (Bin(I) == 1) Nmax = I
@@ -564,6 +566,7 @@ CONTAINS
 
     ! Firs we need the binary decomposition of 
     ! Nex
+    Nmax = 0
     Do I = 1, Maxcfr
        Bin(I) = Int(Mod(Nex, 2**I)/(2**(I-1)))
        If (Bin(I) == 1) Nmax = I

@@ -252,6 +252,7 @@ CONTAINS
     end do
 
     rnd%cnt = 97
+    rnd%cyc = 0_8
 
     Return
   contains

@@ -301,6 +301,7 @@ CONTAINS
        OldN = Old2N
     End Do
     
+!    return
     ! If we reach this point, we have a problem with
     ! the convergence.
 

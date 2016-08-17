@@ -766,6 +766,7 @@ CONTAINS
        If (R > 0.0_DP) Then
           L(J,J) = Sqrt(R)
        Else
+          write(*,*)'column, R: ', j, R
           CALL abort("Cholesky", "Matrix not positive definite")
        End If
        Do I = J+1, Size(M,1)

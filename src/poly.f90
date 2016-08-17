@@ -370,7 +370,7 @@ CONTAINS
 
 !  *********************************************
 !  *                                           *
-  Real (kind=DP) Function InterpolValue(X, Y, Xo)
+  Real (kind=DP) Function InterpolValue(X, Y, Xo, Dv)
 !  *                                           *
 !  *********************************************
 !  * Calculates the value of the Interpolation 
@@ -379,8 +379,9 @@ CONTAINS
 !  *********************************************
 
     Real (kind=DP), Intent (in) :: X(:), Y(:), Xo
+    Real (kind=DP), Intent (out), Optional :: Dv
 
-    Real (kind=DP) :: a(Size(X),Size(X))
+    Real (kind=DP) :: a(Size(X),Size(X)), b(Size(X),Size(X))
     Integer :: I, J, Npoints
 
     Npoints = Size(X)
@@ -395,6 +396,19 @@ CONTAINS
     
     InterpolValue = a(Npoints, Npoints)
 
+    if (present(Dv)) then
+       b = 0.0_DP 
+       Do J = 2, Npoints
+          Do I = J, Npoints
+             b(I,J) = ( (Xo-X(I-J+1))*b(I,J-1) + (X(I)-Xo)*b(I-1,J-1) - a(I-1,J-1) + a(I,J-1) ) &
+                  & / (X(I) - X(I-J+1))
+          End Do
+       End Do
+       
+       Dv = b(Npoints, Npoints)
+    end if
+
+    
     Return
   End Function InterpolValue
 

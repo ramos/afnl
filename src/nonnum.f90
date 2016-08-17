@@ -2287,42 +2287,52 @@ CONTAINS
 
 ! ***************************************************
 ! *
-  Subroutine addtofile(orig, dest)
+  function  add_to_file(orig, dest) result (nb)
 ! *
 ! ***************************************************
     character (len=*), intent (in) :: orig, dest
 
-    logical :: ok
-    integer :: iszo, iszd, ifnd, ifno, ios
+    logical :: ok, is_old
+    integer :: iszo, iszd, ifnd, ifno, ios, ifoo
     character (len=1) :: c
+    integer :: nb
     
     inquire(file=trim(orig), exist=ok)
     if (.not.ok) call aabort('addtofile', 'file '//trim(orig)//' does not exist')
-    inquire(file=trim(dest), exist=ok)
-    if (.not.ok) call aabort('addtofile', 'file '//trim(dest)//' does not exist')
+    inquire(file=trim(dest), exist=is_old)
 
     inquire(file=trim(orig), size=iszo)
-    inquire(file=trim(dest), size=iszd)
-    if (iszd>iszo) call aabort('addtofile', 'destination file larger than origin file')
-    
+    if (is_old) then
+       inquire(file=trim(dest), size=iszd)
+       if (iszd>iszo) call aabort('addtofile', 'destination file larger than origin file')
+
+       open(file=Trim(dest), newunit=ifnd, ACTION="READWRITE", &
+            & Form='UNFORMATTED', Access='STREAM', Position="APPEND", Status="OLD")
+    else
+       open(file=Trim(dest), newunit=ifnd, ACTION="WRITE", &
+            & Form='UNFORMATTED', Access='STREAM', Status="NEW")
+    end if
+       
     open(file=Trim(orig), newunit=ifno, ACTION="READ", &
               & Form='UNFORMATTED', Access='STREAM')
-    open(file=Trim(dest), newunit=ifnd, ACTION="READWRITE", &
-              & Form='UNFORMATTED', Access='STREAM')
 
-    read(ifno, pos=iszd)
-    read(ifnd, pos=iszd)
+    if (is_old) then
+       read(ifno, pos=iszd)
+       read(ifnd, pos=iszd)
+    end if
+    nb = 0
     do
        read(ifno, iostat=ios)c
        if (ios==iostat_end) exit
        write(ifnd)c
+       nb = nb + 1
     end do
     
     close(ifno)
     close(ifnd)
 
     return
-  end Subroutine addtofile
+  end function add_to_file
   
 End MODULE NonNumeric
 
