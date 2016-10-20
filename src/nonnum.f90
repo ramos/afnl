@@ -2041,6 +2041,18 @@ CONTAINS
 
 ! ***************************************
 ! *
+  Function get_program_name() result (cname)
+! *
+! ***************************************
+    character (len=MAXLN) :: cname
+
+    Call Get_command_argument(0, cname)
+    
+    return
+  end Function get_program_name
+    
+! ***************************************
+! *
   Function GetOptCh(opt, val) Result (GetOpt)
 ! *
 ! ***************************************
