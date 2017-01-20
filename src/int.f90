@@ -286,6 +286,7 @@ CONTAINS
     bsup = Max(a,b)
   
     CALL Trap(ainf, bsup, Func, Old2N, 1)
+    OldN = Old2N
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter
@@ -464,6 +465,7 @@ CONTAINS
     bsup = Max(a,b)
   
     CALL TrapAb(ainf, bsup, Func, Old2N, 1)
+    OldN = Old2N
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter
@@ -588,6 +590,7 @@ CONTAINS
     
 
     CALL TrapInfUP(a, Func, Old2N, 1)
+    OldN = Old2N
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter
@@ -714,6 +717,7 @@ CONTAINS
 
     Old2N = 0.0_DP
     CALL TrapInfDw(a, Func, Old2N, 1)
+    OldN = Old2N
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter
@@ -839,6 +843,7 @@ CONTAINS
     End If
     
     CALL TrapSingDw(a, b, Func, Old2N, 1, gamma)
+    OldN = Old2N
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter
@@ -964,6 +969,7 @@ CONTAINS
     End If
     
     CALL TrapSingUp(a, b, Func, Old2N, 1, gamma)
+    OldN = Old2N
 
     OldSum = Old2N + 1.D39*Old2N
     Do I = 2, Maxiter

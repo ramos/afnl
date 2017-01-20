@@ -2345,6 +2345,82 @@ CONTAINS
 
     return
   end function add_to_file
+
+! ***************************************************
+! *
+  subroutine factor(factors, nfac, n)
+! *
+! ***************************************************
+    integer, intent (in) :: n
+    integer, intent (out) :: factors(:), nfac
+
+    integer :: k, num, maxf
+    
+    nfac = 0
+    num  = n
+    maxf = int(sqrt(real(n))) + 1
+    
+    k = 2
+    do
+       if (mod(num,k)==0) then
+          num = num/k
+          nfac = nfac + 1
+          factors(nfac) = k
+       else
+          if (k==2) then
+             k = 3
+          else
+             k = k + 2
+          end if
+       end if
+       if (num==1) return
+       if (k > maxf) then
+          nfac = nfac + 1
+          factors(nfac) = num
+          return
+       end if
+    end do
+    
+
+    return
+  end subroutine factor
+  
+! ***************************************************
+! *
+  elemental function count_factors(n) result (nfac)
+! *
+! ***************************************************
+    integer, intent (in) :: n
+    integer :: nfac
+
+    integer :: k, num, maxf
+    
+    nfac = 0
+    num  = n
+    maxf = int(sqrt(real(n)))
+    
+    k = 2
+    do
+       if (mod(num,k)==0) then
+          num = num/k
+          nfac = nfac + 1
+       else
+          if (k==2) then
+             k = 3
+          else
+             k = k + 2
+          end if
+       end if
+       if (num==1) return
+       if (k > maxf) then
+          nfac = nfac + 1
+          return
+       end if
+    end do
+    
+
+    return
+  end function count_factors
   
 End MODULE NonNumeric
 
